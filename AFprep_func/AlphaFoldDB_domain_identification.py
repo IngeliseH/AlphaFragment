@@ -125,7 +125,7 @@ def find_domains_from_PAE(PAE):
             # Calculate the distance between resiudes being evaluated
             res_difference = abs(res1 - res2)
             # Find the PAE between the residues, looking at both directions
-            relative_PAE = min(PAE[res1, res2], PAE[res2, res1])
+            relative_PAE = min(PAE[res1][res2], PAE[res2][res1])
 
             # Evaluate whether residues are part of the same domain given PAE value and their distance
             is_same_domain = (res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or \
