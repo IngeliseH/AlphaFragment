@@ -59,13 +59,13 @@ def find_key_for_value(dict, value):
 
 def find_domains_from_PAE(PAE):
     domain_dict = {}
-    prev_domain = 0
+    next_domain = 1
     res_dist_cutoff = 7
     close_PAE_val = 2
     further_PAE_val = 6
 
     for res1 in range(len(PAE)-1, -1, -1):
-        for res2 in range(0, res1-3):
+        for res2 in range(0, res1 - 3):
             # Calculate the distance between resiudes being evaluated
             res_difference = abs(res1 - res2)
             # Find the PAE between the residues, looking at both directions
@@ -76,32 +76,32 @@ def find_domains_from_PAE(PAE):
                              (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
 
             if is_same_domain:
-                # check if res1 in domain_dict
-                # check if res2 in domain_dict
-                # if res1 in domain_dict and res2 not in domain_dict:
-                # if neither in domain_dict:
+                key_res1 = find_key_for_value(domain_dict, res1)
+                key_res2 = find_key_for_value(domain_dict, res2)
 
-                
+                if key_res1 and not key_res2:
+                    # Add res2 and all values in between to the domain of res1
+                    domain_dict[key_res1].extend(range(min(domain_dict[key_res1]), res2 + 1))
+                    domain_dict[key_res1] = list(set(domain_dict[key_res1]))  # Remove duplicates
+                elif not key_res1 and not key_res2:
+                    # Create new domain and associate res1, res2, and all values in between
+                    domain_dict[f"D{next_domain}"] = list(range(res2, res1 + 1))
+                    next_domain += 1
+                    
+                break  # Break the inner loop once is_same_domain condition is met and processed    
 
-        domain = copy.prev_domain + 1
-        prev_domain = prev_domain + 1
 
+# check if res1 is an item in domain_dict
+# check if res2 is an item in domain_dict
+# if res1 in domain_dict and res2 not in domain_dict:
+    # get list of values associated with same key as res1
+    # find smallest value in this list
+    # make list of all values between this smallest value and res2
+    # add all of these values to the items associated with the same key as res1
+# if neither res1 or res2 is item in domain_dict:
+    # add new key to domain_dict - key = "D+{next_domain}" - make sure this value will not change when next_domain is updated
+    # associate res1, res2 and all values in between with this key (in value order from small to large - res2 will always be smaller than res1)
+    # add one to next_domain
 
-# The numbers you want to associate with 'A'
-new_numbers = list(range(1, 13)) + [15]  # Creates a list from 1 to 12 and adds 15
-
-# Check if 'A' is already a key in the dictionary
-if 'A' in my_dict:
-    # Add new numbers to 'A', ignoring duplicates by using set for uniqueness and then converting back to list
-    my_dict['A'] = list(set(my_dict['A'] + new_numbers))
-else:
-    # If 'A' is not a key, simply add the new numbers
-    my_dict['A'] = new_numbers
-
-# Optionally, if you need the list to be sorted
-my_dict['A'] = sorted(my_dict['A'])
-
-# Print the dictionary to see the result
-print(my_dict)
 
 
