@@ -50,3 +50,58 @@ def read_AFDB_json(accession_id, database_version="v4"):
 Ana2_PAE = read_AFDB_json("Q9XZ31")
 print(Ana2_PAE)
 
+# Function to find the key for a given value
+def find_key_for_value(dict, value):
+    for key, value_list in dict.items():
+        if value in value_list:
+            return key  # Return the key if the value is found
+    return None  # Return None if the value is not found
+
+def find_domains_from_PAE(PAE):
+    domain_dict = {}
+    prev_domain = 0
+    res_dist_cutoff = 7
+    close_PAE_val = 2
+    further_PAE_val = 6
+
+    for res1 in range(len(PAE)-1, -1, -1):
+        for res2 in range(0, res1-3):
+            # Calculate the distance between resiudes being evaluated
+            res_difference = abs(res1 - res2)
+            # Find the PAE between the residues, looking at both directions
+            relative_PAE = min(PAE[res1, res2], PAE[res2, res1])
+
+            # Evaluate whether residues are part of the same domain given PAE value and their distance
+            is_same_domain = (res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or \
+                             (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
+
+            if is_same_domain:
+                # check if res1 in domain_dict
+                # check if res2 in domain_dict
+                # if res1 in domain_dict and res2 not in domain_dict:
+                # if neither in domain_dict:
+
+                
+
+        domain = copy.prev_domain + 1
+        prev_domain = prev_domain + 1
+
+
+# The numbers you want to associate with 'A'
+new_numbers = list(range(1, 13)) + [15]  # Creates a list from 1 to 12 and adds 15
+
+# Check if 'A' is already a key in the dictionary
+if 'A' in my_dict:
+    # Add new numbers to 'A', ignoring duplicates by using set for uniqueness and then converting back to list
+    my_dict['A'] = list(set(my_dict['A'] + new_numbers))
+else:
+    # If 'A' is not a key, simply add the new numbers
+    my_dict['A'] = new_numbers
+
+# Optionally, if you need the list to be sorted
+my_dict['A'] = sorted(my_dict['A'])
+
+# Print the dictionary to see the result
+print(my_dict)
+
+
