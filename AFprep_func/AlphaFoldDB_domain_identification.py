@@ -50,14 +50,70 @@ def read_AFDB_json(accession_id, database_version="v4"):
 Ana2_PAE = read_AFDB_json("Q9XZ31")
 print(Ana2_PAE)
 
+
 # Function to find the key for a given value
 def find_key_for_value(dict, value):
+    """
+    Searches through a dictionary to find the key associated with a given value.
+
+    This function iterates over each key-value pair in the dictionary. It checks whether the given value is present
+    in the list of values associated with each key. If the value is found within a value list, the function returns
+    the corresponding key.
+
+    Parameters:
+    - dict (dict): The dictionary to search through. It is expected that the dictionary's values are lists.
+    - value: The value to search for within the lists associated with each key in the dictionary.
+
+    Returns:
+    - The key associated with the given value if found within any of the value lists. If the value is not found,
+      the function returns None.
+
+    Note:
+    - This function assumes that each value in the dictionary is a list of values. If the given value is found
+      within any of these lists, the corresponding key is returned.
+    - If multiple keys contain the value in their respective lists, only the first key encountered during the
+      iteration is returned. The order of iteration is determined by the insertion order of the keys.
+    - The function returns None if the value is not found in any of the lists within the dictionary.
+    """
     for key, value_list in dict.items():
         if value in value_list:
             return key  # Return the key if the value is found
     return None  # Return None if the value is not found
 
+
 def find_domains_from_PAE(PAE):
+    """
+    Analyzes Predicted Aligned Error (PAE) data to group residues into domains based on their PAE values and distances.
+
+    This function iterates through pairs of residues in the provided PAE matrix. It determines whether each pair belongs
+    to the same domain based on their PAE values relative to specified cutoffs for "close" and "further" distances. If a pair
+    is deemed to be in the same domain, they are grouped together in the `domain_dict` dictionary, with each domain
+    assigned a unique identifier.
+
+    Parameters:
+    - PAE (list of lists): A 2D matrix representing the Predicted Aligned Error values between residue pairs. PAE[i][j]
+      gives the PAE value between residue i and residue j.
+
+    Returns:
+    - domain_dict (dict): A dictionary where each key is a domain identifier (e.g., "D1", "D2", ...) and each value is a
+      list of residue indices belonging to that domain. The indices in each list are unique and sorted in ascending order.
+
+    The function employs a specific logic to decide domain membership:
+    - Two residues are considered to be in the same domain if the distance between them is greater than `res_dist_cutoff` and the
+      lesser of the two PAE values between them (ie min(PAE[res1, res2] and PAE[res2, res1])) is less than `further_PAE_val`, or if
+      the distance between them is less than or equal to `res_dist_cutoff` and the lesser of the two PAE values between them is below
+      `close_PAE_val`. A higher PAE threshold is set for closer residues, as these will always have a higher background level of
+      confidence about their relative positions.
+    - PAE between residues with less than 4 residues between them will not be examined, due to always having high confidence in
+      this range, even in unstructured regions
+    - If either residue in the pair is already associated with a domain, the pair is added to the existing domain. If both are
+      new, a new domain is created. If only one residue is new, it is added to the domain of the other residue.
+    - The inner loop breaks early once a residue pair is processed and determined to be in the same domain, moving to the next residue.
+
+    Note:
+    - `res_dist_cutoff`, `close_PAE_val`, and `further_PAE_val` are predefined thresholds used to evaluate the PAE data.
+    - The function assumes that the PAE matrix is symmetric and that the PAE value between a residue and itself is not considered.
+    """
     domain_dict = {}
     next_domain = 1
     res_dist_cutoff = 7
@@ -87,21 +143,15 @@ def find_domains_from_PAE(PAE):
                     # Create new domain and associate res1, res2, and all values in between
                     domain_dict[f"D{next_domain}"] = list(range(res2, res1 + 1))
                     next_domain += 1
-                    
-                break  # Break the inner loop once is_same_domain condition is met and processed    
+
+                break  # Break the inner loop once is_same_domain condition is met and processed
+    return domain_dict    
+
+#testing using Ana2
+Ana2_domains = find_domains_from_PAE(Ana2_PAE)
+print(Ana2_domains)
 
 
-# check if res1 is an item in domain_dict
-# check if res2 is an item in domain_dict
-# if res1 in domain_dict and res2 not in domain_dict:
-    # get list of values associated with same key as res1
-    # find smallest value in this list
-    # make list of all values between this smallest value and res2
-    # add all of these values to the items associated with the same key as res1
-# if neither res1 or res2 is item in domain_dict:
-    # add new key to domain_dict - key = "D+{next_domain}" - make sure this value will not change when next_domain is updated
-    # associate res1, res2 and all values in between with this key (in value order from small to large - res2 will always be smaller than res1)
-    # add one to next_domain
 
 
 
