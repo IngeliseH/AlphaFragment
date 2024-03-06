@@ -116,13 +116,13 @@ def find_domains_from_PAE(PAE):
     """
     domain_dict = {}
     next_domain = 1
-    res_dist_cutoff = 7
-    close_PAE_val = 2
-    further_PAE_val = 6
+    res_dist_cutoff = 10
+    close_PAE_val = 4
+    further_PAE_val = 11
 
     for res1 in range(len(PAE)-1, -1, -1):
-        for res2 in range(0, res1 - 3):
-            # Calculate the distance between resiudes being evaluated
+        for res2 in range(0, res1 - 4):
+            # Calculate the distance between residues being evaluated
             res_difference = abs(res1 - res2)
             # Find the PAE between the residues, looking at both directions
             relative_PAE = min(PAE[res1][res2], PAE[res2][res1])
@@ -130,28 +130,73 @@ def find_domains_from_PAE(PAE):
             # Evaluate whether residues are part of the same domain given PAE value and their distance
             is_same_domain = (res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or \
                              (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
+            
+            if res1 < 20 and res_difference < 10:
+                print("res1 = ", res1)
+                print("res2 = ", res2)
+                print("PAE = ", relative_PAE)
+
 
             if is_same_domain:
                 key_res1 = find_key_for_value(domain_dict, res1)
                 key_res2 = find_key_for_value(domain_dict, res2)
+                print("res1 = ", res1)
+                print("res2 = ", res2)
+
 
                 if key_res1 and not key_res2:
+                    print("res1 key = ", key_res1)
+
                     # Add res2 and all values in between to the domain of res1
-                    domain_dict[key_res1].extend(range(min(domain_dict[key_res1]), res2 + 1))
+                    # domain_dict[key_res1].extend(range(min(domain_dict[key_res1]), res2 + 1))
+                    domain_dict[key_res1].extend(range(res2 + 1, min(domain_dict[key_res1])))
                     domain_dict[key_res1] = list(set(domain_dict[key_res1]))  # Remove duplicates
                 elif not key_res1 and not key_res2:
                     # Create new domain and associate res1, res2, and all values in between
                     domain_dict[f"D{next_domain}"] = list(range(res2, res1 + 1))
+                    print(f"new key: D{next_domain}")
                     next_domain += 1
 
                 break  # Break the inner loop once is_same_domain condition is met and processed
-    return domain_dict    
+    return domain_dict
 
-#testing using Ana2
+# testing using Ana2
 Ana2_domains = find_domains_from_PAE(Ana2_PAE)
 print(Ana2_domains)
+print(len(Ana2_PAE))
+
+# testing function by visualising output for Ana2
+import pandas as pd
+import matplotlib
+matplotlib.use('Qt5Agg', force=True)  # Force the use of the Qt5Agg backend
+
+# Now import pyplot after setting the backend
+import matplotlib.pyplot as plt
 
 
+# Convert the dictionary to a list of tuples [(key, item), ...] for easier DataFrame creation
+data = [(key, item) for key, value_list in Ana2_domains.items() for item in value_list]
+print(data)
 
+# Create the DataFrame
+df = pd.DataFrame(data, columns=['Domain', 'Item'])
+print(df)
+
+# Plotting
+plt.figure(figsize=(10, 6))
+# Assuming 'Item' should be treated as a continuous variable on the x-axis and 'Domain' as a categorical variable on the y-axis
+# Convert domain to category type for better handling by matplotlib
+df['Domain'] = pd.Categorical(df['Domain'])
+
+# Scatter plot with 'Item' on x-axis and 'Domain' on y-axis
+plt.scatter(df['Item'], df['Domain'])
+
+plt.xlabel('Item')
+plt.ylabel('Domain')
+plt.title('Domain Distribution of Items')
+plt.xlim(0, len(Ana2_PAE))  # Set x-axis limits based on the length of Ana2_PAE
+plt.grid(True)
+
+plt.show()
 
 
