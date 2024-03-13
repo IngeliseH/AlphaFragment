@@ -16,6 +16,10 @@ class Domain:
         self.type = domain_type
         self.residues = residues
 
+    def __str__(self):
+        # Format the string representation of the Domain instance
+        return f"{self.type} ({self.start}, {self.end})"
+
 class Protein:
     def __init__(self, name, accession_id, sequence, domain_list=None, fragment_list=None):
         """
