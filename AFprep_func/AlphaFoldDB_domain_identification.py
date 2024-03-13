@@ -127,7 +127,7 @@ def find_domains_from_PAE(PAE):
             is_same_domain = (res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or \
                              (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
             
-            if res1 < 20 and res_difference < 10:
+            #if res1 < 20 and res_difference < 10:
                 #print("res1 = ", res1)
                 #print("res2 = ", res2)
                 #print("PAE = ", relative_PAE)
