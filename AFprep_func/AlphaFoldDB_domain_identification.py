@@ -128,20 +128,20 @@ def find_domains_from_PAE(PAE):
                              (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
             
             if res1 < 20 and res_difference < 10:
-                print("res1 = ", res1)
-                print("res2 = ", res2)
-                print("PAE = ", relative_PAE)
+                #print("res1 = ", res1)
+                #print("res2 = ", res2)
+                #print("PAE = ", relative_PAE)
 
 
             if is_same_domain:
                 key_res1 = find_key_for_value(domain_dict, res1)
                 key_res2 = find_key_for_value(domain_dict, res2)
-                print("res1 = ", res1)
-                print("res2 = ", res2)
+                #print("res1 = ", res1)
+                #print("res2 = ", res2)
 
 
                 if key_res1 and not key_res2:
-                    print("res1 key = ", key_res1)
+                    #print("res1 key = ", key_res1)
 
                     # Add res2 and all values in between to the domain of res1
                     # domain_dict[key_res1].extend(range(min(domain_dict[key_res1]), res2 + 1))
@@ -150,7 +150,7 @@ def find_domains_from_PAE(PAE):
                 elif not key_res1 and not key_res2:
                     # Create new domain and associate res1, res2, and all values in between
                     domain_dict[f"D{next_domain}"] = list(range(res2, res1 + 1))
-                    print(f"new key: D{next_domain}")
+                    #print(f"new key: D{next_domain}")
                     next_domain += 1
 
                 break  # Break the inner loop once is_same_domain condition is met and processed
