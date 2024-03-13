@@ -46,10 +46,6 @@ def read_AFDB_json(accession_id, database_version="v4"):
     # If everything went smoothly, return the content of the file
     return predicted_aligned_error
 
-#testing using Ana2
-Ana2_PAE = read_AFDB_json("Q9XZ31")
-print(Ana2_PAE)
-
 
 # Function to find the key for a given value
 def find_key_for_value(dict, value):
@@ -159,44 +155,5 @@ def find_domains_from_PAE(PAE):
 
                 break  # Break the inner loop once is_same_domain condition is met and processed
     return domain_dict
-
-# testing using Ana2
-Ana2_domains = find_domains_from_PAE(Ana2_PAE)
-print(Ana2_domains)
-print(len(Ana2_PAE))
-
-# testing function by visualising output for Ana2
-import pandas as pd
-import matplotlib
-matplotlib.use('Qt5Agg', force=True)  # Force the use of the Qt5Agg backend
-
-# Now import pyplot after setting the backend
-import matplotlib.pyplot as plt
-
-
-# Convert the dictionary to a list of tuples [(key, item), ...] for easier DataFrame creation
-data = [(key, item) for key, value_list in Ana2_domains.items() for item in value_list]
-print(data)
-
-# Create the DataFrame
-df = pd.DataFrame(data, columns=['Domain', 'Item'])
-print(df)
-
-# Plotting
-plt.figure(figsize=(10, 6))
-# Assuming 'Item' should be treated as a continuous variable on the x-axis and 'Domain' as a categorical variable on the y-axis
-# Convert domain to category type for better handling by matplotlib
-df['Domain'] = pd.Categorical(df['Domain'])
-
-# Scatter plot with 'Item' on x-axis and 'Domain' on y-axis
-plt.scatter(df['Item'], df['Domain'])
-
-plt.xlabel('Item')
-plt.ylabel('Domain')
-plt.title('Domain Distribution of Items')
-plt.xlim(0, len(Ana2_PAE))  # Set x-axis limits based on the length of Ana2_PAE
-plt.grid(True)
-
-plt.show()
 
 
