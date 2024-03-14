@@ -119,7 +119,7 @@ def find_domains_from_PAE(PAE):
                     domain_res1.end = max(domain_res1.end, res2)
                 elif not domain_res1 and not domain_res2:
                     # Create a new domain starting at res1 and ending at res2
-                    domains.append(Domain(f"D{next_domain_num}", res1, res1, 'AF'))
+                    domains.append(Domain(f"D{next_domain_num}", res1, res2, 'AF'))
                     next_domain_num += 1
 
                 break  # Move to the next residue after processing a same domain pair

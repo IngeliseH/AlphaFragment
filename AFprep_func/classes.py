@@ -4,15 +4,15 @@ class Domain:
         Initializes a Domain instance.
 
         Parameters:
-        - start (int): The starting position of the domain in the protein sequence. Must be > 0.
         - num (string): A string identifying the domain
-        - end (int): The ending position of the domain in the protein sequence. Must be > 0.
+        - start (int): The starting position of the domain in the protein sequence. Must be >= 0.
+        - end (int): The ending position of the domain in the protein sequence. Must be >= 0.
         - domain_type (str): The type or name of the domain.
         """
-        if start <= 0 or end <= 0:
+        if start <0 or end < 0:
             raise ValueError("Start and end must be greater than 0.")
-        self.start = start
         self.num = num
+        self.start = start
         self.end = end
         self.type = domain_type
 
