@@ -1,7 +1,7 @@
 #identifying domains from AlphaFold DB
 #importing required packages
-import os
 import requests
+from classes import Domain
 
 def read_AFDB_json(accession_id, database_version="v4"):
     """
@@ -48,7 +48,17 @@ def read_AFDB_json(accession_id, database_version="v4"):
 
 
 # Function to find the domain for a given residue
-def find_domain_by_res(res, domains):
+def find_domain_by_res(domains, res):
+    """
+    Helper function to find the domain that contains a given residue.
+
+    Parameters:
+    - domains (list of Domain): The list of current domain objects.
+    - res (int): The residue index to find within the domains.
+
+    Returns:
+    - Domain object if the residue is found within a domain, None otherwise.
+    """
     for domain in domains:
         if domain.start <= res <= domain.end:
             return domain
@@ -56,36 +66,31 @@ def find_domain_by_res(res, domains):
 
 def find_domains_from_PAE(PAE):
     """
-    Analyzes Predicted Aligned Error (PAE) data to group residues into domains based on their PAE values and distances.
-
-    This function iterates through pairs of residues in the provided PAE matrix. It determines whether each pair belongs
-    to the same domain based on their PAE values relative to specified cutoffs for "close" and "further" distances. If a pair
-    is deemed to be in the same domain, they are grouped together in the `domain_dict` dictionary, with each domain
-    assigned a unique identifier.
+    Analyzes Predicted Aligned Error (PAE) data to group residues into domains. This function iterates through residue
+    pairs, determining their domain membership based on PAE values and residue distances. Domains are represented as 
+    Domain objects with unique identifiers, start, and end residues.
 
     Parameters:
-    - PAE (list of lists): A 2D matrix representing the Predicted Aligned Error values between residue pairs. PAE[i][j]
-      gives the PAE value between residue i and residue j.
+    - PAE (list of lists): A 2D matrix of PAE values between residue pairs, where PAE[i][j] is the PAE between residues i and j.
 
     Returns:
-    - domain_dict (dict): A dictionary where each key is a domain identifier (e.g., "D1", "D2", ...) and each value is a
-      list of residue indices belonging to that domain. The indices in each list are unique and sorted in ascending order.
+    - A list of Domain objects, each representing a domain with a unique identifier and the range of residues it encompasses.
 
-    The function employs a specific logic to decide domain membership:
+    The logic used to determine domain membership is:
     - Two residues are considered to be in the same domain if the distance between them is greater than `res_dist_cutoff` and the
       lesser of the two PAE values between them (ie min(PAE[res1, res2] and PAE[res2, res1])) is less than `further_PAE_val`, or if
       the distance between them is less than or equal to `res_dist_cutoff` and the lesser of the two PAE values between them is below
       `close_PAE_val`. A higher PAE threshold is set for closer residues, as these will always have a higher background level of
       confidence about their relative positions.
-    - PAE between residues with less than 4 residues between them will not be examined, due to always having high confidence in
-      this range, even in unstructured regions
-    - If either residue in the pair is already associated with a domain, the pair is added to the existing domain. If both are
-      new, a new domain is created. If only one residue is new, it is added to the domain of the other residue.
-    - The inner loop breaks early once a residue pair is processed and determined to be in the same domain, moving to the next residue.
+    - The function does not evaluate PAE for residue pairs less than 4 residues apart due to inherently high confidence in their relative positions.
+    - Domains are updated or created based on the membership of the residues being evaluated. If one residue is already in a domain and the other is
+      not, the latter is added to the former's domain. New domains are created for pairs where neither residue is currently in a domain.
+    - The inner loop breaks early once a residue pair is processed and determined to be in the same domain, moving to the next residue (as all
+      residues between these are assumed to be in the same domain). No gaps are possible within domains
 
     Note:
-    - `res_dist_cutoff`, `close_PAE_val`, and `further_PAE_val` are predefined thresholds used to evaluate the PAE data.
-    - The function assumes that the PAE matrix is symmetric and that the PAE value between a residue and itself is not considered.
+    - `res_dist_cutoff`, `close_PAE_val`, and `further_PAE_val` are defined thresholds for evaluating PAE data.
+    - Assumes the PAE matrix is symmetric and PAE[i][i] (self-comparison) is not considered.
     """
     domains = []
     next_domain_num = 1
@@ -93,42 +98,32 @@ def find_domains_from_PAE(PAE):
     close_PAE_val = 4
     further_PAE_val = 11
 
-    for res1 in range(0, len(PAE)):  # Iterate forwards from 0 to len(PAE)
-        for res2 in range(len(PAE)-1, res1 + 4, -1):  # Iterate backwards from len(PAE)-1 to 4 residues after res1
+    for res1 in range(0, len(PAE)):  # Iterate through residues from start to end
+        for res2 in range(len(PAE)-1, res1 + 4, -1):  # Iterate through potential domain-mate residues, skipping nearby ones
+            
             # Calculate the distance between residues being evaluated
             res_difference = abs(res2 - res1)
             # Find the PAE between the residues, looking at both directions
             relative_PAE = min(PAE[res1][res2], PAE[res2][res1])
 
-            # Evaluate whether residues are part of the same domain given PAE value and their distance
-            is_same_domain = (res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or \
-                             (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val)
-            
-            #if res1 < 20 and res_difference < 10:
-                #print("res1 = ", res1)
-                #print("res2 = ", res2)
-                #print("PAE = ", relative_PAE)
-
+            # Determine if residues are in the same domain based on PAE and distance
+            is_same_domain = ((res_difference <= res_dist_cutoff and relative_PAE < close_PAE_val) or
+                              (res_difference > res_dist_cutoff and relative_PAE < further_PAE_val))
 
             if is_same_domain:
                 domain_res1 = find_domain_by_res(domains, res1)
                 domain_res2 = find_domain_by_res(domains, res2)
-                #print("res1 = ", res1)
-                #print("res2 = ", res2)
-
 
                 if domain_res1 and not domain_res2:
-                    # Extend the domain of res1 to include res2 if it's outside the current range
-                    if res2 > domain_res1.end:
-                        domain_res1.end = res2
+                    # Extend domain_res1 to include res2 (and so all residues in between) if outside current range
+                    domain_res1.end = max(domain_res1.end, res2)
                 elif not domain_res1 and not domain_res2:
-                    # Create a new domain with res1 and res2
-                    new_domain_num = f"D{next_domain_num}"
-                    next_domain_num += 1  # Update this to however you're generating new IDs
-                    new_domain = Domain(new_domain_num, res1, res2, 'AF')
-                    domains.append(new_domain)
+                    # Create a new domain starting at res1 and ending at res2
+                    domains.append(Domain(f"D{next_domain_num}", res1, res1, 'AF'))
+                    next_domain_num += 1
 
-                break  # Break the inner loop once is_same_domain condition is met and processed
+                break  # Move to the next residue after processing a same domain pair
+            
     return domains
 
 
