@@ -1,24 +1,24 @@
 class Domain:
-    def __init__(self, start, end, domain_type, residues):
+    def __init__(self, num, start, end, domain_type):
         """
         Initializes a Domain instance.
 
         Parameters:
         - start (int): The starting position of the domain in the protein sequence. Must be > 0.
+        - num (string): A string identifying the domain
         - end (int): The ending position of the domain in the protein sequence. Must be > 0.
         - domain_type (str): The type or name of the domain.
-        - residues (list of int): List of residue positions within this domain. All values must be > 0.
         """
-        if start <= 0 or end <= 0 or not all(r > 0 for r in residues):
-            raise ValueError("Start, end, and residues must be greater than 0.")
+        if start <= 0 or end <= 0:
+            raise ValueError("Start and end must be greater than 0.")
         self.start = start
+        self.num = num
         self.end = end
         self.type = domain_type
-        self.residues = residues
 
     def __str__(self):
         # Format the string representation of the Domain instance
-        return f"{self.type} ({self.start}, {self.end})"
+        return f"{self.type}{self.num} ({self.start}, {self.end})"
 
 class Protein:
     def __init__(self, name, accession_id, sequence, domain_list=None, fragment_list=None):

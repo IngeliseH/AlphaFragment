@@ -10,11 +10,7 @@ print(f"Proteins with errors or no data available: {errors}")
 
 for protein in proteins:
     protein_PAE = read_AFDB_json(protein.accession_id)
-    domain_dict = find_domains_from_PAE(protein_PAE)
-    for domain_name, residues in domain_dict.items():
-        start = min(residues)
-        end = max(residues)
-        domain_type = 'AF'
-        domain = Domain(start=start, end=end, domain_type=domain_type, residues=residues)
+    domains = find_domains_from_PAE(protein_PAE)
+    for domain in domains:
         protein.add_domain(domain)
     print(protein.name, " has ", len(protein.domain_list), "domains")

@@ -47,35 +47,12 @@ def read_AFDB_json(accession_id, database_version="v4"):
     return predicted_aligned_error
 
 
-# Function to find the key for a given value
-def find_key_for_value(dict, value):
-    """
-    Searches through a dictionary to find the key associated with a given value.
-
-    This function iterates over each key-value pair in the dictionary. It checks whether the given value is present
-    in the list of values associated with each key. If the value is found within a value list, the function returns
-    the corresponding key.
-
-    Parameters:
-    - dict (dict): The dictionary to search through. It is expected that the dictionary's values are lists.
-    - value: The value to search for within the lists associated with each key in the dictionary.
-
-    Returns:
-    - The key associated with the given value if found within any of the value lists. If the value is not found,
-      the function returns None.
-
-    Note:
-    - This function assumes that each value in the dictionary is a list of values. If the given value is found
-      within any of these lists, the corresponding key is returned.
-    - If multiple keys contain the value in their respective lists, only the first key encountered during the
-      iteration is returned. The order of iteration is determined by the insertion order of the keys.
-    - The function returns None if the value is not found in any of the lists within the dictionary.
-    """
-    for key, value_list in dict.items():
-        if value in value_list:
-            return key  # Return the key if the value is found
-    return None  # Return None if the value is not found
-
+# Function to find the domain for a given residue
+def find_domain_by_res(res, domains):
+    for domain in domains:
+        if domain.start <= res <= domain.end:
+            return domain
+    return None
 
 def find_domains_from_PAE(PAE):
     """
@@ -110,16 +87,16 @@ def find_domains_from_PAE(PAE):
     - `res_dist_cutoff`, `close_PAE_val`, and `further_PAE_val` are predefined thresholds used to evaluate the PAE data.
     - The function assumes that the PAE matrix is symmetric and that the PAE value between a residue and itself is not considered.
     """
-    domain_dict = {}
-    next_domain = 1
+    domains = []
+    next_domain_num = 1
     res_dist_cutoff = 10
     close_PAE_val = 4
     further_PAE_val = 11
 
-    for res1 in range(len(PAE)-1, -1, -1):
-        for res2 in range(0, res1 - 4):
+    for res1 in range(0, len(PAE)):  # Iterate forwards from 0 to len(PAE)
+        for res2 in range(len(PAE)-1, res1 + 4, -1):  # Iterate backwards from len(PAE)-1 to 4 residues after res1
             # Calculate the distance between residues being evaluated
-            res_difference = abs(res1 - res2)
+            res_difference = abs(res2 - res1)
             # Find the PAE between the residues, looking at both directions
             relative_PAE = min(PAE[res1][res2], PAE[res2][res1])
 
@@ -134,26 +111,24 @@ def find_domains_from_PAE(PAE):
 
 
             if is_same_domain:
-                key_res1 = find_key_for_value(domain_dict, res1)
-                key_res2 = find_key_for_value(domain_dict, res2)
+                domain_res1 = find_domain_by_res(domains, res1)
+                domain_res2 = find_domain_by_res(domains, res2)
                 #print("res1 = ", res1)
                 #print("res2 = ", res2)
 
 
-                if key_res1 and not key_res2:
-                    #print("res1 key = ", key_res1)
-
-                    # Add res2 and all values in between to the domain of res1
-                    # domain_dict[key_res1].extend(range(min(domain_dict[key_res1]), res2 + 1))
-                    domain_dict[key_res1].extend(range(res2 + 1, min(domain_dict[key_res1])))
-                    domain_dict[key_res1] = list(set(domain_dict[key_res1]))  # Remove duplicates
-                elif not key_res1 and not key_res2:
-                    # Create new domain and associate res1, res2, and all values in between
-                    domain_dict[f"D{next_domain}"] = list(range(res2, res1 + 1))
-                    #print(f"new key: D{next_domain}")
-                    next_domain += 1
+                if domain_res1 and not domain_res2:
+                    # Extend the domain of res1 to include res2 if it's outside the current range
+                    if res2 > domain_res1.end:
+                        domain_res1.end = res2
+                elif not domain_res1 and not domain_res2:
+                    # Create a new domain with res1 and res2
+                    new_domain_num = f"D{next_domain_num}"
+                    next_domain_num += 1  # Update this to however you're generating new IDs
+                    new_domain = Domain(new_domain_num, res1, res2, 'AF')
+                    domains.append(new_domain)
 
                 break  # Break the inner loop once is_same_domain condition is met and processed
-    return domain_dict
+    return domains
 
 
