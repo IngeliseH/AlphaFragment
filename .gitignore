@@ -1,7 +1,1 @@
 .DS_Store
-/env
-AFprep_func/proteins1.csv
-AFprep_func/proteins2.csv
-AFprep_func/uniprot gene list updated.xlsx
-AFprep.egg-info/
-AFprep_func/__pycache__/
