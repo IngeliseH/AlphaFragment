@@ -6,6 +6,8 @@
 Welcome to AFprep's documentation!
 ==================================
 
+:caption: Contents:
+
 .. toctree::
    :maxdepth: 2
 
@@ -15,7 +17,7 @@ Welcome to AFprep's documentation!
    recursive_fragment_finding
    UniProt_data_fetch
 
-   :caption: Contents:
+ 
 
 
 

@@ -1,5 +1,5 @@
 Fragmenting proteins
-=================================
+====================
 
 .. automodule:: AFprep_func.recursive_fragment_finding
    :members:
