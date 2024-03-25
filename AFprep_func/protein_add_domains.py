@@ -1,7 +1,7 @@
-from AlphaFoldDB_domain_identification import read_AFDB_json
-from AlphaFoldDB_domain_identification import find_domains_from_PAE
-from protein_init import initialize_proteins_from_csv  # Importing the function to fetch sequence data
-from classes import Domain
+from AFprep_func.AlphaFoldDB_domain_identification import read_AFDB_json
+from AFprep_func.AlphaFoldDB_domain_identification import find_domains_from_PAE
+from AFprep_func.protein_init import initialize_proteins_from_csv  # Importing the function to fetch sequence data
+from AFprep_func.classes import Domain
 
 csv_path = 'proteins1.csv'
 proteins, errors = initialize_proteins_from_csv(csv_path)

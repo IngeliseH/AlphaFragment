@@ -1,7 +1,7 @@
 #identifying domains from AlphaFold DB
 #importing required packages
 import requests
-from classes import Domain
+from AFprep_func.classes import Domain
 
 def read_AFDB_json(accession_id, database_version="v4"):
     """
@@ -77,6 +77,7 @@ def find_domains_from_PAE(PAE):
     - A list of Domain objects, each representing a domain with a unique identifier and the range of residues it encompasses.
 
     The logic used to determine domain membership is:
+    
     - Two residues are considered to be in the same domain if the distance between them is greater than `res_dist_cutoff` and the
       lesser of the two PAE values between them (ie min(PAE[res1, res2] and PAE[res2, res1])) is less than `further_PAE_val`, or if
       the distance between them is less than or equal to `res_dist_cutoff` and the lesser of the two PAE values between them is below

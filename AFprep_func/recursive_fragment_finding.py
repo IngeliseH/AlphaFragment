@@ -1,4 +1,4 @@
-from classes import Domain
+from AFprep_func.classes import Domain
 
 def recursive_fragmentation(domains, fragment_start, first_res, last_res, min_len, max_len, overlap, max_overlap, min_overlap, cutpoints=None, overlaps=None):
     # Base case: if previous fragment end is at or beyond the last_res, we've reached the end and return the cutpoints

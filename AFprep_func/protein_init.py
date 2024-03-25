@@ -1,6 +1,6 @@
 import pandas as pd
-from classes import Protein  # Importing the Protein class
-from UniProt_data_fetch import fetch_uniprot_info  # Importing the function to fetch sequence data
+from AFprep_func.classes import Protein  # Importing the Protein class
+from AFprep_func.UniProt_data_fetch import fetch_uniprot_info  # Importing the function to fetch sequence data
 
 def initialize_proteins_from_csv(csv_path):
     """
