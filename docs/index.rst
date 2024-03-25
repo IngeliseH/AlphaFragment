@@ -12,10 +12,11 @@ Welcome to AFprep's documentation!
    :maxdepth: 2
 
    AlphaFoldDB_domain_identification
-   protein_add_domains
-   protein_init
-   recursive_fragment_finding
    UniProt_data_fetch
+   classes
+   protein_init
+   protein_add_domains
+   recursive_fragment_finding
 
  
 
