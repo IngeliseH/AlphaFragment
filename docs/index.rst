@@ -9,12 +9,11 @@ Welcome to AFprep's documentation!
 .. toctree::
    :maxdepth: 2
 
-   AFprep_func/AlphaFoldDB_domain_identification
-   AFprep_func/classes
-   AFprep_func/protein_add_domains
-   AFprep_func/protein_init
-   AFprep_func/recursive_fragment_finding
-   AFprep_func/UniProt_data_fetch
+   AlphaFoldDB_domain_identification
+   protein_add_domains
+   protein_init
+   recursive_fragment_finding
+   UniProt_data_fetch
 
    :caption: Contents:
 
