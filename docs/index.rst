@@ -11,11 +11,10 @@ Welcome to AFprep's documentation!
 .. toctree::
    :maxdepth: 2
 
+   classes
    AlphaFoldDB_domain_identification
    UniProt_data_fetch
-   classes
    protein_init
-   protein_add_domains
    recursive_fragment_finding
 
  
