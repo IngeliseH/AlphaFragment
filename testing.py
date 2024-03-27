@@ -2,6 +2,7 @@ from protein_init import initialize_proteins_from_csv  # Importing the function 
 
 # Example usage
 csv_path = 'AFprep_func/proteins1.csv'
+csv_path = 'proteins2.csv'
 proteins, errors = initialize_proteins_from_csv(csv_path)
 print(f"Successfully initialized proteins: {[protein.name for protein in proteins]}")
 print(f"Proteins with errors or no data available: {errors}")
@@ -79,7 +80,7 @@ max_len = 200
 overlap = 10
 max_overlap = 20
 min_overlap = 0
-result = recursive_fragmentation(first_res, first_res, last_res, min_len, max_len, overlap, max_overlap, min_overlap)
+result = recursive_fragmentation(domains=domains, fragment_start=1, first_res = first_res, last_res = last_res, min_len = min_len, max_len = max_len, overlap = overlap, max_overlap = max_overlap, min_overlap = min_overlap)
 
 if result is not None:
     print("Cutpoints found:", result)

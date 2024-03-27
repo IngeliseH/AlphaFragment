@@ -7,7 +7,8 @@ from AlphaFoldDB_domain_identification import find_domains_from_PAE
 from protein_init import initialize_proteins_from_csv  # Importing the function to fetch sequence data
 
 # Example usage
-csv_path = 'AFprep_func/proteins2.csv'
+#csv_path = 'AFprep_func/proteins2.csv'
+csv_path = 'proteins2.csv'
 proteins, errors = initialize_proteins_from_csv(csv_path)
 print(f"Successfully initialized proteins: {[protein.name for protein in proteins]}")
 print(f"Proteins with errors or no data available: {errors}")
@@ -20,8 +21,8 @@ for protein in proteins:
         protein.add_domain(domain)
     print(protein.name, " has ", len(protein.domain_list), "domains")
 
-min_len = 100
-max_len = 200
+min_len = 150
+max_len = 250
 overlap = 10
 max_overlap = 30
 min_overlap = 0
@@ -31,12 +32,12 @@ for protein in proteins:
     fragments = None
     first_res = 0
     last_res = len(protein.sequence)
-    while fragments == None and min_len > 0 and max_len < len(protein.sequence):
+    while fragments == None:
         fragments = recursive_fragmentation(protein.domain_list, first_res, first_res, last_res, min_len, max_len, overlap, max_overlap, min_overlap)
         if fragments == None:
-            min_len+=-10
-            print(min_len)
-            max_len+=10
+            #min_len = max (min_len-10, max_overlap + 1)
+            #print(min_len)
+            max_len = min(max_len+10, len(protein_sequence))
             print(max_len)
     if fragments is not None:
         print("Cutpoints found for protein ", protein, ":", fragments)
