@@ -68,7 +68,7 @@ def read_afdb_json(accession_id, database_version="v4"):
         f'-predicted_aligned_error_{database_version}.json'
     )
     try:
-        response = requests.get(json_url, timeout=10) #timeout in 10 seconds
+        response = requests.get(json_url, timeout=30) #timeout in 30 seconds
         # Raise an HTTPError if the status is 4xx, 5xx
         response.raise_for_status()
         data = response.json()

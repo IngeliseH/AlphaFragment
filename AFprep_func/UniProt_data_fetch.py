@@ -46,7 +46,7 @@ def fetch_uniprot_info(accession_id):
     """
     request_url = f"https://www.ebi.ac.uk/proteins/api/features/{accession_id}"
     try:
-        response = requests.get(request_url, headers={"Accept": "application/json"}, timeout=10)
+        response = requests.get(request_url, headers={"Accept": "application/json"}, timeout=30)
         response.raise_for_status()  # Raises an HTTPError for bad responses (4xx, 5xx)
         return response.json()  # Parse and return JSON response
     except requests.exceptions.HTTPError as e:

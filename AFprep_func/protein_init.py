@@ -56,24 +56,25 @@ def initialize_proteins_from_csv(csv_path):
     proteins_with_errors = []  # List to store protein names with no UniProt data available
 
     # Read the CSV file
-    df = pd.read_csv(csv_path, usecols=[0, 1])  # Adjust column names as necessary
+    df = pd.read_csv(csv_path, usecols=[0, 1], names=['name', 'accession_id'])
 
     # Iterate through each row in the DataFrame
     for _, row in df.iterrows():
-        protein_name = row[0]
-        accession_id = row[1]
+        protein_name = row['name']
+        print("protein name = ", protein_name)
+        accession_id = row['accession_id']
+        print("accession id = ", accession_id)
         try:
             # Attempt to fetch sequence using the accession ID
             fetch_result = fetch_uniprot_info(accession_id)
-            sequence = fetch_result['sequence'] if 'sequence' in fetch_result else None
-
-            if sequence:
+            if fetch_result is not None and 'sequence' in fetch_result:
+                sequence = fetch_result['sequence']
                 # Initialize a Protein object and add it to the list if sequence is found
                 proteins.append(Protein(name=protein_name,
                                         accession_id=accession_id,
                                         sequence=sequence))
             else:
-                # If no sequence is found, add the protein name to the error list
+                # If no result is found, add the protein name to the error list
                 proteins_with_errors.append(protein_name)
         except RequestException as e:
             print(f"Error fetching data for {protein_name}: {str(e)}")
