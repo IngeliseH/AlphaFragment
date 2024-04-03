@@ -63,13 +63,17 @@ def check_valid_cutpoint(res, domains, sequence_end):
     return True
 
 
-def find_next_start(res, overlap, max_overlap, min_overlap, domains, last_res):
-    if check_valid_cutpoint(res - overlap, domains, last_res):
+def find_next_start(res, overlap, max_overlap, min_overlap, domains, sequence_end):
+    if check_valid_cutpoint(res - overlap, domains, sequence_end):
         return res - overlap
+    #force none if moving fragment end would allow better overlap
+    for forwards_res in range(max_overlap, min_overlap, -1):
+        if check_valid_cutpoint(res + forwards_res, domains, sequence_end):
+            return None
     for increased_overlap in range(overlap + 1, max_overlap):
-        if check_valid_cutpoint(res - increased_overlap, domains, last_res):
+        if check_valid_cutpoint(res - increased_overlap, domains, sequence_end):
             return res - increased_overlap
     for decreased_overlap in range(overlap - 1, min_overlap, -1):
-        if check_valid_cutpoint(res - decreased_overlap, domains, last_res):
+        if check_valid_cutpoint(res - decreased_overlap, domains, sequence_end):
             return res - decreased_overlap
     return None
