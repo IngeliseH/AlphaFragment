@@ -1,6 +1,6 @@
 from AFprep_func.classes import Domain
 
-def recursive_fragmentation(domains, fragment_start, first_res, last_res, min_len, max_len, overlap, max_overlap, min_overlap, cutpoints=None, overlaps=None):
+def recursive_fragmentation(domains, fragment_start, first_res, last_res, min_len, max_len, overlap, min_overlap, max_overlap, cutpoints=None, overlaps=None):
     # Base case: if previous fragment end is at or beyond the last_res, we've reached the end and return the cutpoints
     if cutpoints:
         if cutpoints[-1][1] >= last_res:
@@ -15,7 +15,7 @@ def recursive_fragmentation(domains, fragment_start, first_res, last_res, min_le
 
     for res in range(fragment_start + min_len, min(fragment_start + max_len, last_res) + 1):
         if check_valid_cutpoint(res, domains, last_res):
-            next_start = find_next_start(res, overlap, max_overlap, min_overlap, domains, last_res)
+            next_start = find_next_start(res, overlap, min_overlap, max_overlap, domains, last_res)
             if next_start:
                 valid_cut_found = True
                 cutpoints.append((fragment_start, res))
@@ -51,19 +51,26 @@ def check_valid_cutpoint(res, domains, sequence_end):
     Returns:
     - bool: True if the cutpoint is valid, False otherwise.
     """
-    # Check if res is beyond the end of the sequence
-    if res > sequence_end + 1:
+    # Check if res is beyond the end or before the start of the sequence
+    if res > sequence_end: #was sequence_end + 1 but not sure why so changed - change back if not working
+        return False
+    if res < 0:
         return False
     
+    # If res is at end of sequence, doesn't matter if it is in a domain
+    if res == (sequence_end):
+        return True
+
     for domain in domains:
         # Check if res and res-1 are within the same domain
+        #if both in same domain, cutting at res will split the domain - if only res is, or they are in different domains, this is fine
         if domain.start <= res <= domain.end and domain.start <= res-1 <= domain.end:
             return False
             
     return True
 
 
-def find_next_start(res, overlap, max_overlap, min_overlap, domains, sequence_end):
+def find_next_start(res, overlap, min_overlap, max_overlap, domains, sequence_end):
     if check_valid_cutpoint(res - overlap, domains, sequence_end):
         return res - overlap
     #force none if moving fragment end would allow better overlap

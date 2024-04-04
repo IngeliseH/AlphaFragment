@@ -89,16 +89,18 @@ class Protein:
       sequence. Defaults to an empty list.
     """
 
-    def __init__(self, name, accession_id, sequence, domain_list=None, fragment_list=None):
+    def __init__(self, name, accession_id, sequence, first_res=0, last_res=None, domain_list=None, fragment_list=None):
         """
         Initializes a new instance of the Protein class.
         """
         self.name = name
         self.accession_id = accession_id
         self.sequence = sequence
+        self.first_res = first_res
+        self.last_res = last_res if last_res is not None else len(sequence)
         self.domain_list = domain_list if domain_list is not None else []
         self.fragment_list = fragment_list if fragment_list is not None else []
-
+        
     def add_domain(self, domain):
         """
         Adds a Domain instance to the protein's domain list.
@@ -131,7 +133,7 @@ class Protein:
           follow sequentially after the last added fragment.
         
         """
-        if not (isinstance(start, int) and isinstance(end, int) and 0 < start < end):
+        if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
             raise ValueError("Start and end must be positive integers, and start "
                              "must be less than end.")
 
@@ -148,3 +150,8 @@ class Protein:
         """
         return (f"Protein Name: {self.name}, Accession ID: {self.accession_id}, "
                 f"Domains: {len(self.domain_list)}, Fragments: {len(self.fragment_list)}")
+
+class ProteinSubsection(Protein):
+    def __init__(self, parent_protein, start, end):
+        super().__init__(parent_protein.name, parent_protein.accession_id, parent_protein.sequence[start:end], start, end, parent_protein.domain_list, parent_protein.fragment_list)
+        self.parent_protein = parent_protein

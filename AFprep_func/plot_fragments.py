@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import itertools
+import os
 
-def plot_fragments(protein, fragments):
+def plot_fragments(protein, fragments, save_location = None):
     fig, ax = plt.subplots(figsize=(12, 4))
     base_y_position = 0.55
     domain_height = 0.4
@@ -40,5 +41,14 @@ def plot_fragments(protein, fragments):
     ax.set_xlabel('Protein Sequence Position')
     ax.set_yticks([])
     ax.set_title(f'Protein Domains and Fragments in {protein.name}')
+
+    if save_location:
+        # Check if the directory exists, and create it if it doesn't
+        if not os.path.exists(save_location):
+            os.makedirs(save_location)
+    
+    # Save the figure
+    fig.savefig(f"{save_location}/{protein.name}fragments.png")
+
 
     return fig
