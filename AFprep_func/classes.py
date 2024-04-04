@@ -1,61 +1,30 @@
 """
-This module defines classes for representing and manipulating protein sequences,
-focusing on the identification and organization of domains and fragments within
-these sequences. It provides a structured approach to model proteins, their
-distinct domains, and specific subsequences or fragments.
-
-Classes:
-- Domain: Represents a specific domain within a protein sequence, characterized
-  by a unique identifier, start and end positions, and a domain type.
-
-- Protein: Models a protein with its amino acid sequence, including information
-  about its name, UniProt accession ID, and optionally, lists of its domains and
-  fragments. This class allows for the addition of domains and fragments to
-  a protein.
-
-Usage:
-This module is intended for use in bioinformatics applications, and
-particularly as part of the workflow for domain aware fragmentation of protein
-sequences for AlphaFold input. It enables the organization of protein data into
-structured objects, making it easier to work with complex protein information,
-such as domain architecture and sequence fragments.
-
-Dependencies:
-The classes within this module do not rely on external libraries for their
-basic functionality.
-
-Note:
-This module does not include functionality for automatic domain prediction or
-sequence retrieval from databases. This module is designed primarily for use as
-part of the AFprep workflow.
+Defines classes for representing proteins and their structural components. This
+includes handling domains, fragments, and subsections within protein sequences,
+intended for use as part of the AFprep workflow.
 """
 
 class Domain:
     """
-    Represents a domain within a protein sequence, identified by a unique string,
-    with specified start and end positions, and the domain's type.
+    Represents a domain in a protein sequence, defined by start/end positions and a type.
 
-    A domain is a distinct part of a protein sequence. Each domain in this
-    context is defined by its starting and ending positions in the protein
-    sequence, along with a type or name that categorizes the domain.
-
-    Parameters:
-    - num (str): A string identifying the domain.
-    - start (int): The start position of the domain in the protein sequence. Must
-      be >= 0.
-    - end (int): The end position of the domain in the protein sequence. Must be
-      >= 0.
-    - domain_type (str): The type of the domain.
+    Attributes:
+    - num (str): Identifier for the domain.
+    - start (int): Start position of the domain in the sequence. Must be >= 0.
+    - end (int): End position of the domain in the sequence. Must be >= 0.
+    - domain_type (str): Type of the domain.
 
     Raises:
-    - ValueError: If `start` or `end` is less than 0.
+    - ValueError: If `start` or `end` is less than 0, or 'start' > 'end'.
     """
     def __init__(self, num, start, end, domain_type):
         """
         Initializes a new instance of the Domain class.
         """
         if start <0 or end < 0:
-            raise ValueError("Start and end must be greater than 0.")
+            raise ValueError("Domain start and end must be greater than 0.")
+        if start > end:
+            raise ValueError("Domain start cannot be after end.")
         self.num = num
         self.start = start
         self.end = end
@@ -70,26 +39,23 @@ class Domain:
 
 class Protein:
     """
-    Represents a protein with a specified amino acid sequence, including
-    information on its name, uniprot accession ID, and optionally, domains and
-    fragments within the protein sequence.
-
+    Models a protein, including sequence, domains and fragments. 
     Domains are significant structural or functional units within the protein,
-    while fragments refer to specific subsequences of the protein sequence.
+    while fragments refer to specific subsequences of the protein sequence
+    created as part of the AFprep workflow.
 
-    Parameters:
-    - name (str): The name of the protein.
-    - accession_id (str): The uniprot accession ID of the protein.
-    - sequence (str): The amino acid sequence of the protein.
-    - domain_list (list of Domain instances, optional): A list representing
-      the domains identified within the protein sequence. Defaults to an empty
-      list.
-    - fragment_list (list of tuples, optional): A list of tuples, each
-      representing a fragment's start and end positions within the protein
-      sequence. Defaults to an empty list.
+    Attributes:
+    - name (str): Name of the protein.
+    - accession_id (str): UniProt accession ID.
+    - sequence (str): Amino acid sequence of the protein.
+    - first_res (int): Index of the first residue.
+    - last_res (int): Index of the last residue, defaults to the sequence length.
+    - domain_list (list of Domain instances, optional): Domains within the protein.
+    - fragment_list (list of tuples, optional): Fragments identified in the
+      protein sequence, represented as a tuple in the form (start_pos, end_pos)
     """
-
-    def __init__(self, name, accession_id, sequence, first_res=0, last_res=None, domain_list=None, fragment_list=None):
+    def __init__(self, name, accession_id, sequence, first_res=0, last_res=None,
+                domain_list=None, fragment_list=None):
         """
         Initializes a new instance of the Protein class.
         """
@@ -100,7 +66,7 @@ class Protein:
         self.last_res = last_res if last_res is not None else len(sequence)
         self.domain_list = domain_list if domain_list is not None else []
         self.fragment_list = fragment_list if fragment_list is not None else []
-        
+
     def add_domain(self, domain):
         """
         Adds a Domain instance to the protein's domain list.
@@ -152,6 +118,26 @@ class Protein:
                 f"Domains: {len(self.domain_list)}, Fragments: {len(self.fragment_list)}")
 
 class ProteinSubsection(Protein):
+    """
+    Represents a specific subsection of a protein sequence, inheriting from the
+    Protein class. Initialized based on a parent protein and specified start/end
+    positions within the parent's sequence. Takes sequence within the specified
+    region and all domains and fragments from parent.
+
+    Attributes:
+    - parent_protein (Protein): The original protein from which the subsection is derived.
+    - start (int): Start position of the subsection in the parent protein sequence.
+    - end (int): End position of the subsection in the parent protein sequence.
+    """
     def __init__(self, parent_protein, start, end):
-        super().__init__(parent_protein.name, parent_protein.accession_id, parent_protein.sequence[start:end], start, end, parent_protein.domain_list, parent_protein.fragment_list)
+        """
+        Initializes a new ProteinSubsection instance, including all parent domains and fragments.
+        """
+        super().__init__(parent_protein.name,
+                         parent_protein.accession_id,
+                         parent_protein.sequence[start:end],
+                         start,
+                         end,
+                         parent_protein.domain_list,
+                         parent_protein.fragment_list)
         self.parent_protein = parent_protein

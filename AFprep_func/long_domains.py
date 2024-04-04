@@ -1,6 +1,6 @@
 from AFprep_func.classes import ProteinSubsection
 from AFprep_func.recursive_fragment_finding import check_valid_cutpoint
-from AFprep_func.fragment_protein import fragment_protein
+from AFprep_func.recursive_fragment_finding import fragment_protein
 
 def adjust_long_domain_overlap(position, overlap, min_overlap, max_overlap, domains, sequence_length, is_start):
     """
