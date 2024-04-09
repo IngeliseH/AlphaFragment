@@ -19,7 +19,8 @@ def fetch_uniprot_info(accession_id):
 
     Parameters:
       - accession_id (str): The accession id of the protein for which to fetch
-        domain information.
+        domain information. If 'na' or a similar placeholder is provided, the
+        function will not attempt a request and will return None immediately.
 
     Returns:
       - dict or None: The JSON response as a dictionary if the request is
@@ -33,6 +34,11 @@ def fetch_uniprot_info(accession_id):
       - This function requires the `requests` library to make HTTP requests.
       - A timeout is set to 30 seconds for the HTTP request to prevent hanging.
     """
+    # Check for non-applicable accession_id before attempting the request
+    if accession_id.lower() == "na":
+        print("No valid accession ID provided. Skipping fetch operation.")
+        return None
+    
     request_url = f"https://www.ebi.ac.uk/proteins/api/features/{accession_id}"
     try:
         response = requests.get(request_url, headers={"Accept": "application/json"}, timeout=30)

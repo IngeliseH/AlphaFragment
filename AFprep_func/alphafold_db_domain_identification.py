@@ -25,7 +25,8 @@ def read_afdb_json(accession_id, database_version="v4"):
 
     Parameters:
       - accession_id (str): The accession ID for which to fetch the corresponding
-        AlphaFold PAE data.
+        AlphaFold PAE data. If 'na' or a similar placeholder is provided, the
+        function will not attempt a request and will return None immediately.
       - database_version (str, optional): The version of the database to query.
         Default is "v4".
 
@@ -47,6 +48,11 @@ def read_afdb_json(accession_id, database_version="v4"):
         'AF-[a UniProt accession]-F1.' If there are multiple fragments associated
         with a uniprot id this will only take fragment 1
     """
+    # Check for non-applicable accession_id before attempting the request
+    if accession_id.lower() == "na":
+        print("No valid accession ID provided. Skipping fetch operation.")
+        return None
+    
     alphafold_id = f'AF-{accession_id}-F1'
     json_url = (
         f'https://alphafold.ebi.ac.uk/files/{alphafold_id}'
@@ -169,7 +175,7 @@ def find_domains_from_pae(pae, res_dist_cutoff = 10, close_pae_val = 4, further_
                     domain_res1.end = max(domain_res1.end, res2)
                 elif not domain_res1 and not domain_res2:
                     # Create a new domain starting at res1 and ending at res2
-                    domains.append(Domain(f"D{next_domain_num}", res1, res2, 'AF'))
+                    domains.append(Domain(f"AF_D{next_domain_num}", res1, res2, 'AF'))
                     next_domain_num += 1
 
                 # Move to the next residue after processing a same domain pair

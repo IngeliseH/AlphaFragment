@@ -59,18 +59,20 @@ def initialize_proteins_from_csv(csv_path):
         print("protein name = ", protein_name)
         accession_id = row['accession_id']
         print("accession id = ", accession_id)
+        sequence = row['sequence']
         try:
             # Attempt to fetch sequence using the accession ID
             fetch_result = fetch_uniprot_info(accession_id)
             if fetch_result is not None and 'sequence' in fetch_result:
                 sequence = fetch_result['sequence']
-                # Initialize a Protein object and add it to the list if sequence is found
-                proteins.append(Protein(name=protein_name,
-                                        accession_id=accession_id,
-                                        sequence=sequence))
             else:
                 # If no result is found, add the protein name to the error list
                 proteins_with_errors.append(protein_name)
+            # Initialize a Protein object and add it to the list - if sequence
+            # is found in uniprot, use this
+            proteins.append(Protein(name=protein_name,
+              accession_id=accession_id,
+              sequence=sequence))
         except RequestException as e:
             print(f"Error fetching data for {protein_name}: {str(e)}")
             # If any error occurs during data fetching, also add to the error list
