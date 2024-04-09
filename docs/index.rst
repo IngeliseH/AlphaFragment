@@ -11,7 +11,7 @@ Welcome to AFprep's documentation!
 
    classes
    alphafold_db_domain_identification
-   uniprot_data_fetch
+   UniProt_data_fetch
    protein_init
    fragmentation_methods
    long_domains

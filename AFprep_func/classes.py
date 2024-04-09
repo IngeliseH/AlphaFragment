@@ -57,7 +57,7 @@ class Protein:
         - last_res (int): Index of the last residue, defaults to the sequence length.
         - domain_list (list of Domain instances, optional): Domains within the protein.
         - fragment_list (list of tuples, optional): Fragments identified in the
-        protein sequence, represented as a tuple in the form (start_pos, end_pos)
+          protein sequence, represented as a tuple in the form (start_pos, end_pos)
     """
     def __init__(self, name, accession_id, sequence, first_res=0, last_res=None,
                 domain_list=None, fragment_list=None):
@@ -95,14 +95,14 @@ class Protein:
 
         Parameters:
             - start (int): The start position of the fragment in the protein sequence.
-            Must be > 0.
+              Must be > 0.
             - end (int): The end position of the fragment in the protein sequence.
-            Must be > start.
+              Must be > start.
 
         Raises:
             - ValueError: If start or end are not positive integers or if start
-            is not less than end. Also raises ValueError if the fragment does not
-            follow sequentially after the last added fragment.
+              is not less than end. Also raises ValueError if the fragment does not
+              follow sequentially after the last added fragment.
         """
         if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
             raise ValueError("Start and end must be positive integers, and start "
