@@ -1,6 +1,15 @@
 """
 This module provides functionality to plot the AFprep fragmentation output of a protein.
-It includes functions to plot domains and fragments of a protein on a matplotlib figure.
+
+Functions:
+- plot_domain: Plots a rectangle representing a single protein domain
+- plot_fragment: Plots a rectangle representing a single protein fragment
+- plot_fragmentation_output: Creates and optionally saves a visualization of protein domains and fragments
+
+Dependencies:
+- itertools: Used for cycling through colors for the protein domains.
+- os: Used for creating directories if they do not exist.
+- matplotlib: Used for plotting the protein domains and fragments.
 """
 
 import itertools
@@ -68,10 +77,7 @@ def plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
 def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(12, 4)):
     """
     Creates and optionally saves a visualization of protein domains and fragments.
-
-    This function generates a matplotlib figure depicting the domains and
-    fragments of a protein.
-    Domains are plotted as colored rectangles, and fragments are plotted as red
+    Domains are plotted as colored rectangles, and fragments as red
     rectangles with a vertical offset so they can be distinguished. 
     The resulting plot can be saved to a file by specifiying a save location.
 
@@ -90,8 +96,7 @@ def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(1
     Note:
     - If `save_location` is provided and the directory does not exist, it will
       be created.
-    - The function sets the figure's x-axis to represent the protein sequence
-      position and removes the y-axis labels for clarity.
+    - x-axis represents the protein sequence position
     """
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55

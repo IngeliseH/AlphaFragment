@@ -1,11 +1,16 @@
-"""
-Contains functions to split a protein sequence into fragments.
+""""
+Internal utility functions for protein fragmention process.
+
+Functions:
+- recursive_fragmentation: Main function for recursively generating fragments.
+- check_valid_cutpoint: Helper function to validate potential fragment boundaries.
 """
 
 def recursive_fragmentation(protein, fragment_start, min_len, max_len,
                             overlap, min_overlap, max_overlap, cutpoints=None):
     """
-    Recursively splits a protein sequence into overlapping fragments, avoiding breaking domains.
+    Recursively splits a protein sequence into overlapping fragments, avoiding
+    breaking domains.
 
     Parameters:
     - protein (Protein): The protein object to fragment.
@@ -16,10 +21,12 @@ def recursive_fragmentation(protein, fragment_start, min_len, max_len,
     - overlap (int): Ideal overlap between fragments.
     - min_overlap (int): Minimum allowable overlap between fragments.
     - max_overlap (int): Maximum allowable overlap between fragments.
-    - cutpoints (list of tuples, optional): Accumulator for storing fragment cutpoints.
+    - cutpoints (list of tuples, optional): Accumulator for storing fragment
+      cutpoints.
 
     Returns:
-    - list of tuples or None: The list of fragment cutpoints if successful; otherwise, None.
+    - list of tuples or None: The list of fragment cutpoints if successful;
+      otherwise, None.
     """
     def find_next_start(res):
         # Use ideal overlap if possible
@@ -46,7 +53,8 @@ def recursive_fragmentation(protein, fragment_start, min_len, max_len,
     if cutpoints is None:
         cutpoints = []
 
-    for res in range(fragment_start + min_len, min(fragment_start + max_len, protein.last_res) + 1):
+    for res in range(fragment_start + min_len,
+                     min(fragment_start + max_len, protein.last_res) + 1):
         if check_valid_cutpoint(res, protein.domain_list, protein.last_res):
             next_start = find_next_start(res)
             if next_start:
@@ -91,8 +99,7 @@ def check_valid_cutpoint(res, domains, sequence_end):
 
     for domain in domains:
         # Check if current and previous res are within the same domain
-        # if both are in same domain, cutting at res will split the domain -
-        # if they are in different domains, this is fine
+        # (if both are in same domain, cutting at res would split the domain)
         if domain.start <= res <= domain.end and domain.start <= res-1 <= domain.end:
             return False
 

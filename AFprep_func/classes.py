@@ -2,6 +2,11 @@
 Defines classes for representing proteins and their structural components. This
 includes handling domains, fragments, and subsections within protein sequences,
 intended for use as part of the AFprep workflow.
+
+Classes:
+- Domain: Represents a domain within a protein sequence.
+- Protein: Models a protein, including sequence, domains, and fragments.
+- ProteinSubsection: Represents a subsection of a protein sequence.
 """
 
 class Domain:

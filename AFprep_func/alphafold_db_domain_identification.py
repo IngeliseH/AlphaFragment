@@ -1,27 +1,16 @@
 """
-This module is designed to interact with the AlphaFold Database (AFDB) to fetch
-and analyze Predicted Aligned Error (PAE) data for protein structures. It
-provides functionalities to retrieve PAE data using UniProt accession IDs and
-to analyze this data to identify protein domains. Domains are defined based on
-the PAE values, with residues grouped into domains based on their relative
-positions and PAE thresholds.
+This module interacts with the AlphaFold Database (AFDB) to obtain and analyze
+Predicted Aligned Error (PAE) data for identifying protein domains. Domains are 
+determined from PAE values, grouping residues with similar PAE thresholds.
 
 Functions:
-- read_afdb_json(accession_id, database_version="v4"): Fetches PAE data from
-  AFDB.
-- find_domain_by_res(domains, res): Finds the domain a given residue belongs to.
-- find_domains_from_pae(pae): Analyzes PAE data to identify and group residues
-  into domains.
+- read_afdb_json(accession_id, database_version="v4"): Retrieves PAE data.
+- find_domain_by_res(domains, res): Identifies the domain a residue is in.
+- find_domains_from_pae(pae): Groups residues into domains based on PAE.
 
-The module relies on the `requests` library for HTTP requests and a custom
-`Domain` class for representing domains. It is intended for use in computational
-biology and bioinformatics applications, particularly as part of the preparation
-of protein fragments for AlphaFold input.
-
-Note:
-This module assumes AlphaFold IDs are formatted as 'AF-[UniProt accession]-F1',
-targeting only the first fragment of UniProt IDs. The default database version
-targeted is 'v4', but this can be adjusted as needed.
+Dependencies:
+- requests: Used for making HTTP requests to the AlphaFold Database.
+- AFprep_func.classes.Domain: The Domain class used to represent protein domains.
 """
 
 #importing required packages
@@ -54,7 +43,6 @@ def read_afdb_json(accession_id, database_version="v4"):
     - The 'predicted_aligned_error' data cannot be found within the response,
       indicating either an issue with the response data structure or the absence
       of PAE data for the provided accession ID.
-
 
     Note:
     - This function requires the `requests` library to make HTTP requests.
@@ -109,7 +97,7 @@ def find_domain_by_res(domains, res):
             return domain
     return None
 
-def find_domains_from_pae(pae):
+def find_domains_from_pae(pae, res_dist_cutoff = 10, close_pae_val = 4, further_pae_val = 11):
     """
     Analyzes Predicted Aligned Error (PAE) data to group residues into domains.
     This function iterates through residue pairs, determining their domain
@@ -127,11 +115,11 @@ def find_domains_from_pae(pae):
 
     The logic used to determine domain membership is:
     - Two residues are considered to be in the same domain if the distance
-      between them is greater than `RES_DIST_CUTOFF` and the lesser of the two
+      between them is greater than `res_dist_cutoff` and the lesser of the two
       PAE values between them (ie min(pae[res1, res2] and pae[res2, res1])) is
-      less than `FURTHER_PAE_VAL`, or if the distance between them is less than
-      or equal to `RES_DIST_CUTOFF` and the lesser of the two PAE values between
-      them is below `CLOSE_PAE_VAL`. A higher PAE threshold is set for closer
+      less than `further_pae_val`, or if the distance between them is less than
+      or equal to `res_dist_cutoff` and the lesser of the two PAE values between
+      them is below `close_pae_val`. A higher PAE threshold is set for closer
       residues, as these will always have a higher background level of confidence
       about their relative positions.
     - The function does not evaluate PAE for residue pairs less than 4 residues
@@ -146,15 +134,12 @@ def find_domains_from_pae(pae):
       possible within domains
 
     Note:
-    - `RES_DIST_CUTOFF`, `CLOSE_PAE_VAL`, and `FURTHER_PAE_VAL` are defined
+    - `res_dist_cutoff`, `close_pae_val`, and `further_pae_val` are defined
       thresholds for evaluating PAE data.
     - Assumes the pae matrix is symmetric
     """
     domains = []
     next_domain_num = 1
-    RES_DIST_CUTOFF = 10
-    CLOSE_PAE_VAL = 4
-    FURTHER_PAE_VAL = 11
 
     # Iterate through residues from start to end
     for res1 in range(0, len(pae)):
@@ -168,10 +153,10 @@ def find_domains_from_pae(pae):
             relative_pae = min(pae[res1][res2], pae[res2][res1])
 
             # Determine if residues are in the same domain based on PAE and distance
-            is_same_domain = ((res_difference <= RES_DIST_CUTOFF and
-                               relative_pae < CLOSE_PAE_VAL) or
-                              (res_difference > RES_DIST_CUTOFF and
-                               relative_pae < FURTHER_PAE_VAL))
+            is_same_domain = ((res_difference <= res_dist_cutoff and
+                               relative_pae < close_pae_val) or
+                              (res_difference > res_dist_cutoff and
+                               relative_pae < further_pae_val))
 
             if is_same_domain:
                 domain_res1 = find_domain_by_res(domains, res1)

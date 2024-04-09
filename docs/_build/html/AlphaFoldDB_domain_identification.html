@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>AlphaFoldDB Domain Identification &#8212; AFprep  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fetch data from UniProt" href="UniProt_data_fetch.html" />
+    <link rel="prev" title="Setting up custom classes" href="classes.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-AFprep_func.AlphaFoldDB_domain_identification">
+<span id="alphafolddb-domain-identification"></span><h1>AlphaFoldDB Domain Identification<a class="headerlink" href="#module-AFprep_func.AlphaFoldDB_domain_identification" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="AFprep_func.AlphaFoldDB_domain_identification.find_domain_by_res">
+<span class="sig-prename descclassname"><span class="pre">AFprep_func.AlphaFoldDB_domain_identification.</span></span><span class="sig-name descname"><span class="pre">find_domain_by_res</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domains</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AFprep_func.AlphaFoldDB_domain_identification.find_domain_by_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function to find the domain that contains a given residue.</p>
+<p>Parameters:
+- domains (list of Domain): The list of current domain objects.
+- res (int): The residue index to find within the domains.</p>
+<p>Returns:
+- Domain object if the residue is found within a domain, None otherwise.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AFprep_func.AlphaFoldDB_domain_identification.find_domains_from_PAE">
+<span class="sig-prename descclassname"><span class="pre">AFprep_func.AlphaFoldDB_domain_identification.</span></span><span class="sig-name descname"><span class="pre">find_domains_from_PAE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">PAE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AFprep_func.AlphaFoldDB_domain_identification.find_domains_from_PAE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyzes Predicted Aligned Error (PAE) data to group residues into domains. This function iterates through residue
+pairs, determining their domain membership based on PAE values and residue distances. Domains are represented as 
+Domain objects with unique identifiers, start, and end residues.</p>
+<p>Parameters:
+- PAE (list of lists): A 2D matrix of PAE values between residue pairs, where PAE[i][j] is the PAE between residues i and j.</p>
+<p>Returns:
+- A list of Domain objects, each representing a domain with a unique identifier and the range of residues it encompasses.</p>
+<p>The logic used to determine domain membership is:</p>
+<ul class="simple">
+<li><p>Two residues are considered to be in the same domain if the distance between them is greater than <cite>res_dist_cutoff</cite> and the
+lesser of the two PAE values between them (ie min(PAE[res1, res2] and PAE[res2, res1])) is less than <cite>further_PAE_val</cite>, or if
+the distance between them is less than or equal to <cite>res_dist_cutoff</cite> and the lesser of the two PAE values between them is below
+<cite>close_PAE_val</cite>. A higher PAE threshold is set for closer residues, as these will always have a higher background level of
+confidence about their relative positions.</p></li>
+<li><p>The function does not evaluate PAE for residue pairs less than 4 residues apart due to inherently high confidence in their relative positions.</p></li>
+<li><p>Domains are updated or created based on the membership of the residues being evaluated. If one residue is already in a domain and the other is
+not, the latter is added to the former’s domain. New domains are created for pairs where neither residue is currently in a domain.</p></li>
+<li><p>The inner loop breaks early once a residue pair is processed and determined to be in the same domain, moving to the next residue (as all
+residues between these are assumed to be in the same domain). No gaps are possible within domains</p></li>
+</ul>
+<p>Note:
+- <cite>res_dist_cutoff</cite>, <cite>close_PAE_val</cite>, and <cite>further_PAE_val</cite> are defined thresholds for evaluating PAE data.
+- Assumes the PAE matrix is symmetric and PAE[i][i] (self-comparison) is not considered.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="AFprep_func.AlphaFoldDB_domain_identification.read_AFDB_json">
+<span class="sig-prename descclassname"><span class="pre">AFprep_func.AlphaFoldDB_domain_identification.</span></span><span class="sig-name descname"><span class="pre">read_AFDB_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accession_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'v4'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#AFprep_func.AlphaFoldDB_domain_identification.read_AFDB_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches and returns the Predicted Aligned Error (PAE) data from the AlphaFold Database (AFDB) for a given UniProt accession ID.</p>
+<p>This function queries the AFDB for the PAE associated with a specific accession ID and the chosen database version. It directly extracts and returns the ‘predicted_aligned_error’ data from the JSON response.</p>
+<p>Parameters:
+- accession_id (str): The accession ID for which to fetch the corresponding AlphaFold PAE data.
+- database_version (str, optional): The version of the database to query. Default is “v4”.</p>
+<p>Returns:
+- list of lists or None: The predicted_aligned_error data as a list of lists if the request is successful and the data is present; otherwise, None.</p>
+<p>Prints an error message and returns None if:
+- The HTTP request to retrieve the file fails (e.g., file not found, network problems).
+- The ‘predicted_aligned_error’ data cannot be found within the response, indicating either an issue with the response data structure or the absence of PAE data for the provided accession ID.</p>
+<p>Note:
+- This function requires the <cite>requests</cite> library to make HTTP requests.
+- The function assumes that alphafold ids take the form AF-[a UniProt accession]-F1. If there are multiple fragments associated with a uniprot id this will only take fragment 1</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AFprep</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="classes.html">Setting up custom classes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AlphaFoldDB Domain Identification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UniProt_data_fetch.html">Fetch data from UniProt</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_init.html">Initialise protein objects from a csv file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protein_add_domains.html">Add domains to protein</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recursive_fragment_finding.html">Fragmenting proteins</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="classes.html" title="previous chapter">Setting up custom classes</a></li>
+      <li>Next: <a href="UniProt_data_fetch.html" title="next chapter">Fetch data from UniProt</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2024, Ingelise Holland-Kaye.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/AlphaFoldDB_domain_identification.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

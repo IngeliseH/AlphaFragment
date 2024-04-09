@@ -12,13 +12,11 @@ Welcome to AFprep's documentation!
    :maxdepth: 2
 
    classes
-   alphafold_db_domain_identification
-   uniprot_data_fetch
+   AlphaFoldDB_domain_identification
+   UniProt_data_fetch
    protein_init
-   fragmentation_methods
-   long_domains
-   fragment_protein
-   plot_fragments
+   protein_add_domains
+   recursive_fragment_finding
 
  
 
