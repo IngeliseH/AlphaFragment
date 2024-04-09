@@ -21,7 +21,7 @@ from requests.exceptions import RequestException
 # Import the Protein class
 from AFprep_func.classes import Protein
 # Import function to fetch sequence data
-from AFprep_func.UniProt_data_fetch import fetch_uniprot_info
+from AFprep_func.uniprot_fetch import fetch_uniprot_info
 
 def initialize_proteins_from_csv(csv_path):
     """

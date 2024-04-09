@@ -2,7 +2,7 @@
 This module provides functionalities for fetching domain information associated
 with protein accession codes from the UniProt database.
 
-Dependencies:
+Dependencies: 
   - requests: Required for making HTTP requests to the UniProt API.
 
 Functions:
