@@ -5,18 +5,15 @@ information from UniProt. Proteins for which sequence data cannot be fetched are
 tracked and reported separately.
 
 Functions:
-- initialize_proteins_from_csv: Reads a CSV file and initializes Protein objects
-  with sequence data from UniProt.
+  - initialize_proteins_from_csv: Reads a CSV file and initializes Protein objects
+    with sequence data from UniProt.
 
 Dependencies:
-- pandas: Used for reading and processing the CSV file.
-- AFprep_func.classes.Protein: The Protein class used to represent and manipulate
-  protein data.
-- AFprep_func.uniprot_data_fetch.fetch_uniprot_info: A function to fetch protein
-  data from UniProt.
-
-This module is intended for bioinformatics applications, specifically within the
-AlphaPrep workflow
+  - pandas: Used for reading and processing the CSV file.
+  - AFprep_func.classes.Protein: The Protein class used to represent and manipulate
+    protein data.
+  - AFprep_func.uniprot_data_fetch.fetch_uniprot_info: A function to fetch protein
+    data from UniProt.
 """
 
 import pandas as pd
@@ -34,21 +31,21 @@ def initialize_proteins_from_csv(csv_path):
     tracked separately.
 
     Parameters:
-    - csv_path (str): The path to the CSV file.
+      - csv_path (str): The path to the CSV file.
 
     Returns:
-    - tuple of (list of Protein, list of str): 
-        - The first element is a list of initialized Protein objects for which
-          sequences were successfully fetched.
-        - The second element is a list of protein names for which sequences
-          could not be retrieved or other errors occurred during fetching.
+      - tuple of (list of Protein, list of str): 
+          - The first element is a list of initialized Protein objects for which
+            sequences were successfully fetched.
+          - The second element is a list of protein names for which sequences
+            could not be retrieved or other errors occurred during fetching.
 
-    This function attempts to fetch protein sequence data using provided
-    accession IDs. If successful, a Protein object is created and added to the
-    list of proteins. If the sequence cannot be fetched or an error occurs (e.g.,
-    invalid UniProt code, network issues), the protein's name is added to a
-    separate list indicating an error or missing data. This allows for easy
-    identification of proteins that could not be processed as expected.
+    Errors and Exceptions:
+      - If the sequence cannot be fetched or an error occurs (e.g., invalid
+        UniProt code, network issues), the protein's name is added to a separate
+        list indicating an error or missing data.
+      - Specific error messages will be printed to standard output to indicate the
+        nature of the issue encountered during the fetching process.
     """
     proteins = []  # List to store successfully initialized Protein objects
     proteins_with_errors = []  # List to store protein names with no UniProt data available

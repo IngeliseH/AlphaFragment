@@ -2,8 +2,8 @@
 Internal utility functions for protein fragmention process.
 
 Functions:
-- recursive_fragmentation: Main function for recursively generating fragments.
-- check_valid_cutpoint: Helper function to validate potential fragment boundaries.
+    - recursive_fragmentation: Main function for recursively generating fragments.
+    - check_valid_cutpoint: Helper function to validate potential fragment boundaries.
 """
 
 def recursive_fragmentation(protein, fragment_start, min_len, max_len,
@@ -13,20 +13,20 @@ def recursive_fragmentation(protein, fragment_start, min_len, max_len,
     breaking domains.
 
     Parameters:
-    - protein (Protein): The protein object to fragment.
-    - fragment_start (int): The starting position for fragmentation.
-    - min_len (int): Minimum allowed fragment length.
-    - max_len (int): Maximum allowed fragment length. (May be increased in the
-      fragmentation process)
-    - overlap (int): Ideal overlap between fragments.
-    - min_overlap (int): Minimum allowable overlap between fragments.
-    - max_overlap (int): Maximum allowable overlap between fragments.
-    - cutpoints (list of tuples, optional): Accumulator for storing fragment
-      cutpoints.
+        - protein (Protein): The protein object to fragment.
+        - fragment_start (int): The starting position for fragmentation.
+        - min_len (int): Minimum allowed fragment length.
+        - max_len (int): Maximum allowed fragment length. (May be increased in the
+        fragmentation process)
+        - overlap (int): Ideal overlap between fragments.
+        - min_overlap (int): Minimum allowable overlap between fragments.
+        - max_overlap (int): Maximum allowable overlap between fragments.
+        - cutpoints (list of tuples, optional): Accumulator for storing fragment
+        cutpoints.
 
     Returns:
-    - list of tuples or None: The list of fragment cutpoints if successful;
-      otherwise, None.
+        - list of tuples or None: The list of fragment cutpoints if successful;
+        otherwise, None.
     """
     def find_next_start(res):
         # Use ideal overlap if possible
@@ -80,12 +80,12 @@ def check_valid_cutpoint(res, domains, sequence_end):
     Checks if a residue position is a valid cutpoint.
 
     Parameters:
-    - res (int): The residue position to check.
-    - domains (list of Domain): The domains within the protein.
-    - sequence_end (int): The last residue position in the protein sequence.
+        - res (int): The residue position to check.
+        - domains (list of Domain): The domains within the protein.
+        - sequence_end (int): The last residue position in the protein sequence.
 
     Returns:
-    - bool: True if the residue position is a valid cutpoint; False otherwise.
+        - bool: True if the residue position is a valid cutpoint; False otherwise.
     """
     # Check if res is beyond the end or before the start of the sequence
     if res > sequence_end:

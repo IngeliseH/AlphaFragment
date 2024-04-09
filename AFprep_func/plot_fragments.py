@@ -2,14 +2,14 @@
 This module provides functionality to plot the AFprep fragmentation output of a protein.
 
 Functions:
-- plot_domain: Plots a rectangle representing a single protein domain
-- plot_fragment: Plots a rectangle representing a single protein fragment
-- plot_fragmentation_output: Creates and optionally saves a visualization of protein domains and fragments
+  - plot_domain: Plots a rectangle representing a single protein domain
+  - plot_fragment: Plots a rectangle representing a single protein fragment
+  - plot_fragmentation_output: Creates and optionally saves a visualization of protein domains and fragments
 
 Dependencies:
-- itertools: Used for cycling through colors for the protein domains.
-- os: Used for creating directories if they do not exist.
-- matplotlib: Used for plotting the protein domains and fragments.
+  - itertools: Used for cycling through colors for the protein domains.
+  - os: Used for creating directories if they do not exist.
+  - matplotlib: Used for plotting the protein domains and fragments.
 """
 
 import itertools
@@ -24,15 +24,15 @@ def plot_domain(ax, domain, base_y_position, domain_height, domain_colors):
     colors.
 
     Parameters:
-    - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the domain.
-    - domain (Domain): Expected to be a domain type object
-    - base_y_position (float): The base Y-axis position for the domain rectangle.
-    - domain_height (float): The height of the domain rectangle.
-    - domain_colors (iterator): An iterator that cycles through a list of colors.
+      - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the domain.
+      - domain (Domain): Expected to be a domain type object
+      - base_y_position (float): The base Y-axis position for the domain rectangle.
+      - domain_height (float): The height of the domain rectangle.
+      - domain_colors (iterator): An iterator that cycles through a list of colors.
 
     Note:
-    - This function adds to the provided axis but does not show it. The display
-      is managed by the caller.
+      - This function adds to the provided axis but does not show it. The display
+        is managed by the caller.
     """
     color = next(domain_colors)
     rect = patches.Rectangle((domain.start, base_y_position - domain_height / 2),
@@ -50,18 +50,18 @@ def plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
     prevent overlap between consecutive fragments.
 
     Parameters:
-    - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the
-      fragment.
-    - fragment (tuple): A tuple containing fragment start and end positions.
-    - index (int): The index of the fragment, used to alternate vertical offset.
-    - base_y_position (float): The base Y-axis position for fragment rectangles.
-    - fragment_height (float): The height of the fragment rectangle.
-    - offset (float): The vertical offset for each fragment (to distinguish
-      between overlapping fragments).
+      - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the
+        fragment.
+      - fragment (tuple): A tuple containing fragment start and end positions.
+      - index (int): The index of the fragment, used to alternate vertical offset.
+      - base_y_position (float): The base Y-axis position for fragment rectangles.
+      - fragment_height (float): The height of the fragment rectangle.
+      - offset (float): The vertical offset for each fragment (to distinguish
+        between overlapping fragments).
 
     Note:
-    - This function adds to the provided axis but does not show it. The display
-      is managed by the caller.
+      - This function adds to the provided axis but does not show it. The display
+        is managed by the caller.
     """
     start, end = fragment
     vertical_position = (base_y_position - (fragment_height / 2) +
@@ -82,21 +82,21 @@ def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(1
     The resulting plot can be saved to a file by specifiying a save location.
 
     Parameters:
-    - protein (Protein): The protein object, expected to have
-      'domain_list' and 'last_res' attributes.
-    - fragments (list of tuples): A list of tuples, each containing the start
-      and end positions of a fragment.
-    - save_location (str, optional): The directory path where the plot image
-      will be saved. If not provided, the image is not saved.
-    - figsize (tuple, optional): The size of the output figure.
+      - protein (Protein): The protein object, expected to have
+        'domain_list' and 'last_res' attributes.
+      - fragments (list of tuples): A list of tuples, each containing the start
+        and end positions of a fragment.
+      - save_location (str, optional): The directory path where the plot image
+        will be saved. If not provided, the image is not saved.
+      - figsize (tuple, optional): The size of the output figure.
 
     Returns:
-    - matplotlib.figure.Figure: The figure object containing the plot.
+      - matplotlib.figure.Figure: The figure object containing the plot.
 
     Note:
-    - If `save_location` is provided and the directory does not exist, it will
-      be created.
-    - x-axis represents the protein sequence position
+      - If `save_location` is provided and the directory does not exist, it will
+        be created.
+      - x-axis represents the protein sequence position
     """
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55

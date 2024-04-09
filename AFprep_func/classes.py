@@ -4,9 +4,9 @@ includes handling domains, fragments, and subsections within protein sequences,
 intended for use as part of the AFprep workflow.
 
 Classes:
-- Domain: Represents a domain within a protein sequence.
-- Protein: Models a protein, including sequence, domains, and fragments.
-- ProteinSubsection: Represents a subsection of a protein sequence.
+    - Domain: Represents a domain within a protein sequence.
+    - Protein: Models a protein, including sequence, domains, and fragments.
+    - ProteinSubsection: Represents a subsection of a protein sequence.
 """
 
 class Domain:
@@ -14,13 +14,13 @@ class Domain:
     Represents a domain in a protein sequence, defined by start/end positions and a type.
 
     Attributes:
-    - num (str): Identifier for the domain.
-    - start (int): Start position of the domain in the sequence. Must be >= 0.
-    - end (int): End position of the domain in the sequence. Must be >= 0.
-    - domain_type (str): Type of the domain.
+        - num (str): Identifier for the domain.
+        - start (int): Start position of the domain in the sequence. Must be >= 0.
+        - end (int): End position of the domain in the sequence. Must be >= 0.
+        - domain_type (str): Type of the domain.
 
     Raises:
-    - ValueError: If `start` or `end` is less than 0, or 'start' > 'end'.
+        - ValueError: If `start` or `end` is less than 0, or 'start' > 'end'.
     """
     def __init__(self, num, start, end, domain_type):
         """
@@ -50,14 +50,14 @@ class Protein:
     created as part of the AFprep workflow.
 
     Attributes:
-    - name (str): Name of the protein.
-    - accession_id (str): UniProt accession ID.
-    - sequence (str): Amino acid sequence of the protein.
-    - first_res (int): Index of the first residue.
-    - last_res (int): Index of the last residue, defaults to the sequence length.
-    - domain_list (list of Domain instances, optional): Domains within the protein.
-    - fragment_list (list of tuples, optional): Fragments identified in the
-      protein sequence, represented as a tuple in the form (start_pos, end_pos)
+        - name (str): Name of the protein.
+        - accession_id (str): UniProt accession ID.
+        - sequence (str): Amino acid sequence of the protein.
+        - first_res (int): Index of the first residue.
+        - last_res (int): Index of the last residue, defaults to the sequence length.
+        - domain_list (list of Domain instances, optional): Domains within the protein.
+        - fragment_list (list of tuples, optional): Fragments identified in the
+        protein sequence, represented as a tuple in the form (start_pos, end_pos)
     """
     def __init__(self, name, accession_id, sequence, first_res=0, last_res=None,
                 domain_list=None, fragment_list=None):
@@ -77,9 +77,10 @@ class Protein:
         Adds a Domain instance to the protein's domain list.
 
         Parameters:
-        - domain (Domain): The Domain instance to be added.
+            - domain (Domain): The Domain instance to be added.
+
         Raises:
-        - ValueError: If the input is not an instance of the Domain class.
+            - ValueError: If the input is not an instance of the Domain class.
         """
         if not isinstance(domain, Domain):
             raise ValueError("domain must be an instance of Domain.")
@@ -93,16 +94,15 @@ class Protein:
         the last fragment added.
 
         Parameters:
-        - start (int): The start position of the fragment in the protein sequence.
-          Must be > 0.
-        - end (int): The end position of the fragment in the protein sequence.
-          Must be > start.
+            - start (int): The start position of the fragment in the protein sequence.
+            Must be > 0.
+            - end (int): The end position of the fragment in the protein sequence.
+            Must be > start.
 
         Raises:
-        - ValueError: If start or end are not positive integers or if start
-          is not less than end. Also raises ValueError if the fragment does not
-          follow sequentially after the last added fragment.
-        
+            - ValueError: If start or end are not positive integers or if start
+            is not less than end. Also raises ValueError if the fragment does not
+            follow sequentially after the last added fragment.
         """
         if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
             raise ValueError("Start and end must be positive integers, and start "
@@ -130,9 +130,9 @@ class ProteinSubsection(Protein):
     region and all domains and fragments from parent.
 
     Attributes:
-    - parent_protein (Protein): The original protein from which the subsection is derived.
-    - start (int): Start position of the subsection in the parent protein sequence.
-    - end (int): End position of the subsection in the parent protein sequence.
+        - parent_protein (Protein): The original protein from which the subsection is derived.
+        - start (int): Start position of the subsection in the parent protein sequence.
+        - end (int): End position of the subsection in the parent protein sequence.
     """
     def __init__(self, parent_protein, start, end):
         """
