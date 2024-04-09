@@ -5,7 +5,8 @@ determined from PAE values, grouping residues with similar PAE thresholds.
 
 Functions:
 - read_afdb_json(accession_id, database_version="v4"): Retrieves PAE data.
-- find_domain_by_res(domains, res): Identifies the domain a residue is in.
+- find_domain_by_res(domains, res): Helper function to identify the domain a
+  residue is in.
 - find_domains_from_pae(pae): Groups residues into domains based on PAE.
 
 Dependencies:

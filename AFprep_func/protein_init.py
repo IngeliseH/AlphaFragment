@@ -4,11 +4,9 @@ and associated accession ids into a list of Protein objects, using sequence
 information from UniProt. Proteins for which sequence data cannot be fetched are
 tracked and reported separately.
 
-Features:
-- Reading protein identifiers from a CSV file.
-- Fetching protein sequences using UniProt accession IDs.
-- Initializing Protein objects with fetched sequences.
-- Error handling for missing or inaccessible sequence data.
+Functions:
+- initialize_proteins_from_csv: Reads a CSV file and initializes Protein objects
+  with sequence data from UniProt.
 
 Dependencies:
 - pandas: Used for reading and processing the CSV file.
@@ -17,7 +15,7 @@ Dependencies:
 - AFprep_func.uniprot_data_fetch.fetch_uniprot_info: A function to fetch protein
   data from UniProt.
 
-This module is intended for bioinformatics applications, specifically wthin the
+This module is intended for bioinformatics applications, specifically within the
 AlphaPrep workflow
 """
 
