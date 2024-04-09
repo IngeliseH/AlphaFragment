@@ -17,16 +17,16 @@ def recursive_fragmentation(protein, fragment_start, min_len, max_len,
         - fragment_start (int): The starting position for fragmentation.
         - min_len (int): Minimum allowed fragment length.
         - max_len (int): Maximum allowed fragment length. (May be increased in the
-        fragmentation process)
+          fragmentation process)
         - overlap (int): Ideal overlap between fragments.
         - min_overlap (int): Minimum allowable overlap between fragments.
         - max_overlap (int): Maximum allowable overlap between fragments.
         - cutpoints (list of tuples, optional): Accumulator for storing fragment
-        cutpoints.
+          cutpoints.
 
     Returns:
         - list of tuples or None: The list of fragment cutpoints if successful;
-        otherwise, None.
+          otherwise, None.
     """
     def find_next_start(res):
         # Use ideal overlap if possible

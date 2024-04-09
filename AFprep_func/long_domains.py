@@ -48,22 +48,22 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
       - Iterate over the list of domains in the protein to identify those exceeding
         the specified maximum length (`max_len`), categorizing them as long domains.
       - For each identified long domain:
-        - Determine if it should be merged with sequence between this and adjacent
-          long domains, or protein ends
+          - Determine if it should be merged with sequence between this and adjacent
+            long domains, or protein ends
               - If distance to these points is less than the minimum fragment length
                 (`min_len`), merge to avoid leaving very short fragments. If a region
                 between two long domains is < min_len, merge this with the shorter
                 of the two long domains.
-        - For the region before the current long domain, create a subsection if it
-          hasn't been included in a previous fragment or subsection and if its
-          length is viable.
+          - For the region before the current long domain, create a subsection if it
+            hasn't been included in a previous fragment or subsection and if its
+            length is viable.
       - Adjust the start and end points of each long domain fragment to include
         overlaps:
-        - Attempt to add an overlap to both the start and end points within the
-          bounds of `min_overlap` and `max_overlap`, ensuring the selected points
-          are valid cutpoints.
-        - Ensure the adjusted start and end points do not extend beyond the protein's
-          boundaries.
+          - Attempt to add an overlap to both the start and end points within the
+            bounds of `min_overlap` and `max_overlap`, ensuring the selected points
+            are valid cutpoints.
+          - Ensure the adjusted start and end points do not extend beyond the protein's
+            boundaries.
       - Add the long domain, neighbouring merged regions, and overlap, as a fragment.
       - After processing all long domains, check for any remaining unfragmented
         protein sequence at the end and create a subsection if necessary.
