@@ -139,7 +139,7 @@ def update_csv_with_fragments(df, output_csv, proteins):
 
     Parameters:
       - df (dataframe): DataFrame containing initial information, likely from an
-      input csv.
+        input csv.
       - output_csv (file path ending .csv): Path to save the final csv file.
       - proteins (list of Protein objects): Protein objects containing
         information on Domain and fragment locations to be added to the output
