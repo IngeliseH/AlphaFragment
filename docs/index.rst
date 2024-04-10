@@ -12,11 +12,12 @@ Welcome to AFprep's documentation!
    classes
    alphafold_db_domain_identification
    uniprot_fetch
-   protein_init
+   process_proteins_csv
    fragmentation_methods
    long_domains
    fragment_protein
    plot_fragments
+   fragment_proteins_from_csv
 
  
 

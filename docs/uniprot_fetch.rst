@@ -1,5 +1,5 @@
-Fetch data from UniProt
-=======================
+Handle data from UniProt
+========================
 
 .. automodule:: AFprep_func.uniprot_fetch
    :members:
