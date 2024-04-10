@@ -52,7 +52,7 @@ def initialize_proteins_from_csv(csv_path):
       - Raises ValueError if required columns ('name', 'accession_id') are not
         found.
       - Reports when sequences cannot be fetched (e.g., invalid accession_id,
-      network issues) and when a manually provided sequence is
+        network issues) and when a manually provided sequence is
         used instead.
       - Prints an error message if neither fetching nor manual sequence
         provision is successful and the protein cannot be initialised.
