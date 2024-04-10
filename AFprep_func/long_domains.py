@@ -14,11 +14,12 @@ Functions:
 Dependencies:
   - AFprep_func.classes.ProteinSubsection: Used to represent sections of a protein,
     including domains and fragments.
+  - AFprep_func.classes.Domain: Used to represent protein domains.
   - AFprep_func.fragmentation_methods.check_valid_cutpoint: Utilized to ensure
     proposed fragmentation points are valid based on domain boundaries and protein.
 """
 
-from AFprep_func.classes import ProteinSubsection
+from AFprep_func.classes import ProteinSubsection, Domain
 from AFprep_func.fragmentation_methods import check_valid_cutpoint
 
 def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_overlap):
@@ -45,6 +46,8 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
         long domains with appropriate overlaps.
     
     Function Logic:
+      - Merge overlapping domains into a single domain to simplify processing, and add
+        these to a new list.
       - Iterate over the list of domains in the protein to identify those exceeding
         the specified maximum length (`max_len`), categorizing them as long domains.
       - For each identified long domain:
@@ -74,13 +77,28 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
         for adjusted_overlap in (list(range(overlap, max_overlap + 1)) +
                                  list(range(overlap - 1, min_overlap - 1, -1))):
             adjusted_position = position + (direction * adjusted_overlap)
-            if check_valid_cutpoint(adjusted_position, protein.domains, protein.last_res):
+            if check_valid_cutpoint(adjusted_position, protein.domain_list, protein.last_res):
                 return adjusted_position
         return position  # Return original if no adjustment is valid
 
     long_domain_list = []
     subsections = []
     fragments = []
+
+    # Merge overlapping domains to simplify processing
+    sorted_domains = sorted(protein.domain_list, key=lambda x: x.start)
+    combined_domains = []
+    for domain in sorted_domains:
+        if not combined_domains:
+            combined_domains.append(domain)
+        else:
+            last = combined_domains[-1]
+            # Check if the current domain overlaps with the last one in the list
+            if domain.start <= last.end:
+                # Merge the two domains by updating the end of the last domain
+                combined_domains[-1] = Domain(last.name, last.start, max(last.end, domain.end), last.type)
+            else:
+                combined_domains.append(domain)
 
     prev_end = 0
     for domain in protein.domain_list:
