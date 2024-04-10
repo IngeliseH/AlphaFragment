@@ -1,7 +1,7 @@
-Initialise protein objects from a csv file
-==========================================
+Handle protein objects and domains in a csv file
+================================================
 
-.. automodule:: AFprep_func.protein_init
+.. automodule:: AFprep_func.process_proteins_csv
    :members:
    :undoc-members:
    :show-inheritance:
