@@ -30,6 +30,8 @@ class Domain:
             raise ValueError("Domain start and end must be greater than 0.")
         if start > end:
             raise ValueError("Domain start cannot be after end.")
+        if start == end:
+            raise ValueError("Domain must be longer than 1 residue.")
         self.num = num
         self.start = start
         self.end = end
@@ -41,6 +43,29 @@ class Domain:
         as 'domain_type + num' followed by the range '(start, end)'.
         """
         return f"{self.type}{self.num} ({self.start}, {self.end})"
+
+    def __eq__(self, other):
+        """
+        Checks if this Domain instance is equal to another by comparing their attributes.
+
+        Parameters:
+            - other (Domain): Another Domain instance to compare against.
+
+        Returns:
+            - bool: True if the domains have the same attributes, False otherwise.
+        """
+        if not isinstance(other, Domain):
+            return NotImplemented
+        return (self.num == other.num and
+                self.start == other.start and
+                self.end == other.end and
+                self.type == other.type)
+
+    def __repr__(self):
+        """
+        Returns a formal string representation of the Domain instance.
+        """
+        return f"Domain(num={self.num}, start={self.start}, end={self.end}, domain_type='{self.type}')"
 
 class Protein:
     """
@@ -137,7 +162,11 @@ class ProteinSubsection(Protein):
     def __init__(self, parent_protein, start, end):
         """
         Initializes a new ProteinSubsection instance, including all parent domains and fragments.
+        Validates that the start and end indices are within the parent protein's sequence boundaries.
         """
+        if start < 0 or end > len(parent_protein.sequence) or start >= end:
+            raise ValueError(f"Invalid start ({start}) or end ({end}) for the parent protein sequence length {len(parent_protein.sequence)}. Start must be less than end.")
+
         super().__init__(parent_protein.name,
                          parent_protein.accession_id,
                          parent_protein.sequence[start:end],

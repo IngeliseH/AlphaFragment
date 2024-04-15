@@ -159,8 +159,17 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
 
     Raises:
       - ValueError: If the method is 'custom' and custom_params is not provided
-        or missing necessary keys, or if an invalid method is specified.
+        or missing necessary keys, if an invalid method is specified, or if the
+        pae data is in the wrong format (not a square matrix of numbers).
     """
+    # Check if 'pae' is a non-empty matrix, each row is a list, and contains only numeric entries
+    if not pae or not isinstance(pae, list) or any(not isinstance(row, list) or any(not isinstance(item, (int, float)) for item in row) for row in pae):
+        raise ValueError("Input 'pae' must be a non-empty matrix of numbers.")
+
+    # Check if 'pae' is a square matrix
+    if any(len(row) != len(pae) for row in pae):
+        raise ValueError("Input 'pae' must be a square matrix.")
+
     # Default parameters for cautious and definite methods
     parameters = {
         'cautious': {'res_dist_cutoff': 10, 'close_pae_val': 4, 'further_pae_val': 11},
