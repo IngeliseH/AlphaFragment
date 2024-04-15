@@ -4,6 +4,8 @@ information from the UniProt database.
 
 Dependencies: 
   - requests: Required for making HTTP requests to the UniProt API.
+  - AFprep_func.classes: Contains the Domain class used to represent protein
+    domains.
 
 Functions:
   - fetch_uniprot_info(accession_id): Fetches information for a given protein
@@ -13,6 +15,7 @@ Functions:
 """
 
 import requests
+from AFprep_func.classes import Domain
 
 def fetch_uniprot_info(accession_id):
     """
@@ -109,7 +112,7 @@ def find_uniprot_domains(protein):
 
             uniprot_domains.append(Domain(description, start, end, feature['type']))
     if uniprot_domains:
-        print(f"{len(uniprot_domains)} found in UniProt for {protein.name}: {uniprot_domains}")
+        print(f"{len(uniprot_domains)} domains found in UniProt for {protein.name}: {uniprot_domains}")
     else:
         print(f"No domains found in UniProt for protein {protein.name}.")
     return uniprot_domains

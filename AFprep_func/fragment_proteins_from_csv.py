@@ -22,7 +22,10 @@ from AFprep_func.plot_fragments import plot_fragmentation_output
 from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, add_user_specified_domains, update_csv_with_fragments
 
 def fragment_proteins_from_csv(input_csv_path, output_csv_path, uniprot=True,
-                               alphafold=True, manual=True, image_save_location=None):
+                               alphafold=True, manual=True, pae_method="cautious",
+                               pae_custom_params=None, fragment_min_len=150,fragment_max_len=250,
+                               fragment_overlap=10, fragment_min_overlap=0, fragment_max_overlap=30,
+                               image_save_location=None):
     """
     Orchestrates the domain aware fragmentation of proteins listed in an input
     CSV file, using domain data from a specified combination of UniProt,
@@ -75,7 +78,7 @@ def fragment_proteins_from_csv(input_csv_path, output_csv_path, uniprot=True,
         if alphafold:
             protein_pae = read_afdb_json(protein.accession_id)
             if protein_pae:
-                alphafold_domains = find_domains_from_pae(protein_pae) or []
+                alphafold_domains = find_domains_from_pae(protein_pae, method=pae_method, custom_params=pae_custom_params) or []
                 if alphafold_domains:
                     print(f"{len(alphafold_domains)} domains found in AlphaFold structure for {protein.name}: {alphafold_domains}")
                     domains.extend(alphafold_domains)
@@ -89,7 +92,8 @@ def fragment_proteins_from_csv(input_csv_path, output_csv_path, uniprot=True,
             protein.add_domain(domain)
 
         #fragment protein
-        fragments = fragment_protein(protein)
+        fragments = fragment_protein(protein, min_len=fragment_min_len,
+                                     max_len=fragment_max_len, overlap=fragment_overlap, min_overlap=fragment_min_overlap, max_overlap=fragment_max_overlap)
         print("Cutpoints found for protein ", protein.name, ":", fragments)
         for start, end in fragments:
             protein.add_fragment(start, end)

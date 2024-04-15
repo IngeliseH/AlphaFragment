@@ -96,7 +96,7 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
             # Check if the current domain overlaps with the last one in the list
             if domain.start <= last.end:
                 # Merge the two domains by updating the end of the last domain
-                combined_domains[-1] = Domain(last.name, last.start, max(last.end, domain.end), last.type)
+                combined_domains[-1] = Domain(last.num, last.start, max(last.end, domain.end), last.type)
             else:
                 combined_domains.append(domain)
 

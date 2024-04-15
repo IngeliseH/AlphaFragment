@@ -100,7 +100,7 @@ def find_domain_by_res(domains, res):
             return domain
     return None
 
-def find_domains_from_pae(pae, res_dist_cutoff = 10, close_pae_val = 4, further_pae_val = 11):
+def find_domains_from_pae(pae,  method='cautious', custom_params=None):
     """
     Analyzes Predicted Aligned Error (PAE) data to group residues into domains.
     This function iterates through residue pairs, determining their domain
@@ -111,41 +111,75 @@ def find_domains_from_pae(pae, res_dist_cutoff = 10, close_pae_val = 4, further_
     Parameters:
       - pae (list of lists): A 2D matrix of PAE values between residue pairs,
         where pae[i][j] is the PAE between residues i and j.
-      - res_dist_cutoff (int, optional): The distance threshold for residues to be
-        evaluated using the close_pae_val threshold. Default is 10. Should not be
-        below 4 as residues closer than this are ignored, because there is always
-        high confidence in relative position of residues this close.
-      - close_pae_val (int, optional): The PAE threshold which residue pairs must
-        surpass to be considered within the same domain, if the distance between
-        them is between 4 and res_dist_cutoff. Default is 4.
-      - further_pae_val (int, optional): The PAE threshold which residue pairs must
-        surpass to be considered within the same domain, if the distance between
-        them is greater than res_dist_cutoff. Default is 11.
+      - method (str, optional): Strategy for grouping residues into domains.
+        Options are:
+          - 'cautious' - Groups residues into domains with moderate PAE
+            thresholds, aiming to balance sensitivity and specificity.
+          - 'definite' - Only groups residues into domains if there is very high
+            confidence in their relative positions. Likely to produce smaller domains.
+          - 'custom' - Allows specification of custom PAE thresholds via the
+            custom_params argument.
+      - custom_params (dict, optional): Required if method is 'custom', ignored
+        otherwise. Must include:
+          - 'res_dist_cutoff' (int) - The residue distance threshold to
+            differentiate between close and further residue evaluations.
+            Meaningless if close_pae_val == further_pae_val, or if set below 4
+            as residues closer than this are ignored anyway due to high base
+            confidence in their relative positions. Set to 10 for cautious
+            grouping method, and irrelavant for definite grouping method as close
+            and further pae_vals are equal.
+          - 'close_pae_val' (int) - The PAE threshold which residue pairs must
+            fall below to be considered within the same domain, if the distance
+            between them is between 4 and res_dist_cutoff. Set to 4 for cautious
+            grouping method and 2 for definite grouping method.
+          - 'further_pae_val' (int) - The PAE threshold which residue pairs must
+            fall below to be considered within the same domain, if the distance
+            between them is greater than res_dist_cutoff. Set to 11 for close
+            grouping method and 2 for definite grouping method.
 
     Returns:
       - A list of Domain objects, each representing a domain with a unique
         identifier and the range of residues it encompasses.
 
-    The logic used to determine domain membership is:
-      - Two residues are considered to be in the same domain if the distance
-        between them is greater than `res_dist_cutoff` and the lesser of the two
-        PAE values between them (ie min(pae[res1, res2] and pae[res2, res1])) is
-        less than `further_pae_val`, or if the distance between them is less than
-        or equal to `res_dist_cutoff` and the lesser of the two PAE values between
-        them is below `close_pae_val`. A higher PAE threshold is set for closer
-        residues, as these will always have a higher background level of confidence
-        about their relative positions.
-      - The function does not evaluate PAE for residue pairs less than 4 residues
-        apart due to inherently high confidence in their relative positions.
-      - Domains are updated or created based on the membership of the residues
-        being evaluated. If one residue is already in a domain and the other is
-        not, the latter is added to the former's domain. New domains are created
-        for pairs where neither residue is currently in a domain.
-      - The inner loop breaks early once a residue pair is processed and
-        determined to be in the same domain, moving to the next residue (as all
-        residues between these are assumed to be in the same domain). No gaps are
-        possible within domains
+    Function logic:
+      - Residues are grouped into the same domain based on a comparison of their
+        Predicted Aligned Error (pae) values against thresholds determined by
+        their proximity. If two residues are sufficiently close (based on a
+        predefined or custom distance threshold), their PAE value must fall
+        below a stricter, lower threshold to confirm high confidence in their 
+        proximity. For further apart residues, a higher PAE threshold can be
+        used to account for less background confidence in their relative positions.
+      - If a residue pair is decided to be in the same domain, the function checks
+        if either residue is already part of an existing domain, and either adds
+        the other residue to that domain or creates a new domain that includes both
+        residues. All residues in between the two being assessed will also be
+        automatically included in the domain - no gaps are allowed within domains.
+      - Very close residues will always have high confidence in their relative
+        positions, so are not evaluated.
+
+    Raises:
+      - ValueError: If the method is 'custom' and custom_params is not provided
+        or missing necessary keys, or if an invalid method is specified.
     """
+    # Default parameters for cautious and definite methods
+    parameters = {
+        'cautious': {'res_dist_cutoff': 10, 'close_pae_val': 4, 'further_pae_val': 11},
+        'definite': {'res_dist_cutoff': 0, 'close_pae_val': 2, 'further_pae_val': 2}
+    }
+
+    if method in ['cautious', 'definite']:
+        res_dist_cutoff = parameters[method]['res_dist_cutoff']
+        close_pae_val = parameters[method]['close_pae_val']
+        further_pae_val = parameters[method]['further_pae_val']
+    elif method == 'custom':
+        if not custom_params or not all(key in custom_params for key in ['res_dist_cutoff', 'close_pae_val', 'further_pae_val']):
+            raise ValueError("For custom method, 'custom_params' must be a dictionary with keys 'res_dist_cutoff', 'close_pae_val', 'further_pae_val'.")
+        res_dist_cutoff = custom_params['res_dist_cutoff']
+        close_pae_val = custom_params['close_pae_val']
+        further_pae_val = custom_params['further_pae_val']
+    else:
+        raise ValueError("Invalid method. Choose 'cautious', 'definite', or 'custom'.")
+
     domains = []
     next_domain_num = 1
 
