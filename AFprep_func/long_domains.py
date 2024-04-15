@@ -17,10 +17,12 @@ Dependencies:
   - AFprep_func.classes.Domain: Used to represent protein domains.
   - AFprep_func.fragmentation_methods.check_valid_cutpoint: Utilized to ensure
     proposed fragmentation points are valid based on domain boundaries and protein.
+  - AFprep_func.fragmentation_methods.merge_overlapping_domains: Used to merge
+    overlapping domains within a protein.
 """
 
 from AFprep_func.classes import ProteinSubsection, Domain
-from AFprep_func.fragmentation_methods import check_valid_cutpoint
+from AFprep_func.fragmentation_methods import check_valid_cutpoint, merge_overlapping_domains
 
 def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_overlap):
     """
@@ -86,22 +88,10 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
     fragments = []
 
     # Merge overlapping domains to simplify processing
-    sorted_domains = sorted(protein.domain_list, key=lambda x: x.start)
-    combined_domains = []
-    for domain in sorted_domains:
-        if not combined_domains:
-            combined_domains.append(domain)
-        else:
-            last = combined_domains[-1]
-            # Check if the current domain overlaps with the last one in the list
-            if domain.start <= last.end:
-                # Merge the two domains by updating the end of the last domain
-                combined_domains[-1] = Domain(last.num, last.start, max(last.end, domain.end), last.type)
-            else:
-                combined_domains.append(domain)
+    combined_domains = merge_overlapping_domains(protein.domain_list)
 
     prev_end = 0
-    for domain in protein.domain_list:
+    for domain in combined_domains:
         domain_len = domain.end - domain.start + 1
         if domain_len >= max_len:
             long_domain_list.append(domain)

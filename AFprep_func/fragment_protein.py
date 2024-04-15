@@ -17,7 +17,7 @@ Dependencies:
     within the protein.
 """
 
-from AFprep_func.fragmentation_methods import recursive_fragmentation
+from AFprep_func.fragmentation_methods import recursive_fragmentation, merge_overlapping_domains
 from AFprep_func.long_domains import handle_long_domains
 
 def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
@@ -49,6 +49,7 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
                                                  overlap, min_overlap, max_overlap)
 
     for subsection in subsections:
+        merged_domains = merge_overlapping_domains(subsection.domain_list)
         subsection_fragments = None
         while subsection_fragments is None:
             #deal with short proteins/sections by classifying as one fragment
@@ -57,7 +58,8 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
                 subsection_fragments = [(subsection.first_res, subsection.last_res)]
                 continue
 
-            subsection_fragments = recursive_fragmentation(subsection, subsection.first_res,
+            subsection_fragments = recursive_fragmentation(subsection, merged_domains,
+                                                           subsection.first_res,
                                                            min_len, max_len, overlap,
                                                            min_overlap, max_overlap)
             if subsection_fragments is None:
