@@ -2,7 +2,7 @@
 Test file for the fragmentation_methods module.
 """
 import pytest
-from AFprep_func.classes import Domain
+from AFprep_func.classes import Domain, Protein
 from AFprep_func.fragmentation_methods import merge_overlapping_domains, check_valid_cutpoint, recursive_fragmentation
 
 @pytest.mark.parametrize(
@@ -71,13 +71,6 @@ def test_check_valid_cutpoint(res, domains, sequence_end, expected):
     result = check_valid_cutpoint(res, domains, sequence_end)
     assert result == expected, f"Expected {expected} but got {result} for residue {res} with sequence end {sequence_end}"
 
-class MockProtein:
-    """
-    Mock class to represent a protein for testing recursive_fragmentation.
-    """
-    def __init__(self, last_res):
-        self.last_res = last_res
-
 @pytest.mark.parametrize(
     "domains, min_len, max_len, ideal_overlap, min_overlap, max_overlap",
     [
@@ -95,7 +88,7 @@ def test_recursive_fragmentation_lengths_and_overlaps(domains, min_len, max_len,
     Tests the recursive_fragmentation function to ensure that all fragments meet
     the length and overlap requirements specified by the parameters.
     """
-    result = recursive_fragmentation(MockProtein(20), domains, 0, min_len,
+    result = recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20), domains, 0, min_len,
                                      max_len, ideal_overlap, min_overlap, max_overlap)
 
     # Check if any fragments were generated
@@ -126,5 +119,5 @@ def test_recursive_fragmentation_overlap_error(min_len, max_len, ideal_overlap, 
     overlap and length constraints are not met.
     """
     with pytest.raises(ValueError):
-        recursive_fragmentation(MockProtein(20), [], 0, min_len, max_len, ideal_overlap,
+        recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20), [], 0, min_len, max_len, ideal_overlap,
                                 min_overlap, max_overlap)

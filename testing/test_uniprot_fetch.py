@@ -1,5 +1,5 @@
 """
-This test file contains test cases for the 'fetch_uniprot_info' and 'find_uniprot_domains' functions
+Test file contains test cases for the uniprot_fetch module
 """
 import pytest
 import requests_mock

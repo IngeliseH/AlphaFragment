@@ -15,10 +15,12 @@ Dependencies:
     protein sections that are not classified as long domains.
   - AFprep_func.long_domains.handle_long_domains: Handles the fragmentation of long domains
     within the protein.
+  - AFprep_func.classes.Protein: Used to check the input is a valid Protein object.
 """
 
-from AFprep_func.fragmentation_methods import recursive_fragmentation, merge_overlapping_domains
+from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains
 from AFprep_func.long_domains import handle_long_domains
+from AFprep_func.classes import Protein
 
 def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
                      min_overlap = 0, max_overlap = 30):
@@ -45,6 +47,9 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
       - list of tuples: A sorted list of tuples, where each tuple represents a
         fragment with its start and end positions within the protein sequence.
     """
+    # Validate the input parameters
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+
     subsections, fragments = handle_long_domains(protein, min_len, max_len,
                                                  overlap, min_overlap, max_overlap)
 

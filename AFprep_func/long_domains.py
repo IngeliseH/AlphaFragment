@@ -21,8 +21,8 @@ Dependencies:
     overlapping domains within a protein.
 """
 
-from AFprep_func.classes import ProteinSubsection, Domain
-from AFprep_func.fragmentation_methods import check_valid_cutpoint, merge_overlapping_domains
+from AFprep_func.classes import ProteinSubsection
+from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
 
 def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_overlap):
     """
@@ -65,23 +65,33 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
       - Adjust the start and end points of each long domain fragment to include
         overlaps:
           - Attempt to add an overlap to both the start and end points within the
-            bounds of `min_overlap` and `max_overlap`, ensuring the selected points
-            are valid cutpoints.
+            bounds of `max_overlap` and 0, ensuring the selected points are valid
+            cutpoints.
+          - If an overlap cannot be added, the original start and end points are
+            used.
           - Ensure the adjusted start and end points do not extend beyond the protein's
             boundaries.
       - Add the long domain, neighbouring merged regions, and overlap, as a fragment.
       - After processing all long domains, check for any remaining unfragmented
         protein sequence at the end and create a subsection if necessary.
       - Return the created subsections and fragments.
+
+    Notes:
+      - If two long domains are adjacent and the distance between them is less than
+        'min_overlap', the domains will still be created as separate fragments with
+        as much ovverlap as is allowed by the space between them.
     """
+    # Validate the input parameters
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+
     # Nested function for adjusting adding overlap around long domains
     def add_overlap(position, direction):
         for adjusted_overlap in (list(range(overlap, max_overlap + 1)) +
-                                 list(range(overlap - 1, min_overlap - 1, -1))):
+                                 list(range(overlap - 1, - 1, -1))):
             adjusted_position = position + (direction * adjusted_overlap)
             if check_valid_cutpoint(adjusted_position, protein.domain_list, protein.last_res):
                 return adjusted_position
-        return position  # Return original if no adjustment is valid
+        return position  # Return original if no adjustment is valid (should never be used as overlap will be reduced to 0 which will return original anyway)
 
     long_domain_list = []
     subsections = []
@@ -98,12 +108,11 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
 
     # Process each long domain
     for long_domain in long_domain_list:
-        # Check distances to protein ends and nearby long domains
+        # Check distances to protein ends
         distance_to_start = long_domain.start
         distance_to_end = protein.last_res - long_domain.end
 
-        # Determine if the long domain should be extended to include the gap to
-        # other long domains, or to the start of end of the protein
+        # Determine if the long domain should be extended to the start of end of the protein
         should_merge_start = distance_to_start < min_len
         should_merge_end = distance_to_end < min_len
 
@@ -116,10 +125,10 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
             other_domain_len = other_domain.end - other_domain.start + 1
             if other_domain == long_domain:
                 continue
-            if abs(long_domain.end - other_domain.start) < min_len:
+            if (long_domain.end < other_domain.start) and (other_domain.start - long_domain.end  < min_len):
                 if long_domain_len <= other_domain_len:
                     end = max(end, other_domain.start)
-            if abs(long_domain.start - other_domain.end) < min_len:
+            if (long_domain.start > other_domain.end) and (long_domain.start - other_domain.end < min_len):
                 if long_domain_len < other_domain_len:
                     start = min(start, other_domain.end)
 

@@ -1,5 +1,5 @@
 """
-This test file contains tests for the classes in the AFprep_func package.
+Test file for classes in the AFprep_func package.
 """
 import pytest
 from AFprep_func.classes import Domain, Protein, ProteinSubsection  # Adjust the import as necessary.
@@ -19,7 +19,8 @@ def test_domain_initialization():
     assert domain.end == 20, "Domain end did not initialize correctly"
     assert domain.type == "TYPE", "Domain type did not initialize correctly"
 
-    # Test initialization of a domain where start and end are the same
+    # Test initialization of a domain where start and end are the same (useful
+    # for marking specific points of interest to see where these fall in fragments)
     single_residue_domain = Domain("SingleResidue", 5, 5, "POINT")
     assert single_residue_domain.start == 5, "Single residue domain start did not initialize correctly"
     assert single_residue_domain.end == 5, "Single residue domain end did not initialize correctly"
@@ -48,14 +49,6 @@ def test_domain_equality():
     domain3 = Domain("D1", 10, 21, "TYPE")
     assert domain1 == domain2
     assert domain1 != domain3
-
-def test_domain_same_start_end():
-    """
-    Test that Domain can be one residue long (useful for marking specific points
-    of interest to see where these fall in fragments)
-    """
-    with pytest.raises(ValueError):
-        Domain("D1", 5, 5, "TYPE")
 
 # Tests for Protein
 def test_protein_initialization():

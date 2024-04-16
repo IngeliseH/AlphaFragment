@@ -1,5 +1,5 @@
 """
-This test file contains tests for the functions in the process_proteins_csv module.
+Test file for the process_proteins_csv module.
 """
 from io import StringIO
 from unittest.mock import patch

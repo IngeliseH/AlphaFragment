@@ -2,14 +2,53 @@
 Internal utility functions for protein fragmention process.
 
 Functions:
+    - validate_fragmentation_parameters: Validates the parameters used for protein fragmentation.
     - merge_overlapping_domains: Merges overlapping domains within a list of domains.
-    - recursive_fragmentation: Main function for recursively generating fragments.
     - check_valid_cutpoint: Helper function to validate potential fragment boundaries.
-
+    - recursive_fragmentation: Main function for recursively generating fragments.
+    
 Dependencies:
     - Domain: A class representing a domain within a protein sequence.
+    - Protein: A class representing a protein sequence.
 """
-from AFprep_func.classes import Domain
+from AFprep_func.classes import Domain, Protein
+
+def validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap):
+    """
+    Validates the parameters used for protein fragmentation.
+    
+    Args:
+    - protein (Protein): The protein object to be fragmented.
+    - min_len (int): Minimum acceptable length for a protein fragment.
+    - max_len (int): Maximum acceptable length for a protein fragment.
+    - overlap (int): Ideal size of the overlap between fragments.
+    - min_overlap (int): Minimum allowed overlap size.
+    - max_overlap (int): Maximum allowed overlap size.
+
+    Raises:
+    - ValueError: If any of the parameter validations fail.
+    - TypeError: If the protein input is not an instance of the Protein class.
+    """
+    # Check that the protein input is an instance of the Protein class
+    if not isinstance(protein, Protein):
+        raise TypeError("Input protein must be an instance of the Protein class.")
+
+    # Check that the min_len is less than the max_len
+    if min_len > max_len:
+        raise ValueError(f"Minimum fragment length ({min_len}) must be less than maximum fragment length ({max_len}).")
+
+    # Check that the minimum overlap is less than or equal to the maximum overlap
+    if min_overlap > max_overlap:
+        raise ValueError(f"Minimum overlap ({min_overlap}) must be less than or equal to maximum overlap ({max_overlap}).")
+
+    # Check that the ideal overlap is within the min and max overlap bounds
+    if not (min_overlap <= overlap <= max_overlap):
+        raise ValueError("Ideal overlap must be within the min and max overlap bounds.")
+
+    # Check that the maximum overlap is less than the minimum fragment length
+    if max_overlap >= min_len:
+        raise ValueError(f"Maximum overlap ({max_overlap}) must be less than the minimum fragment length ({min_len}) to avoid overlap-length conflicts.")
+
 
 def merge_overlapping_domains(domains):
     """
@@ -40,6 +79,36 @@ def merge_overlapping_domains(domains):
 
     return combined_domains
 
+def check_valid_cutpoint(res, domains, sequence_end):
+    """
+    Checks if a residue position is a valid cutpoint.
+
+    Parameters:
+        - res (int): The residue position to check.
+        - domains (list of Domain): The domains within the protein.
+        - sequence_end (int): The last residue position in the protein sequence.
+
+    Returns:
+        - bool: True if the residue position is a valid cutpoint; False otherwise.
+    """
+    # Check if res is beyond the end or before the start of the sequence
+    if res > sequence_end:
+        return False
+    if res < 0:
+        return False
+
+    # If res is at end of sequence, doesn't matter if it is in a domain
+    if res == (sequence_end):
+        return True
+
+    for domain in domains:
+        # Check if current and previous res are within the same domain
+        # (if both are in same domain, cutting at res would split the domain)
+        if domain.start <= res <= domain.end and domain.start <= res-1 <= domain.end:
+            return False
+
+    return True
+
 def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
                             overlap, min_overlap, max_overlap, cutpoints=None):
     """
@@ -64,6 +133,8 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         - list of tuples or None: The list of fragment cutpoints if successful;
           otherwise, None.
     """
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+
     def find_next_start(res):
         # Use ideal overlap if possible
         if check_valid_cutpoint(res - overlap, domains, protein.last_res):
@@ -79,18 +150,7 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
                 return res - adjusted_overlap
         # If no valid cutpoint is found within overlap boundaries, return None
         return None
-    
-    # Check that the minimum overlap is less than or equal to the maximum overlap
-    if (min_overlap > max_overlap):
-        raise ValueError("Minimum overlap", min_overlap, "must be less than or equal to maximum overlap", max_overlap, ".")
-    # Check that the ideal overlap is within the min and max overlap bounds
-    if not (min_overlap <= overlap <= max_overlap):
-        raise ValueError("Ideal overlap must be within the min and max overlap bounds.")
-    # Check that the maximum overlap is less than the minimum fragment length
-    if (max_overlap >= min_len):
-        raise ValueError("Maximum overlap must be less than the minimum fragment length to avoid overlap-length conflicts.")
-    
-    
+
     # Base case: if previous fragment end is the end of the protein, we've
     # reached the end and return the cutpoints
     if cutpoints is None:
@@ -122,33 +182,3 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
 
     # If no valid cut is found in the loop, return None to indicate failure
     return None
-
-def check_valid_cutpoint(res, domains, sequence_end):
-    """
-    Checks if a residue position is a valid cutpoint.
-
-    Parameters:
-        - res (int): The residue position to check.
-        - domains (list of Domain): The domains within the protein.
-        - sequence_end (int): The last residue position in the protein sequence.
-
-    Returns:
-        - bool: True if the residue position is a valid cutpoint; False otherwise.
-    """
-    # Check if res is beyond the end or before the start of the sequence
-    if res > sequence_end:
-        return False
-    if res < 0:
-        return False
-
-    # If res is at end of sequence, doesn't matter if it is in a domain
-    if res == (sequence_end):
-        return True
-
-    for domain in domains:
-        # Check if current and previous res are within the same domain
-        # (if both are in same domain, cutting at res would split the domain)
-        if domain.start <= res <= domain.end and domain.start <= res-1 <= domain.end:
-            return False
-
-    return True
