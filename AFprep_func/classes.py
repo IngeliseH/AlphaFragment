@@ -30,8 +30,6 @@ class Domain:
             raise ValueError("Domain start and end must be greater than 0.")
         if start > end:
             raise ValueError("Domain start cannot be after end.")
-        if start == end:
-            raise ValueError("Domain must be longer than 1 residue.")
         self.num = num
         self.start = start
         self.end = end
@@ -146,6 +144,36 @@ class Protein:
         """
         return (f"Protein Name: {self.name}, Accession ID: {self.accession_id}, "
                 f"Domains: {len(self.domain_list)}, Fragments: {len(self.fragment_list)}")
+
+    def __repr__(self):
+        """
+        Returns a formal string representation of the Protein instance.
+        """
+        domain_reprs = [repr(d) for d in self.domain_list]
+        fragment_reprs = [repr(f) for f in self.fragment_list]
+        sequence_repr = self.sequence[:10] + '...' if len(self.sequence) > 10 else self.sequence
+        return (f"Protein(name={repr(self.name)}, accession_id={repr(self.accession_id)}, "
+                f"sequence={repr(sequence_repr)}, "
+                f"first_res={self.first_res}, last_res={self.last_res}, "
+                f"domain_list={domain_reprs}, fragment_list={fragment_reprs})")
+
+
+    def __eq__(self, other):
+        """
+        Checks if this Protein instance is equal to another by comparing their attributes.
+
+        Parameters:
+            - other (Protein): Another Protein instance to compare against.
+
+        Returns:
+            - bool: True if the proteins have the same attributes, False otherwise.
+        """
+        if not isinstance(other, Protein):
+            return NotImplemented
+        return (self.name == other.name and self.accession_id == other.accession_id and
+                self.sequence == other.sequence and self.first_res == other.first_res and
+                self.last_res == other.last_res and self.domain_list == other.domain_list and
+                self.fragment_list == other.fragment_list)
 
 class ProteinSubsection(Protein):
     """

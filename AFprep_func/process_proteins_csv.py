@@ -23,7 +23,7 @@ Dependencies:
 import pandas as pd
 from ast import literal_eval
 # Import the Protein class
-from AFprep_func.classes import Protein
+from AFprep_func.classes import Protein, Domain
 # Import function to fetch sequence data
 from AFprep_func.uniprot_fetch import fetch_uniprot_info
 
@@ -96,13 +96,13 @@ def initialize_proteins_from_csv(csv_path):
         elif manual_sequence:  # Use manually provided sequence if fetch fails
             print(f"UniProt fetch failed for {protein_name}; using manually provided sequence.")
             sequence = manual_sequence
-        else:
-            print(f"Unable to obtain a sequence for {protein_name} from UniProt or manual provision.")
-            proteins_with_errors.append(protein_name)
-            continue  # Skip this entry if no sequence available
-
+        
         # Initialize Protein object if sequence is available
-        proteins.append(Protein(name=protein_name, accession_id=accession_id, sequence=sequence))
+        if sequence:
+          proteins.append(Protein(name=protein_name, accession_id=accession_id, sequence=sequence))
+        else:
+          print(f"Unable to obtain a sequence for {protein_name} from UniProt or manual provision.")
+          proteins_with_errors.append(protein_name)
 
     return proteins, proteins_with_errors
 
@@ -112,20 +112,22 @@ def add_user_specified_domains(protein, df):
 
     Parameters:
       - protein (Protein): Protein object to add domains to.
-      - df (dataframe): DataFrame with protein names and user-defined domains.
+      - df (dataframe): DataFrame with protein names and user-defined domains
+        listed as a list of (start, end) tuples in a column "domains".
     
     Notes:
       - Domains are identified by start and end positions within the protein sequence.
     """
     protein_name = protein.name
     manual_domains = []
+    next_domain_num = 1
     if protein_name in df['name'].values:
         domain_data = df.loc[df['name'] == protein_name, 'domains'].iloc[0]
         if pd.notnull(domain_data):
             domain_data = literal_eval(domain_data)
             for domain_start, domain_end in domain_data:
-                next_domain_num = len(protein.domain_list) + 1
                 manual_domains.append(Domain(f"manual_D{next_domain_num}", domain_start, domain_end, "manually_defined"))
+                next_domain_num += 1
             print(f"{len(domain_data)} manually specified domains found for {protein.name}: {manual_domains}")
     else:
         print(f"No user-specified domains found for protein {protein.name}.")
@@ -144,10 +146,16 @@ def update_csv_with_fragments(df, output_csv, proteins):
       - proteins (list of Protein objects): Protein objects containing
         information on Domain and fragment locations to be added to the output
         data.
+
+    Returns:
+      - dataframe: A new DataFrame with updated data and reordered columns.
     
     Notes:
       - Reorders columns for consistency
     """
+    # Create a copy of the DataFrame to avoid modifying the original
+    df_copy = df.copy()
+
     # Prepare dictionaries for mapping protein names to their updated attributes
     sequences_dict = {protein.name: protein.sequence for protein in proteins}
     domains_dict = {
@@ -155,27 +163,29 @@ def update_csv_with_fragments(df, output_csv, proteins):
         if protein.domain_list else ''
         for protein in proteins
     }
-    print(domains_dict)
     fragments_dict = {protein.name: [(start, end) for start, end in protein.fragment_list] for protein in proteins}
     fragments_sequence_dict = {
         protein.name: [protein.sequence[start:end] for start, end in protein.fragment_list]
         for protein in proteins
     }
 
-    # Update the DataFrame with the new sequences, domains, and fragment information
-    df['sequence'] = df['name'].map(sequences_dict)
-    df['domains'] = df['name'].map(domains_dict)
-    df['fragment_indices'] = df['name'].map(fragments_dict)
-    df['fragment_sequences'] = df['name'].map(fragments_sequence_dict)
+    # Update the DataFrame copy with the new sequences, domains, and fragment information
+    df_copy['sequence'] = df['name'].map(sequences_dict)
+    df_copy['domains'] = df['name'].map(domains_dict)
+    df_copy['fragment_indices'] = df['name'].map(fragments_dict)
+    df_copy['fragment_sequences'] = df['name'].map(fragments_sequence_dict)
 
-    # Ensure the desired column order, adding other columns dynamically
+    # Define desired column order, adding other columns dynamically
     desired_columns = ['name', 'accession_id', 'sequence', 'domains', 'fragment_indices', 'fragment_sequences']
-    existing_columns = df.columns.tolist()
-    final_columns_order = [col for col in desired_columns if col in existing_columns] + [col for col in existing_columns if col not in desired_columns]
+    existing_columns = df_copy.columns.tolist()
+    additional_columns = [col for col in existing_columns if col not in desired_columns]
+    final_columns_order = [col for col in desired_columns if col in existing_columns] + additional_columns
+
     # Reorder the DataFrame columns
-    df = df.reindex(columns=final_columns_order)
-
+    new_df = df_copy.reindex(columns=final_columns_order)
     # Save the updated DataFrame to the new CSV file
-    df.to_csv(output_csv, index=False)
-
+    new_df.to_csv(output_csv, index=False)
     print(f"CSV file has been updated and saved to {output_csv}")
+
+    # Return the newly organized DataFrame
+    return new_df

@@ -7,13 +7,23 @@ from AFprep_func.classes import Domain, Protein, ProteinSubsection  # Adjust the
 # Tests for Domain
 def test_domain_initialization():
     """
-    Test that the Domain class initializes
+    Test that the Domain class initializes. This includes checks for:
+    - Regular initialization with a start and end.
+    - Initialization where the start and end are the same, representing a single residue.
+    - Initialization with start/end values below 0, which should raise a ValueError.
+    - Initialization where the end is before the start, which should also raise a ValueError.
     """
     domain = Domain("D1", 10, 20, "TYPE")
-    assert domain.num == "D1"
-    assert domain.start == 10
-    assert domain.end == 20
-    assert domain.type == "TYPE"
+    assert domain.num == "D1", "Domain num did not initialize correctly"
+    assert domain.start == 10, "Domain start did not initialize correctly"
+    assert domain.end == 20, "Domain end did not initialize correctly"
+    assert domain.type == "TYPE", "Domain type did not initialize correctly"
+
+    # Test initialization of a domain where start and end are the same
+    single_residue_domain = Domain("SingleResidue", 5, 5, "POINT")
+    assert single_residue_domain.start == 5, "Single residue domain start did not initialize correctly"
+    assert single_residue_domain.end == 5, "Single residue domain end did not initialize correctly"
+    assert single_residue_domain.type == "POINT", "Single residue domain type did not initialize correctly"
 
     # Test that using the Domain class with start/end below 0 raises a ValueError
     with pytest.raises(ValueError):
@@ -41,7 +51,8 @@ def test_domain_equality():
 
 def test_domain_same_start_end():
     """
-    Test that using the Domain class with start == end raises a ValueError
+    Test that Domain can be one residue long (useful for marking specific points
+    of interest to see where these fall in fragments)
     """
     with pytest.raises(ValueError):
         Domain("D1", 5, 5, "TYPE")

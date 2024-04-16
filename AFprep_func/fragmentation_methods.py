@@ -80,6 +80,17 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         # If no valid cutpoint is found within overlap boundaries, return None
         return None
     
+    # Check that the minimum overlap is less than or equal to the maximum overlap
+    if (min_overlap > max_overlap):
+        raise ValueError("Minimum overlap", min_overlap, "must be less than or equal to maximum overlap", max_overlap, ".")
+    # Check that the ideal overlap is within the min and max overlap bounds
+    if not (min_overlap <= overlap <= max_overlap):
+        raise ValueError("Ideal overlap must be within the min and max overlap bounds.")
+    # Check that the maximum overlap is less than the minimum fragment length
+    if (max_overlap >= min_len):
+        raise ValueError("Maximum overlap must be less than the minimum fragment length to avoid overlap-length conflicts.")
+    
+    
     # Base case: if previous fragment end is the end of the protein, we've
     # reached the end and return the cutpoints
     if cutpoints is None:
@@ -99,7 +110,7 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
                 # Recursively process the next segment
                 result = recursive_fragmentation(protein, domains, next_start,
                                                  min_len, max_len, overlap,
-                                                 max_overlap, min_overlap,
+                                                 min_overlap, max_overlap,
                                                  cutpoints)
 
                 # If a valid fragmentation pattern is found, return the result
