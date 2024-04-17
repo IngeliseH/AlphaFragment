@@ -104,20 +104,21 @@ def test_recursive_fragmentation_lengths_and_overlaps(domains, min_len, max_len,
             actual_overlap = start + fragment_length - next_start
             assert min_overlap <= actual_overlap <= max_overlap, f"Overlap {actual_overlap} out of bounds ({min_overlap}, {max_overlap}) between fragments {i} and {i+1}"
 
-@pytest.mark.parametrize("min_len, max_len, ideal_overlap, min_overlap, max_overlap",
+@pytest.mark.parametrize("ideal_overlap, min_overlap, max_overlap",
     [
         # max overlap < min_overlap
-        (5, 15, 2, 2, 0),
+        (2, 2, 0),
         # max overlap = min_len
-        (5, 15, 2, 1, 5),
+        (2, 1, 5),
         # ideal overlap not between min and max overlap
-        (5, 15, 7, 1, 5),
+        (7, 1, 5),
 ])
-def test_recursive_fragmentation_overlap_error(min_len, max_len, ideal_overlap, min_overlap, max_overlap):
+def test_recursive_fragmentation_overlap_error(ideal_overlap, min_overlap, max_overlap):
     """
     Tests that the recursive_fragmentation function raises a ValueError when
     overlap and length constraints are not met.
     """
     with pytest.raises(ValueError):
-        recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20), [], 0, min_len, max_len, ideal_overlap,
-                                min_overlap, max_overlap)
+        recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20),
+                                [], 0, 5, 15, ideal_overlap,
+                                min_overlap, max_overlap), f"Function did not raise ValueError for invalid overlap parameters. Input parameters: {ideal_overlap}, {min_overlap}, {max_overlap}"

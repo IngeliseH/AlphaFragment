@@ -52,8 +52,8 @@ def test_initialize_proteins_from_csv(csv_data, expected_success, expected_error
             # Mock behavior based on accession ID, assuming 'AAA' is fetched for 'P12345' and None for 'P67890'
             mock_fetch.side_effect = lambda x: {'sequence': 'AAA'} if x == 'P12345' else None
             proteins, errors = initialize_proteins_from_csv("fake_path")
-            assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)}"
-            assert len(errors) == len(expected_errors), f"Expected {len(expected_errors)} errors, got {len(errors)}"
+            assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)} for proteins {proteins}"
+            assert len(errors) == len(expected_errors), f"Expected {len(expected_errors)} errors, got {len(errors)} errors, for proteins {errors}"
 
 @pytest.mark.parametrize("csv_data, expected_columns, raises_error", [
     # No column headings
@@ -74,10 +74,10 @@ def test_csv_column_handling(csv_data, expected_columns, raises_error):
     with patch('pandas.read_csv', return_value=pd.read_csv(StringIO(csv_data))):
         if raises_error:
             with pytest.raises(ValueError):
-                initialize_proteins_from_csv("fake_path")
+                initialize_proteins_from_csv("fake_path"), "Expected ValueError for incorrect column headings"
         else:
             df = pd.read_csv(StringIO(csv_data))
-            assert all(col in df.columns for col in expected_columns), "Expected columns not present in DataFrame"
+            assert all(col in df.columns for col in expected_columns), f"Expected columns not present in DataFrame, expected {expected_columns}, got {df.columns}"
 
 def test_add_user_specified_domains():
     """
@@ -92,7 +92,8 @@ def test_add_user_specified_domains():
                         Domain('manual_D2', 20, 30, 'manually_defined')]
 
     result = add_user_specified_domains(protein, df)
-    assert len(result) == 2 and result == expected_domains
+    assert len(result) == 2, f"Expected 2 domains, got {len(result)} domains, {result}"
+    assert result == expected_domains, f"Expected domains {expected_domains}, got {result}"
 
 def test_update_csv_with_fragments():
     """
@@ -105,9 +106,10 @@ def test_update_csv_with_fragments():
     ]
     output_csv = StringIO()
 
+    # Check DataFrame saved to CSV.
     with patch.object(pd.DataFrame, 'to_csv') as mock_to_csv:
         update_csv_with_fragments(df, output_csv, proteins)
-        mock_to_csv.assert_called_once()  # Ensures that the DataFrame was indeed saved to CSV.
+        mock_to_csv.assert_called_once(), "call to DataFrame.to_csv() not made"
 
 @pytest.mark.parametrize("df_setup, expected_columns", [
     # Test with additional columns
@@ -130,9 +132,9 @@ def test_column_handling(df_setup, expected_columns):
     proteins = [Protein(name='Protein1', accession_id='P12345', sequence='ABCDEFGHIJABCDEFGHIJ')]
     new_df = update_csv_with_fragments(df_setup, output_csv, proteins)
     # Verify that all expected columns are present
-    assert set(new_df.columns) == set(expected_columns), "Not all expected columns are present in the DataFrame."
+    assert set(new_df.columns) == set(expected_columns), f"Not all expected columns are present in the DataFrame, expected {expected_columns}, got {new_df.columns}"
     # Verify the order of the columns
-    assert new_df.columns.tolist() == expected_columns, "Columns are not in the expected order."
+    assert new_df.columns.tolist() == expected_columns, f"Columns are not in the expected order, expected {expected_columns}, got {new_df.columns}"
 
 @pytest.mark.parametrize("df_setup, protein_setup, expected_exception", [
     # Test with incorrect data types in DataFrame
@@ -173,4 +175,4 @@ def test_output_file_writing(output_path):
     df = pd.DataFrame({'name': ['Protein1'], 'accession_id': ['P12345']})
     proteins = [Protein(name='Protein1', accession_id='P12345', sequence='AAA')]
     with pytest.raises(Exception):
-        update_csv_with_fragments(df, output_path, proteins)
+        update_csv_with_fragments(df, output_path, proteins), "Expected an exception when writing to an invalid path"

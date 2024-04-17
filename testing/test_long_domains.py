@@ -40,23 +40,23 @@ def test_handle_long_domains(protein_domains, protein_sequence, long_domain_num,
     subsections, fragments = handle_long_domains(protein, min_len, max_len,
                                                  ideal_overlap, min_overlap, max_overlap)
 
-    assert len(subsections) == subsection_num, "Unexpected number of subsections"
-    assert len(fragments) == long_domain_num, "Unexpected number of long domain fragments"
+    assert len(subsections) == subsection_num, f"Unexpected number of subsections, expected {subsection_num}, got {len(subsections)} with subsections {subsections} and fragments {fragments}"
+    assert len(fragments) == long_domain_num, f"Unexpected number of long domain fragments, expected {long_domain_num}, got {len(fragments)} with fragments {fragments} and subsections {subsections}"
 
     # Check that fragments fit within expected ranges
     for fragment in fragments:
         start, end = fragment
-        assert max_len <= (end - start + 1), "Fragment length too short to contain long domain, shouldn't have been created"
-        assert start >= 0, "Fragment start position out of bounds"
-        assert end > start, "Fragment end position must be after fragment start"
-        assert end <= len(protein_sequence), "Fragment end position out of bounds"
+        assert max_len <= (end - start + 1), f"Fragment length too short to contain long domain, shouldn't have been created. Expected length > {max_len}, got length {end - start + 1} for fragment {fragment} in list {fragments}"
+        assert start >= 0, f"Fragment start position out of bounds, expected start >= 0, got start {start} for fragment {fragment} in list {fragments}"
+        assert end > start, f"Fragment end position must be after fragment start, got start {start} and end {end} for fragment {fragment} in list {fragments}"
+        assert end <= len(protein_sequence), f"Fragment end position out of bounds, expected end <= {len(protein_sequence)}, got end {end} for fragment {fragment} in list {fragments}"
 
     # Check that subsections fit within expected ranges
     for subsection in subsections:
         subsection_len = subsection.last_res - subsection.first_res + 1
-        assert subsection_len >= min_len, "Subsection too short, should have been merged with adjacent long domain containing fragment"
-        assert subsection.first_res >= 0, "Subsection start position out of bounds"
-        assert subsection.last_res <= len(protein_sequence), "Subsection end position out of bounds"
+        assert subsection_len >= min_len, f"Subsection too short, should have been merged with adjacent long domain containing fragment. Expected length >= {min_len}, got length {subsection_len} for subsection {subsection} in list {subsections}"
+        assert subsection.first_res >= 0, f"Subsection start position out of bounds, expected start >= 0, got start {subsection.first_res} for subsection {subsection} in list {subsections}"
+        assert subsection.last_res <= len(protein_sequence), f"Subsection end position out of bounds, expected end <= {len(protein_sequence)}, got end {subsection.last_res} for subsection {subsection} in list {subsections}"
 
     # Check overlap between consecutive fragments and subsections
     for subsection in subsections:
@@ -66,7 +66,7 @@ def test_handle_long_domains(protein_domains, protein_sequence, long_domain_num,
         start, end = fragments_and_subsections[region]
         next_start, next_end = fragments_and_subsections[region + 1]
         overlap = start + (end - start + 1) - next_start
-        assert min_overlap <= overlap <= max_overlap, "Fragment overlap out of bounds"
+        assert min_overlap <= overlap <= max_overlap, f"Fragment overlap out of bounds, expected overlap between ({start}, {end}) and ({next_start}, {next_end}) to be between {min_overlap} and {max_overlap}, got overlap {overlap} for fragments/subsections {fragments_and_subsections}"
 
 def test_adjacent_long_domains():
     """
@@ -82,13 +82,13 @@ def test_adjacent_long_domains():
     subsections, fragments = handle_long_domains(protein, min_len=20, max_len=30,
                                                  overlap=5, min_overlap=3, max_overlap=10)
 
-    assert len(subsections) == 0, "Unexpected number of subsections"
-    assert len(fragments) == 2, "Unexpected number of long domain fragments"
+    assert len(subsections) == 0, f"Unexpected number of subsections, expected 0, got {len(subsections)} with subsections {subsections} and fragments {fragments}"
+    assert len(fragments) == 2, f"Unexpected number of long domain fragments, expected 2, got {len(fragments)} with fragments {fragments} and subsections {subsections}"
 
     # Check that fragments fit within expected ranges
     for fragment in fragments:
         start, end = fragment
-        assert max_len <= (end - start + 1), f"Fragment {fragment} length too short to contain long domain {fragments}, shouldn't have been created"
-        assert start >= 0, "Fragment start position out of bounds"
-        assert end > start, "Fragment end position must be after fragment start"
-        assert end <= len(protein_sequence), "Fragment end position out of bounds"
+        assert max_len <= (end - start + 1), f"Fragment {fragment} length too short to contain long domain, shouldn't have been created. Fragments = {fragments}, domains = {protein.domain_list}"
+        assert start >= 0, f"Fragment start position out of bounds, expected start >= 0, got start {start}"
+        assert end > start, f"Fragment end position must be after fragment start, got start {start} and end {end} for fragment {fragment} in fragments {fragments}"
+        assert end <= len(protein_sequence), f"Fragment end position out of bounds, expected end <= {len(protein_sequence)}, got end {end} for fragment {fragment} in fragments {fragments}"

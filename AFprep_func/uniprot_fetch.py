@@ -110,7 +110,7 @@ def find_uniprot_domains(protein):
                 print(f"Invalid start/end in feature for protein {protein.name}: {feature}")
                 continue
 
-            uniprot_domains.append(Domain(description, start, end, feature['type']))
+            uniprot_domains.append(Domain(description, start, end, "UniProt"))
     if uniprot_domains:
         print(f"{len(uniprot_domains)} domains found in UniProt for {protein.name}: {uniprot_domains}")
     else:

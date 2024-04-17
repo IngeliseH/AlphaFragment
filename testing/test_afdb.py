@@ -70,11 +70,11 @@ def test_request_exceptions_handling(mock_requests, exception):
     # Test with no domains
     ([], 5, None),
     # Test with one domain, residue inside
-    ([Domain("D1", 1, 10, 'AF')], 5, Domain("D1", 1, 10, 'AF')),
+    ([Domain("D1", 1, 10, 'AF1', 'AF')], 5, Domain("D1", 1, 10, 'AF2', 'AF')),
     # Test with multiple domains, residue in second domain
-    ([Domain("D1", 1, 5, 'AF'), Domain("D2", 6, 10, 'AF')], 7, Domain("D2", 6, 10, 'AF')),
+    ([Domain("D1", 1, 5, 'AF1', 'AF'), Domain("D2", 6, 10, 'AF2', 'AF')], 7, Domain("D2", 6, 10, 'AF')),
     # Test with multiple domains, residue not in any domain
-    ([Domain("D1", 1, 5, 'AF'), Domain("D2", 6, 10, 'AF')], 11, None)
+    ([Domain("D1", 1, 5, 'AF1', 'AF'), Domain("D2", 6, 10, 'AF2', 'AF')], 11, None)
 ])
 def test_find_domain_by_res(domains, residue, expected):
     """
@@ -105,7 +105,7 @@ def test_error_handling(pae, method, custom_params, expected_exception):
     Ensures that the domain finding function correctly raises exceptions for various invalid inputs, including incorrect PAE matrices, methods, and parameters.
     """
     with pytest.raises(expected_exception):
-        find_domains_from_pae(pae, method, custom_params)
+        find_domains_from_pae(pae, method, custom_params), f"Expected {expected_exception} for input {pae}, got no exception"
 
 @pytest.mark.parametrize("pae, expected_length", [
     # A very small matrix
@@ -125,7 +125,7 @@ def test_edge_cases_input_structure(pae, expected_length):
     cases to ensure domains are identified or not identified as expected.
     """
     domains = find_domains_from_pae(pae)
-    assert len(domains) == expected_length
+    assert len(domains) == expected_length, f"Expected {expected_length} domains, got {len(domains)} domains, {domains} for pae {pae}"
 
 @pytest.mark.parametrize("pae, expected_domain_length", [
     # Whole matrix with very low values (all in one domain)
@@ -182,7 +182,8 @@ def test_correct_domain_finding(pae, expected_domain_length):
     Verifies that domains are correctly identified and extended.
     """
     domains = find_domains_from_pae(pae)
-    assert len(domains) == 1 and domains[0].end - domains[0].start + 1 == expected_domain_length
+    assert len(domains) == 1, f"Expected 1 domain, got {len(domains)} domains, {domains}"
+    assert domains[0].end - domains[0].start + 1 == expected_domain_length, f"Expected domain length {expected_domain_length}, got {domains[0].end - domains[0].start + 1}"
 
 def test_different_methods():
     """
@@ -213,4 +214,4 @@ def test_different_methods():
                   ]
     cautious_domains = find_domains_from_pae(pae_matrix, 'cautious')
     definite_domains = find_domains_from_pae(pae_matrix, 'definite')
-    assert len(definite_domains) > len(cautious_domains)
+    assert len(definite_domains) > len(cautious_domains), f"Expected more domains with 'definite' method, got {len(cautious_domains)} domains with 'cautious' method and {len(definite_domains)} domains with 'definite' method"

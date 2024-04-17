@@ -14,31 +14,31 @@ def test_domain_initialization():
     - Initialization where the end is before the start, which should also raise a ValueError.
     """
     domain = Domain("D1", 10, 20, "TYPE")
-    assert domain.num == "D1", "Domain num did not initialize correctly"
-    assert domain.start == 10, "Domain start did not initialize correctly"
-    assert domain.end == 20, "Domain end did not initialize correctly"
-    assert domain.type == "TYPE", "Domain type did not initialize correctly"
-
+    assert domain.num == "D1", f"Domain num did not initialize correctly, expected 'D1', got {domain.num}"
+    assert domain.start == 10, f"Domain start did not initialize correctly, expected 10, got {domain.start}"
+    assert domain.end == 20, f"Domain end did not initialize correctly, expected 20, got {domain.end}"
+    assert domain.type == "TYPE", f"Domain type did not initialize correctly, expected 'TYPE', got {domain.type}"
+    
     # Test initialization of a domain where start and end are the same (useful
     # for marking specific points of interest to see where these fall in fragments)
     single_residue_domain = Domain("SingleResidue", 5, 5, "POINT")
-    assert single_residue_domain.start == 5, "Single residue domain start did not initialize correctly"
-    assert single_residue_domain.end == 5, "Single residue domain end did not initialize correctly"
-    assert single_residue_domain.type == "POINT", "Single residue domain type did not initialize correctly"
-
+    assert single_residue_domain.start == 5, f"Single residue domain start did not initialize correctly, expected 5, got {single_residue_domain.start}"
+    assert single_residue_domain.end == 5, f"Single residue domain end did not initialize correctly, expected 5, got {single_residue_domain.end}"
+    assert single_residue_domain.type == "POINT", f"Single residue domain type did not initialize correctly, expected 'POINT', got {single_residue_domain.type}"
+    
     # Test that using the Domain class with start/end below 0 raises a ValueError
     with pytest.raises(ValueError):
-        Domain("D2", -1, 20, "TYPE")
+        Domain("D2", -1, 20, "TYPE"), "Domain with start below 0 did not raise a ValueError"
     # Test that using the Domain class with end before start raises a ValueError
     with pytest.raises(ValueError):
-        Domain("D3", 30, 20, "TYPE")
+        Domain("D3", 30, 20, "TYPE"), "Domain with end before start did not raise a ValueError"
 
 def test_domain_str():
     """
     Test that the __str__ method of the Domain class works as expected
     """
     domain = Domain("D1", 10, 20, "HELIX")
-    assert str(domain) == "HELIXD1 (10, 20)"
+    assert str(domain) == "HELIXD1 (10, 20)", f"Expected str(domain) to give 'HELIXD1 (10, 20)', got {str(domain)}"
 
 def test_domain_equality():
     """
@@ -47,8 +47,8 @@ def test_domain_equality():
     domain1 = Domain("D1", 10, 20, "TYPE")
     domain2 = Domain("D1", 10, 20, "TYPE")
     domain3 = Domain("D1", 10, 21, "TYPE")
-    assert domain1 == domain2
-    assert domain1 != domain3
+    assert domain1 == domain2, "Equal domains did not return True for equality check"
+    assert domain1 != domain3, "Different domains returned True for equality check"
 
 # Tests for Protein
 def test_protein_initialization():
@@ -56,11 +56,11 @@ def test_protein_initialization():
     Test that the Protein class initializes
     """
     protein = Protein("Protein1", "P12345", "MKKLLPT", 0, 7)
-    assert protein.name == "Protein1"
-    assert protein.accession_id == "P12345"
-    assert protein.sequence == "MKKLLPT"
-    assert protein.first_res == 0
-    assert protein.last_res == 7
+    assert protein.name == "Protein1", f"Protein name did not initialize correctly, expected 'Protein1', got {protein.name}"
+    assert protein.accession_id == "P12345", f"Protein accession ID did not initialize correctly, expected 'P12345', got {protein.accession_id}"
+    assert protein.sequence == "MKKLLPT", f"Protein sequence did not initialize correctly, expected 'MKKLLPT', got {protein.sequence}"
+    assert protein.first_res == 0, f"Protein first_res did not initialize correctly, expected 0, got {protein.first_res}"
+    assert protein.last_res == 7, f"Protein last_res did not initialize correctly, expected 7, got {protein.last_res}"
 
 def test_protein_add_domain():
     """
@@ -69,18 +69,18 @@ def test_protein_add_domain():
     protein = Protein("Protein1", "P12345", "MKKLLPT")
     domain = Domain("D1", 2, 5, "TYPE")
     protein.add_domain(domain)
-    assert protein.domain_list == [domain]
+    assert protein.domain_list == [domain], f"add_domain did not add the domain to the protein's domain list, expected [Domain('D1', 2, 5, 'TYPE')], got {protein.domain_list}"
 
     # Test that using the add_domain function with a non Domain class object raises a ValueError
     with pytest.raises(ValueError):
-        protein.add_domain("not a domain")
+        protein.add_domain("not a domain"), "add_domain did not raise a ValueError for a non-Domain object"
 
 def test_protein_empty_sequence():
     """
     Test Protein class initialization with an empty sequence
     """
     protein = Protein("TestProtein", "P00001", "")
-    assert protein.last_res == 0
+    assert protein.last_res == 0, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
 
 def test_protein_non_sequential_fragments():
     """
@@ -90,7 +90,7 @@ def test_protein_non_sequential_fragments():
     protein = Protein("TestProtein", "P00001", "MKKLLPT")
     protein.add_fragment(1, 3)
     with pytest.raises(ValueError):
-        protein.add_fragment(0, 2)  # Tests adding an earlier fragment after a later one
+        protein.add_fragment(0, 2), "add_fragment did not raise a ValueError for non-sequential fragments being added"
 
 # Tests for ProteinSubsection
 def test_protein_subsection_initialization():
@@ -99,22 +99,22 @@ def test_protein_subsection_initialization():
     """
     parent_protein = Protein("Protein1", "P12345", "MKKLLPT")
     subsection = ProteinSubsection(parent_protein, 0, 3)
-    assert subsection.name == parent_protein.name
-    assert subsection.sequence == "MKK"
+    assert subsection.name == parent_protein.name, f"ProteinSubsection name did not initialize correctly, expected 'Protein1', got {subsection.name}"
+    assert subsection.sequence == "MKK", f"ProteinSubsection sequence did not initialize correctly, expected 'MKK', got {subsection.sequence}"
 
     # Test that using the ProteinSubsection class with start > end raises a ValueError
     with pytest.raises(ValueError):
-        ProteinSubsection(parent_protein, 3, 2)
+        ProteinSubsection(parent_protein, 3, 2), "ProteinSubsection with start > end did not raise a ValueError"
     # Test that using the ProteinSubsection class with start < 0 raises a ValueError
     with pytest.raises(ValueError):
-        ProteinSubsection(parent_protein, -1, 5)
+        ProteinSubsection(parent_protein, -1, 5), "ProteinSubsection with start < 0 did not raise a ValueError"
     # Test that using the ProteinSubsection class with end > parent_protein.last_res raises a ValueError
     with pytest.raises(ValueError):
-        ProteinSubsection(parent_protein, 0, 10)
+        ProteinSubsection(parent_protein, 0, 10), "ProteinSubsection with end > parent_protein.last_res did not raise a ValueError"
 
     # Test start and end end exactly at the bounds of the parent sequence
     try:
         subsection = ProteinSubsection(parent_protein, 0, len(parent_protein.sequence))
-        assert subsection.sequence == parent_protein.sequence
+        assert subsection.sequence == parent_protein.sequence, f"ProteinSubsection sequence did not initialize correctly at the bounds of the parent sequence, expected {parent_protein.sequence}, got {subsection.sequence}"
     except ValueError:
         pytest.fail("Unexpected ValueError for a valid end boundary.")
