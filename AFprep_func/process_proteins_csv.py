@@ -15,6 +15,7 @@ Dependencies:
   - pandas: For reading and processing the CSV file.
   - ast.literal_eval: For safely evaluating string literals containing Python
     expressions.
+  - collections.Counter: For checking column names are not duplicated.
   - AFprep_func.classes.Protein: The Protein class for representing protein data.
   - AFprep_func.uniprot_fetch.fetch_uniprot_info: For fetching protein data from
     UniProt.
@@ -22,14 +23,13 @@ Dependencies:
 
 import pandas as pd
 from ast import literal_eval
-# Import the Protein class
+from collections import Counter
 from AFprep_func.classes import Protein, Domain
-# Import function to fetch sequence data
 from AFprep_func.uniprot_fetch import fetch_uniprot_info
 
 def initialize_proteins_from_csv(csv_path):
     """
-    Reads a CSV file with headers for protein names and accession IDs, and
+    Reads a CSV file with columns for protein names and accession IDs, and
     initializes a list of Protein objects. Fetches protein sequences from
     UniProt - if fetching fails, can use manually provided sequence (eg if
     protein is known to not be in uniprot, provide a sequence in a column
@@ -58,14 +58,27 @@ def initialize_proteins_from_csv(csv_path):
         provision is successful and the protein cannot be initialised.
       
     Notes:
+      - Column names must be 'name' and 'accession_id' for protein name and
+        accession ID respectively. If csv includes columns for manually specified
+        protein sequences or domains, these should be named 'sequence' and
+        'domains' respectively. Capitalisation will be ignored. Other columns can
+        also be included.
       - Sequences entered in a 'sequence' column will only be used if no
-        sequence data is found in UniProt.
+        sequence data is found in UniProt. If a sequence is found in UniProt, the
+        'sequence' column will be ignored (and overwritten if the
+        update_csv_with_fragments function is used).
     """
     # Read the CSV file
     df = pd.read_csv(csv_path)
 
     # Normalize column names
     df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+
+    # Check for duplicate column names after normalization
+    column_counter = Counter(df.columns)
+    duplicates = [col for col, count in column_counter.items() if count > 1]
+    if duplicates:
+        raise ValueError(f"Duplicate column names detected after normalization: {', '.join(duplicates)}")
 
     # Check for required columns
     required_columns = ['name', 'accession_id']
@@ -104,7 +117,9 @@ def initialize_proteins_from_csv(csv_path):
           print(f"Unable to obtain a sequence for {protein_name} from UniProt or manual provision.")
           proteins_with_errors.append(protein_name)
 
-    return proteins, proteins_with_errors
+    print(f"Successfully initialized proteins: {[protein.name for protein in proteins]}")
+    print(f"Proteins with errors or no data available: {proteins_with_errors}")
+    return proteins, df
 
 def add_user_specified_domains(protein, df):
     """

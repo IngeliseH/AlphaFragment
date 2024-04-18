@@ -43,40 +43,56 @@ from AFprep_func.classes import Protein, Domain
      [Protein(name='Protein9', accession_id='P12345', sequence='AAA')],
      ['Protein10']),
 ])
-def test_initialize_proteins_from_csv(csv_data, expected_success, expected_errors):
+def test_initialize_proteins_from_csv(csv_data, expected_success, expected_errors, capfd):
     """
-    Test the initialization of Protein objects from CSV data.
+    Test the initialization of Protein objects from CSV data and capture print output.
     """
     with patch('pandas.read_csv', return_value=pd.read_csv(StringIO(csv_data))):
         with patch('AFprep_func.uniprot_fetch.fetch_uniprot_info') as mock_fetch:
-            # Mock behavior based on accession ID, assuming 'AAA' is fetched for 'P12345' and None for 'P67890'
+            # Setup mock to simulate fetching results
             mock_fetch.side_effect = lambda x: {'sequence': 'AAA'} if x == 'P12345' else None
-            proteins, errors = initialize_proteins_from_csv("fake_path")
-            assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)} for proteins {proteins}"
-            assert len(errors) == len(expected_errors), f"Expected {len(expected_errors)} errors, got {len(errors)} errors, for proteins {errors}"
+            proteins, df = initialize_proteins_from_csv("fake_path")
 
-@pytest.mark.parametrize("csv_data, expected_columns, raises_error", [
+            # Check the number of successfully initialized proteins
+            assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)}"
+
+            # Use capfd to capture print statements
+            out, err = capfd.readouterr()
+            # Assume print outputs the number of successfully initialized proteins
+            assert f"Successfully initialized proteins: {[protein.name for protein in expected_success]}\nProteins with errors or no data available: {expected_errors}" in out
+
+@pytest.mark.parametrize("csv_data, expected_columns, raises_error, error_message", [
     # No column headings
-    ('Protein11,P12345\nProtein12,P12345', None, True),
+    ('Protein11,P12345\nProtein12,P12345', None, True, "Missing required columns: name, accession_id"),
     # Incorrect column headings
-    ('Title,ID\nProtein13,P12345\nProtein14,P12345', None, True),
-    # Capitalized column headings
-    ('NAME,ACCESSION_ID\nProtein15,P12345\nProtein16,P12345',
-     ['NAME', 'ACCESSION_ID'], False),
+    ('Title,accession_id\nProtein13,P12345\nProtein14,P12345', None, True, "Missing required columns: name"),
+    # Duplicate columns - currently don't give an error as renamed by pandas upon reading in
+    ('name,accession_id,accession_id\nProtein15,P12346,P12346',
+     ['name', 'accession_id', 'accession_id.1'], False, ""),
+    # Duplicate columns after normalization
+    ('name,Name,ACCESSion_ID,accession_id\nProtein16,,P12346,P12346',
+     None, True, "Duplicate column names detected after normalization"),
+     # Capitalized column headings
+    ('NAME,ACCESSION_ID\nProtein17,P12345\nProtein16,P12345',
+     ['name', 'accession_id'], False, ""),
     # Unnecessary column headings in between useful ones
-    ('name,random_col,accession_id\nProtein17,random,P12345',
-     ['name', 'random_col', 'accession_id'], False),
+    ('name,random_col,accession_id\nProtein18,random,P12345',
+     ['name', 'random_col', 'accession_id'], False, "")
 ])
-def test_csv_column_handling(csv_data, expected_columns, raises_error):
+def test_csv_column_handling(csv_data, expected_columns, raises_error, error_message):
     """
     Test that the CSV column handling in initialize_proteins_from_csv works as expected.
     """
-    with patch('pandas.read_csv', return_value=pd.read_csv(StringIO(csv_data))):
+    with patch('pandas.read_csv', return_value=pd.read_csv(StringIO(csv_data))) as mock_read_csv:
         if raises_error:
-            with pytest.raises(ValueError):
-                initialize_proteins_from_csv("fake_path"), "Expected ValueError for incorrect column headings"
+            with pytest.raises(ValueError) as exc_info:
+                initialize_proteins_from_csv("fake_path")
+            assert error_message in str(exc_info.value), f"Error message does not match expected, expected {error_message}, got {str(exc_info.value)}"
         else:
-            df = pd.read_csv(StringIO(csv_data))
+            proteins, df = initialize_proteins_from_csv("fake_path")
+            # Ensure the mock was called to simulate file reading
+            mock_read_csv.assert_called_once(), "pd.read_csv not called"
+            # Check if DataFrame contains expected columns
             assert all(col in df.columns for col in expected_columns), f"Expected columns not present in DataFrame, expected {expected_columns}, got {df.columns}"
 
 def test_add_user_specified_domains():
