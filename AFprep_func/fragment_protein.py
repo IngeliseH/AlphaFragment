@@ -72,5 +72,7 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
         fragments.extend(subsection_fragments)
 
     fragments.sort()
+    print(protein.name, " is ", len(protein.sequence), " residues long and has ",
+          len(fragments), "fragments", ":", fragments)
 
     return fragments

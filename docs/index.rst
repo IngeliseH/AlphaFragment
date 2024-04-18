@@ -10,14 +10,14 @@ Welcome to AFprep's documentation!
    :maxdepth: 2
 
    classes
+   process_proteins_csv
    alphafold_db_domain_identification
    uniprot_fetch
-   process_proteins_csv
+   compile_domains
    fragmentation_methods
    long_domains
    fragment_protein
    plot_fragments
-   fragment_proteins_from_csv
 
  
 
