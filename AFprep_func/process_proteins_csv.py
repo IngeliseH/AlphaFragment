@@ -140,11 +140,11 @@ def find_user_specified_domains(protein_name, df):
     if 'name' not in df.columns or 'domains' not in df.columns:
         missing_cols = [col for col in ['name', 'domains'] if col not in df.columns]
         raise ValueError(f"Cannot add manually specified domains - missing columns in dataframe: {', '.join(missing_cols)}")
+    
     if protein_name not in df['name'].values:
         print(f"No user-specified domains found for protein {protein_name}.")
-        return []  # Return empty list if protein is not found
+        return []  # Return empty list if protein is not found - not an error
 
-    manual_domains = []
     domain_data = df.loc[df['name'] == protein_name, 'domains'].iloc[0]
     if not domain_data:
       print(f"No user-specified domains found for protein {protein_name}.")
@@ -157,14 +157,21 @@ def find_user_specified_domains(protein_name, df):
         except (SyntaxError, ValueError) as e:
             raise ValueError(f"Error parsing domain data: {str(e)}")
 
-    # Check that domain data is a list of 2-tuples
-    if not isinstance(domain_data, list):
-        raise TypeError("The 'domains' column must contain a list of (start, end) tuples.")
-    for domain in domain_data:
-        if not isinstance(domain, tuple) or len(domain) != 2 or not all(isinstance(num, int) for num in domain):
-            raise TypeError("Each domain must be a 2-tuple of integers.")
-        # Add manually defined domains to the list
-        manual_domains.append(Domain(f"manual_D{len(manual_domains) + 1}", domain[0], domain[1], "manually_defined"))
+    manual_domains = []
+    # Process list of tuples format
+    if isinstance(domain_data, list):
+        for domain in domain_data:
+            if not (isinstance(domain, tuple) and len(domain) == 2 and all(isinstance(num, int) for num in domain)):
+                raise TypeError("Each domain must be a 2-tuple of integers.")
+            manual_domains.append(Domain(f"manual_D{len(manual_domains) + 1}", domain[0], domain[1], "manually_defined"))
+    # Process dictionary format
+    elif isinstance(domain_data, dict):
+        for domain_id, positions in domain_data.items():
+            if not (isinstance(positions, tuple) and len(positions) == 2 and all(isinstance(num, int) for num in positions)):
+                raise TypeError(f"Domain {domain_id} must be associated with a 2-tuple of integers.")
+            manual_domains.append(Domain(domain_id, positions[0], positions[1], "manually_defined"))
+    else:
+        raise TypeError("Domain data must be a list of (start, end) tuples or a dictionary of (start, end) tuples each associated with a string identifier.")
 
     return manual_domains
 
