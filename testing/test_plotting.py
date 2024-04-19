@@ -195,7 +195,7 @@ def test_overlapping_domains():
 
 def test_visual_output():
     # Example setup for a visual test
-    domains = [Domain("1", 10, 500, "AF"), Domain("2", 600, 1100, "UniProt")]
+    domains = [Domain("AF1", 10, 30, "AF"), Domain("UP2", 50, 90, "UniProt"), Domain("M3", 250, 500, "manually_defined"), Domain("O4", 700, 900, "other")]
     fragments = [(0, 110), (100, 250), (240, 550), (530, 700), (690, 1000), (990, 1200)]
     protein = Protein("LargeProtein", "accession", "sequence", first_res=1, last_res=1200, domain_list=domains, fragment_list=fragments)
 
@@ -203,4 +203,6 @@ def test_visual_output():
     plt.close('all')
 
     fig = plot_fragmentation_output(protein, fragments)
+    fig2 = plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt'])
+    fig3 = plot_fragmentation_output(protein, fragments, color_mode='cycle')
     plt.show()  # This will display the plot window for manual verification
