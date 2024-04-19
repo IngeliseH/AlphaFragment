@@ -6,8 +6,7 @@ domains. The module also identifies and outputs unfragmented regions of the
 protein around these long domains for further processing.
 
 Functions:
-  - handle_long_domains(protein, min_len, max_len, overlap, min_overlap,
-    max_overlap): Main function to handle long domains in proteins, creating
+  - handle_long_domains: Main function to handle long domains in proteins, creating
     fragments and identifying adjacent unfragmented regions which are output as a
     list of ProteinSubsection objects.
 

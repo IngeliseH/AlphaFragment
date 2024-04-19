@@ -7,8 +7,8 @@ fragment is within specified size limits where possible, overlapping fragments
 within specified boundaries.
 
 Functions:
-  - fragment_protein(protein, min_len, max_len, overlap, min_overlap, max_overlap):
-    Fragments a given protein into smaller sections based on specified parameters.
+  - fragment_protein: Fragments a given protein into smaller sections based on
+    specified parameters.
 
 Dependencies:
   - AFprep_func.fragmentation_methods.recursive_fragmentation: Used for recursively fragmenting
