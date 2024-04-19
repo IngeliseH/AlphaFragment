@@ -3,7 +3,7 @@ Test file for the fragmentation_methods module.
 """
 import pytest
 from AFprep_func.classes import Domain, Protein
-from AFprep_func.fragmentation_methods import merge_overlapping_domains, check_valid_cutpoint, recursive_fragmentation
+from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, merge_overlapping_domains, check_valid_cutpoint, recursive_fragmentation
 
 @pytest.mark.parametrize(
     "domains, expected",
@@ -72,24 +72,25 @@ def test_check_valid_cutpoint(res, domains, sequence_end, expected):
     assert result == expected, f"Expected {expected} but got {result} for residue {res} with sequence end {sequence_end}"
 
 @pytest.mark.parametrize(
-    "domains, min_len, max_len, ideal_overlap, min_overlap, max_overlap",
+    "domains, min_len, max_len, min_overlap, ideal_overlap, max_overlap",
     [
         # Basic Functionality: No domains, simple split
-        ([], 10, 15, 2, 1, 3),
+        ([], 10, 15, 1, 2, 3),
         # Domain Handling: No split through domain
-        ([Domain(1, 5, 10, 'TYPE')], 5, 10, 2, 1, 3),
+        ([Domain(1, 5, 10, 'TYPE')], 5, 10, 1, 2, 3),
         # Overlap Rules: Ideal overlap not possible
-        ([], 5, 10, 3, 1, 4),
+        ([], 5, 10, 1, 3, 4),
     ]
 )
 def test_recursive_fragmentation_lengths_and_overlaps(domains, min_len, max_len,
-                                                      ideal_overlap, min_overlap, max_overlap):
+                                                      min_overlap, ideal_overlap, max_overlap):
     """
     Tests the recursive_fragmentation function to ensure that all fragments meet
     the length and overlap requirements specified by the parameters.
     """
-    result = recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20), domains, 0, min_len,
-                                     max_len, ideal_overlap, min_overlap, max_overlap)
+    overlap = {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
+    result = recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20),
+                                     domains, 0, min_len, max_len, overlap)
 
     # Check if any fragments were generated
     for i in range(len(result)):
@@ -102,23 +103,30 @@ def test_recursive_fragmentation_lengths_and_overlaps(domains, min_len, max_len,
         if i < len(result) - 1:
             next_start = result[i + 1][0]
             actual_overlap = start + fragment_length - next_start
-            assert min_overlap <= actual_overlap <= max_overlap, f"Overlap {actual_overlap} out of bounds ({min_overlap}, {max_overlap}) between fragments {i} and {i+1}"
+            assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap {actual_overlap} out of bounds ({min_overlap}, {max_overlap}) between fragments {i} and {i+1}"
 
-@pytest.mark.parametrize("ideal_overlap, min_overlap, max_overlap",
+@pytest.mark.parametrize("overlap, expected_error",
     [
         # max overlap < min_overlap
-        (2, 2, 0),
+        ({'min': 2, 'ideal': 2, 'max': 0}, ValueError),
         # max overlap = min_len
-        (2, 1, 5),
+        ({'min': 1, 'ideal': 2, 'max': 10}, ValueError),
         # ideal overlap not between min and max overlap
-        (7, 1, 5),
+        ({'min': 1, 'ideal': 7, 'max': 5}, ValueError),
+        # overlap values numeric but not integers
+        ({'min': 1.5, 'ideal': 2, 'max': 5}, TypeError),
+        # overlap values string
+        ({'min': '1', 'ideal': '2', 'max': '5'}, TypeError),
+        # missing keys in overlap
+        ({'min': 1, 'ideal': 2}, ValueError),
+        # overlap not a dictionary
+        (5, TypeError)
 ])
-def test_recursive_fragmentation_overlap_error(ideal_overlap, min_overlap, max_overlap):
+def test_overlap_validation_error_handling(overlap, expected_error):
     """
-    Tests that the recursive_fragmentation function raises a ValueError when
-    overlap and length constraints are not met.
+    Tests that the validate_fragmentation_parameters function raises correct
+    errors for invalid overlap parameters.
     """
-    with pytest.raises(ValueError):
-        recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20),
-                                [], 0, 5, 15, ideal_overlap,
-                                min_overlap, max_overlap), f"Function did not raise ValueError for invalid overlap parameters. Input parameters: {ideal_overlap}, {min_overlap}, {max_overlap}"
+    with pytest.raises(expected_error):
+        validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
+                                          10, 20, overlap), f"validate_fragmentation_parameters function did not raise {expected_error} with invalid overlap parameters: {overlap}"

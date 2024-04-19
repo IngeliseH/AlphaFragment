@@ -25,17 +25,15 @@ def test_basic_fragmentation(protein):
     """
     min_len = 20
     max_len = 50
-    ideal_overlap = 10
-    min_overlap = 5
-    max_overlap = 15
-    fragments = fragment_protein(protein, min_len, max_len, ideal_overlap, min_overlap, max_overlap)
+    overlap = {'min': 5, 'ideal': 10, 'max': 15}
+    fragments = fragment_protein(protein, min_len, max_len, overlap)
     for i in range(len(fragments) - 1):
         # Check correct fragment length
         fragment_length = fragments[i][1] - fragments[i][0]
         assert min_len <= fragment_length <= max_len, f"Fragment length of fragment {fragments[i]} out of bounds, for fragment index {i} in fragment list {fragments}"
         # Check correct overlap between fragments
         actual_overlap = fragments[i][1] - fragments[i + 1][0]
-        assert min_overlap <= actual_overlap <= max_overlap, f"Overlap of {actual_overlap} out of bounds between fragments {i} and {i+1} in fragment list {fragments}"
+        assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap of {actual_overlap} out of bounds between fragments {i} and {i+1} in fragment list {fragments}"
 
 def test_long_domain_handling():
     """
@@ -43,16 +41,14 @@ def test_long_domain_handling():
     """
     protein = Protein(name="Protein1", accession_id="example_acc_id",
                       sequence='A'*275, domain_list=[Domain(1, 20, 150, 'TYPE')])
-    ideal_overlap = 7
-    min_overlap = 5
-    max_overlap = 10
-    fragments = fragment_protein(protein, 50, 100, ideal_overlap, min_overlap, max_overlap)
+    overlap = {'min': 5, 'ideal': 7, 'max': 10}
+    fragments = fragment_protein(protein, 50, 100, overlap)
     # Check correct number of fragments
     assert len(fragments) == 3, f"Expected 3 fragments, got {len(fragments)}"
     # Check correct overlap between fragments
     for i in range(len(fragments) - 1):
         actual_overlap = fragments[i][1] - fragments[i + 1][0]
-        assert min_overlap <= actual_overlap <= max_overlap, f"Overlap of {actual_overlap} out of bounds between fragments {i} and {i+1} in fragment list {fragments}"
+        assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap of {actual_overlap} out of bounds between fragments {i} and {i+1} in fragment list {fragments}"
 
 def test_very_small_protein():
     """
@@ -60,29 +56,33 @@ def test_very_small_protein():
     """
     protein = Protein(name="Protein1", accession_id="example_acc_id",
                       sequence='A'*10, domain_list=[])
-    fragments = fragment_protein(protein, 20, 50, 5, 0, 5)
+    fragments = fragment_protein(protein, min_len=20, max_len=50, overlap={'min':0, 'ideal':5, 'max':5})
     assert len(fragments) == 1, f"Expected single fragment for very small protein, got {len(fragments)} fragments"
     assert fragments[0] == (0, 10), f"Expected fragment to cover full length of protein (0, 10) for very small protein, got {fragments[0]}"
 
-@pytest.mark.parametrize("params,expected_exception", [
+@pytest.mark.parametrize("min_len, max_len, min_overlap, ideal_overlap, max_overlap", [
     # min_len > max_len
-    ((60, 50, 5, 0, 5), ValueError),
+    (60, 50, 0, 5, 5),
     # overlap less than min_overlap
-    ((20, 50, 15, 20, 25), ValueError),
+    (20, 50, 20, 15, 25),
     # overlap greater than max_overlap
-    ((20, 50, 40, 10, 30), ValueError),
+    (20, 50, 10, 40, 30),
     # max_overlap is greater than min_len
-    ((20, 50, 10, 5, 25), ValueError),
-    # invalid protein input
-    ("not a protein", TypeError)
+    (20, 50, 5, 10, 25)
 ])
-def test_invalid_input(params, expected_exception):
-    if isinstance(params, tuple):
-        min_len, max_len, overlap, min_overlap, max_overlap = params
-        protein = Protein(name="Protein1", accession_id="example_acc_id",
-                          sequence='A'*100, domain_list=[Domain(1, 10, 90, 'TYPE')])
-        with pytest.raises(expected_exception):
-            fragment_protein(protein, min_len, max_len, overlap, min_overlap, max_overlap), f"Expected {expected_exception} for input {params}"
-    else:
-        with pytest.raises(expected_exception):
-            fragment_protein(params, 20, 50, 5, 0, 5), f"Expected {expected_exception} for input {params}"
+def test_invalid_parameters(min_len, max_len, min_overlap, ideal_overlap, max_overlap):
+    """
+    Test that the function raises the correct exception for invalid parameters
+    """
+    overlap = {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
+    protein = Protein(name="Protein1", accession_id="example_acc_id",
+                      sequence='A'*100, domain_list=[Domain(1, 10, 90, 'TYPE')])
+    with pytest.raises(ValueError):
+        fragment_protein(protein, min_len, max_len, overlap), f"Expected ValueError for input {min_len, max_len, overlap}, got {fragment_protein(protein, min_len, max_len, overlap)}"
+
+def test_invalid_protein_input():
+    """
+    Test that the function raises the correct exception for invalid protein input
+    """
+    with pytest.raises(TypeError):
+        fragment_protein("not a protein"), "Expected TypeError for invalid protein input"

@@ -22,8 +22,7 @@ from AFprep_func.fragmentation_methods import validate_fragmentation_parameters,
 from AFprep_func.long_domains import handle_long_domains
 from AFprep_func.classes import Protein
 
-def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
-                     min_overlap = 0, max_overlap = 30):
+def fragment_protein(protein, min_len = 150, max_len = 250, overlap = {'min':0, 'ideal':10, 'max':30}):
     """
     Fragments a given protein into smaller, manageable sections. Initially, it
     identifies long domains within the protein and organises fragments around
@@ -39,19 +38,21 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
       - min_len (int): The minimum acceptable length for a protein fragment.
       - max_len (int): The initial maximum acceptable length for a protein
         fragment, adjusted dynamically for certain subsections.
-      - overlap (int): The ideal size of the overlap between fragments.
-      - min_overlap (int): The minimum allowed overlap size.
-      - max_overlap (int): The maximum allowed overlap size.
+      - overlap (dict, optional): Dictionary containing the ideal, minimum, and
+        maximum overlap values, in the format:
+        {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
+        where min_overlap, ideal_overlap and max_overlap are all integers, with
+        min_overlap<=ideal_overlap<=max_overlap. Default is
+        {'min':0, 'ideal':10, 'max':30}
 
     Returns:
       - list of tuples: A sorted list of tuples, where each tuple represents a
         fragment with its start and end positions within the protein sequence.
     """
     # Validate the input parameters
-    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap)
 
-    subsections, fragments = handle_long_domains(protein, min_len, max_len,
-                                                 overlap, min_overlap, max_overlap)
+    subsections, fragments = handle_long_domains(protein, min_len, max_len, overlap)
 
     for subsection in subsections:
         merged_domains = merge_overlapping_domains(subsection.domain_list)
@@ -65,8 +66,7 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = 10,
 
             subsection_fragments = recursive_fragmentation(subsection, merged_domains,
                                                            subsection.first_res,
-                                                           min_len, max_len, overlap,
-                                                           min_overlap, max_overlap)
+                                                           min_len, max_len, overlap)
             if subsection_fragments is None:
                 max_len = min(max_len+10, len(subsection.sequence))
         fragments.extend(subsection_fragments)

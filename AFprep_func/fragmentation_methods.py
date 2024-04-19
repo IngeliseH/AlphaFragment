@@ -2,9 +2,12 @@
 Internal utility functions for protein fragmention process.
 
 Functions:
-    - validate_fragmentation_parameters: Validates the parameters used for protein fragmentation.
-    - merge_overlapping_domains: Merges overlapping domains within a list of domains.
-    - check_valid_cutpoint: Helper function to validate potential fragment boundaries.
+    - validate_fragmentation_parameters: Validates the parameters used for
+      protein fragmentation.
+    - merge_overlapping_domains: Merges overlapping domains within a list of
+      domains.
+    - check_valid_cutpoint: Helper function to validate potential fragment
+      boundaries.
     - recursive_fragmentation: Main function for recursively generating fragments.
     
 Dependencies:
@@ -13,7 +16,7 @@ Dependencies:
 """
 from AFprep_func.classes import Domain, Protein
 
-def validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap):
+def validate_fragmentation_parameters(protein, min_len, max_len, overlap):
     """
     Validates the parameters used for protein fragmentation.
     
@@ -21,9 +24,11 @@ def validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_ov
     - protein (Protein): The protein object to be fragmented.
     - min_len (int): Minimum acceptable length for a protein fragment.
     - max_len (int): Maximum acceptable length for a protein fragment.
-    - overlap (int): Ideal size of the overlap between fragments.
-    - min_overlap (int): Minimum allowed overlap size.
-    - max_overlap (int): Maximum allowed overlap size.
+    - overlap (dict): Dictionary containing the ideal, minimum, and maximum
+      overlap values, in the format:
+      {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
+      where min_overlap, ideal_overlap and max_overlap are all integers, with
+      min_overlap<=ideal_overlap<=max_overlap.
 
     Raises:
     - ValueError: If any of the parameter validations fail.
@@ -36,18 +41,34 @@ def validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_ov
     # Check that the min_len is less than the max_len
     if min_len > max_len:
         raise ValueError(f"Minimum fragment length ({min_len}) must be less than maximum fragment length ({max_len}).")
+    
+    # Check that the min_len is greater than 0
+    if min_len <= 0:
+        raise ValueError("Minimum fragment length must be greater than 0.")
+    
+    # Check that overlap is a dictionary
+    if not isinstance(overlap, dict):
+        raise TypeError("Overlap must be a dictionary.")
+    
+    # Check that the overlap dictionary contains the required keys
+    if not all(key in overlap for key in ['min', 'ideal', 'max']):
+        raise ValueError("Overlap dictionary must contain keys 'min', 'ideal', and 'max'.")
+
+    # Check that the overlap values are integers
+    if not all(isinstance(overlap[key], int) for key in ['min', 'ideal', 'max']):
+        raise TypeError("Overlap values must be integers.")
 
     # Check that the minimum overlap is less than or equal to the maximum overlap
-    if min_overlap > max_overlap:
-        raise ValueError(f"Minimum overlap ({min_overlap}) must be less than or equal to maximum overlap ({max_overlap}).")
+    if overlap['min'] > overlap['max']:
+        raise ValueError(f"Minimum overlap ({overlap['min']}) must be less than or equal to maximum overlap ({overlap['max']}).")
 
     # Check that the ideal overlap is within the min and max overlap bounds
-    if not (min_overlap <= overlap <= max_overlap):
+    if not (overlap['min'] <= overlap['ideal'] <= overlap['max']):
         raise ValueError("Ideal overlap must be within the min and max overlap bounds.")
 
     # Check that the maximum overlap is less than the minimum fragment length
-    if max_overlap >= min_len:
-        raise ValueError(f"Maximum overlap ({max_overlap}) must be less than the minimum fragment length ({min_len}) to avoid overlap-length conflicts.")
+    if overlap['max'] >= min_len:
+        raise ValueError(f"Maximum overlap ({overlap['max']}) must be less than the minimum fragment length ({min_len}) to avoid overlap-length conflicts.")
 
 
 def merge_overlapping_domains(domains):
@@ -110,7 +131,7 @@ def check_valid_cutpoint(res, domains, sequence_end):
     return True
 
 def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
-                            overlap, min_overlap, max_overlap, cutpoints=None):
+                            overlap, cutpoints=None):
     """
     Recursively splits a protein sequence into overlapping fragments, avoiding
     breaking domains.
@@ -123,9 +144,11 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         - min_len (int): Minimum allowed fragment length.
         - max_len (int): Maximum allowed fragment length. (May be increased in the
           fragmentation process)
-        - overlap (int): Ideal overlap between fragments.
-        - min_overlap (int): Minimum allowable overlap between fragments.
-        - max_overlap (int): Maximum allowable overlap between fragments.
+        - overlap (dict): Dictionary containing the ideal, minimum, and maximum
+          overlap values, in the format:
+          {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
+          where min_overlap, ideal_overlap and max_overlap are all integers,
+          with min_overlap<=ideal_overlap<=max_overlap.
         - cutpoints (list of tuples, optional): Accumulator for storing fragment
           cutpoints.
 
@@ -133,19 +156,19 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         - list of tuples or None: The list of fragment cutpoints if successful;
           otherwise, None.
     """
-    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap)
 
     def find_next_start(res):
         # Use ideal overlap if possible
-        if check_valid_cutpoint(res - overlap, domains, protein.last_res):
-            return res - overlap
+        if check_valid_cutpoint(res - overlap['ideal'], domains, protein.last_res):
+            return res - overlap['ideal']
         # Force None if moving fragment end would allow better overlap
-        for forwards_res in range(max_overlap, min_overlap - 1, -1):
+        for forwards_res in range(overlap['max'], overlap['min'] - 1, -1):
             if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
                 return None
         # Attempt to find a valid cutpoint by first increasing, then decreasing overlap
-        for adjusted_overlap in (list(range(overlap + 1, max_overlap + 1)) +
-                                 list(range(overlap - 1, min_overlap - 1, -1))):
+        for adjusted_overlap in (list(range(overlap['ideal'] + 1, overlap['max'] + 1)) +
+                                 list(range(overlap['ideal'] - 1, overlap['min'] - 1, -1))):
             if check_valid_cutpoint(res - adjusted_overlap, domains, protein.last_res):
                 return res - adjusted_overlap
         # If no valid cutpoint is found within overlap boundaries, return None
@@ -169,9 +192,7 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
 
                 # Recursively process the next segment
                 result = recursive_fragmentation(protein, domains, next_start,
-                                                 min_len, max_len, overlap,
-                                                 min_overlap, max_overlap,
-                                                 cutpoints)
+                                                 min_len, max_len, overlap, cutpoints)
 
                 # If a valid fragmentation pattern is found, return the result
                 if result is not None:

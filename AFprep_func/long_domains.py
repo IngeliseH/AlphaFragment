@@ -24,7 +24,7 @@ Dependencies:
 from AFprep_func.classes import ProteinSubsection
 from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
 
-def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_overlap):
+def handle_long_domains(protein, min_len, max_len, overlap):
     """
     Identifies long domains within a protein and generates fragments that
     include these domains, along with the unfragmented regions of the protein
@@ -37,10 +37,11 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
       - min_len (int): The minimum acceptable length for a protein fragment.
       - max_len (int): The maximum acceptable standard length for a protein
         fragment, beyond which a domain is considered long.
-      - overlap (int): The initial, 'ideal' overlap size to try when adjusting the
-        start and end of a fragment around a long domain.
-      - min_overlap (int): The minimum allowed overlap size.
-      - max_overlap (int): The maximum allowed overlap size.
+      - overlap (dict): Dictionary containing the ideal, minimum, and maximum
+        overlap values, in the format:
+        {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
+        where min_overlap, ideal_overlap and max_overlap are all integers, with
+        min_overlap<=ideal_overlap<=max_overlap.
 
     Returns:
       - tuple: A tuple containing two lists: (1) unfragmented subsections of the
@@ -65,7 +66,7 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
       - Adjust the start and end points of each long domain fragment to include
         overlaps:
           - Attempt to add an overlap to both the start and end points within the
-            bounds of `max_overlap` and 0, ensuring the selected points are valid
+            bounds of 'max_overlap' and 0, ensuring the selected points are valid
             cutpoints.
           - If an overlap cannot be added, the original start and end points are
             used.
@@ -82,12 +83,12 @@ def handle_long_domains(protein, min_len, max_len, overlap, min_overlap, max_ove
         as much ovverlap as is allowed by the space between them.
     """
     # Validate the input parameters
-    validate_fragmentation_parameters(protein, min_len, max_len, overlap, min_overlap, max_overlap)
+    validate_fragmentation_parameters(protein, min_len, max_len, overlap)
 
     # Nested function for adjusting adding overlap around long domains
     def add_overlap(position, direction):
-        for adjusted_overlap in (list(range(overlap, max_overlap + 1)) +
-                                 list(range(overlap - 1, - 1, -1))):
+        for adjusted_overlap in (list(range(overlap['ideal'], overlap['max'] + 1)) +
+                                 list(range(overlap['ideal'] - 1, - 1, -1))):
             adjusted_position = position + (direction * adjusted_overlap)
             if check_valid_cutpoint(adjusted_position, protein.domain_list, protein.last_res):
                 return adjusted_position

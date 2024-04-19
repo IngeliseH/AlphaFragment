@@ -1,5 +1,5 @@
-Functions for protein fragmentation
-====================================
+Utility functions for protein fragmentation
+===========================================
 
 .. automodule:: AFprep_func.fragmentation_methods
    :members:

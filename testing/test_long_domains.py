@@ -34,11 +34,8 @@ def test_handle_long_domains(protein_domains, protein_sequence, long_domain_num,
                       first_res=0, last_res=len(protein_sequence) - 1)
     min_len = 20
     max_len = 30
-    ideal_overlap = 5
-    min_overlap = 3
-    max_overlap = 10
-    subsections, fragments = handle_long_domains(protein, min_len, max_len,
-                                                 ideal_overlap, min_overlap, max_overlap)
+    overlap = {'min': 3, 'ideal': 5, 'max': 10}
+    subsections, fragments = handle_long_domains(protein, min_len, max_len, overlap)
 
     assert len(subsections) == subsection_num, f"Unexpected number of subsections, expected {subsection_num}, got {len(subsections)} with subsections {subsections} and fragments {fragments}"
     assert len(fragments) == long_domain_num, f"Unexpected number of long domain fragments, expected {long_domain_num}, got {len(fragments)} with fragments {fragments} and subsections {subsections}"
@@ -65,8 +62,8 @@ def test_handle_long_domains(protein_domains, protein_sequence, long_domain_num,
     for region in range(len(fragments_and_subsections) - 1):
         start, end = fragments_and_subsections[region]
         next_start, next_end = fragments_and_subsections[region + 1]
-        overlap = start + (end - start + 1) - next_start
-        assert min_overlap <= overlap <= max_overlap, f"Fragment overlap out of bounds, expected overlap between ({start}, {end}) and ({next_start}, {next_end}) to be between {min_overlap} and {max_overlap}, got overlap {overlap} for fragments/subsections {fragments_and_subsections}"
+        actual_overlap = start + (end - start + 1) - next_start
+        assert overlap['min'] <= actual_overlap <= overlap['max'], f"Fragment overlap out of bounds, expected overlap between ({start}, {end}) and ({next_start}, {next_end}) to be between {min_overlap} and {max_overlap}, got overlap {overlap} for fragments/subsections {fragments_and_subsections}"
 
 def test_adjacent_long_domains():
     """
@@ -78,9 +75,10 @@ def test_adjacent_long_domains():
                       sequence=protein_sequence,
                       domain_list=[Domain(1, 0, 31, 'TYPE'), Domain(2, 32, 70, 'TYPE')],
                       first_res=0, last_res=len(protein_sequence) - 1)
+    min_len = 20
     max_len = 30
-    subsections, fragments = handle_long_domains(protein, min_len=20, max_len=30,
-                                                 overlap=5, min_overlap=3, max_overlap=10)
+    overlap = {'min': 3, 'ideal': 5, 'max': 10}
+    subsections, fragments = handle_long_domains(protein, min_len, max_len, overlap)
 
     assert len(subsections) == 0, f"Unexpected number of subsections, expected 0, got {len(subsections)} with subsections {subsections} and fragments {fragments}"
     assert len(fragments) == 2, f"Unexpected number of long domain fragments, expected 2, got {len(fragments)} with fragments {fragments} and subsections {subsections}"
