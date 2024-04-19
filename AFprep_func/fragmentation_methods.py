@@ -20,19 +20,22 @@ def validate_fragmentation_parameters(protein, min_len, max_len, overlap):
     """
     Validates the parameters used for protein fragmentation.
     
-    Args:
-    - protein (Protein): The protein object to be fragmented.
-    - min_len (int): Minimum acceptable length for a protein fragment.
-    - max_len (int): Maximum acceptable length for a protein fragment.
-    - overlap (dict): Dictionary containing the ideal, minimum, and maximum
-      overlap values, in the format:
-      {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
-      where min_overlap, ideal_overlap and max_overlap are all integers, with
-      min_overlap<=ideal_overlap<=max_overlap.
+    Parameters:
+        - protein (Protein): The protein object to be fragmented.
+        - min_len (int): Minimum acceptable length for a protein fragment.
+        - max_len (int): Maximum acceptable length for a protein fragment.
+        - overlap (dict): Dictionary containing the ideal, minimum, and maximum
+          overlap values, in the format:
+          {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
+          where min_overlap, ideal_overlap and max_overlap are all integers, with
+          min_overlap<=ideal_overlap<=max_overlap.
+
+    Returns:
+        - None
 
     Raises:
-    - ValueError: If any of the parameter validations fail.
-    - TypeError: If the protein input is not an instance of the Protein class.
+        - ValueError: If any of the parameter validations fail.
+        - TypeError: If the protein input is not an instance of the Protein class.
     """
     # Check that the protein input is an instance of the Protein class
     if not isinstance(protein, Protein):
