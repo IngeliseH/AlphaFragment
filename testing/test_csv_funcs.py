@@ -5,7 +5,8 @@ from io import StringIO
 from unittest.mock import patch
 import pytest
 import pandas as pd
-from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, add_user_specified_domains, update_csv_with_fragments
+from ast import literal_eval
+from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, find_user_specified_domains, update_csv_with_fragments
 from AFprep_func.classes import Protein, Domain
 
 @pytest.mark.parametrize("csv_data, expected_success, expected_errors", [
@@ -95,21 +96,90 @@ def test_csv_column_handling(csv_data, expected_columns, raises_error, error_mes
             # Check if DataFrame contains expected columns
             assert all(col in df.columns for col in expected_columns), f"Expected columns not present in DataFrame, expected {expected_columns}, got {df.columns}"
 
-def test_add_user_specified_domains():
+@pytest.mark.parametrize("columns, expected_error", [
+    # Test missing 'domains' column
+    (['name'], "ValueError"),
+    # Test missing 'name' column
+    (['domains'], "ValueError"),
+    # Test both columns present
+    (['name', 'domains'], None),
+    # Test neither column present
+    ([], "ValueError"),
+    # Test additional columns present
+    (['name', 'domains', 'other'], None),
+    # Test columns ordered differently
+    (['other', 'domains', 'other2', 'name'], None)
+])
+def test_column_presence(columns, expected_error):
     """
-    Test the addition of user-specified domains in a dataframe to a Protein object.
+    Test the function with various combinations of missing and present columns.
+    """
+    data = {
+        'name': ['Protein1'],
+        'domains': ['[(1, 10), (20, 30)]'],
+        'other': ['extra data'],
+        'other2': ['extra data2']
+    }
+    df = pd.DataFrame({col: data[col] for col in columns if col in data})
+    protein_name = 'Protein1'
+    expected_result = [Domain('manual_D1', 1, 10, 'manually_defined'), Domain('manual_D2', 20, 30, 'manually_defined')]
+    if expected_error:
+        #check expected error (likely ValueError) is raised
+        with pytest.raises(ValueError):
+            find_user_specified_domains(protein_name, df)
+    else:
+        result = find_user_specified_domains(protein_name, df)
+        assert isinstance(result, list), f"Expected a list of Domain objects, got {result} with type {type(result)}"
+        for domain in result:
+            assert isinstance(domain, Domain), f"Expected a Domain object for valid column input, got {domain} with type {type(domain)}"
+        assert result == expected_result, f"Expected {expected_result}, got {result}"
+
+@pytest.mark.parametrize("protein_name,domain_data,expected_result", [
+    # Protein not in dataframe (no error, should return empty list)
+    ('Protein2', '[(1, 10), (20, 30)]', []),
+    # Null values in 'domains'
+    ('Protein1', None, []),
+    # Valid input
+    ('Protein1', '[(1, 10), (20, 30)]', [Domain('manual_D1', 1, 10, 'manually_defined'), Domain('manual_D2', 20, 30, 'manually_defined')])
+])
+def test_various_inputs(protein_name, domain_data, expected_result):
+    """
+    Test function with various inputs and expected outputs.
     """
     df = pd.DataFrame({
         'name': ['Protein1'],
-        'domains': ["[(1, 10), (20, 30)]"]
+        'domains': [domain_data]
     })
-    protein = Protein(name='Protein1', accession_id='P12345', sequence='ABCDEFGHIJABCDEFGHIJ')
-    expected_domains = [Domain('manual_D1', 1, 10, 'manually_defined'),
-                        Domain('manual_D2', 20, 30, 'manually_defined')]
+    result = find_user_specified_domains(protein_name, df)
+    assert result == expected_result, f"Expected result {expected_result}, got {result}"
 
-    result = add_user_specified_domains(protein, df)
-    assert len(result) == 2, f"Expected 2 domains, got {len(result)} domains, {result}"
-    assert result == expected_domains, f"Expected domains {expected_domains}, got {result}"
+@pytest.mark.parametrize("dataframe, error", [
+    # Invalid 'dataframe' input - not a DataFrame
+    ("not a dataframe", "TypeError"),
+    # Invalid data for domains - integer
+    (pd.DataFrame({'name': ['Protein1'], 'domains': [123]}), "TypeError"),
+    # Invalid data for domains - string
+    (pd.DataFrame({'name': ['Protein1'], 'domains': ['not a list']}), "ValueError"),
+    # Invalid data for domains - valid tuple but not in a list
+    (pd.DataFrame({'name': ['Protein1'], 'domains': [(1, 2)]}), "TypeError"),
+    # Invalid data for domains - tuple of strings
+    (pd.DataFrame({'name': ['Protein1'], 'domains': [[('a', 'b')]]}), "TypeError"),
+    # Invalid data for domains - tuple with 3 values
+    (pd.DataFrame({'name': ['Protein1'], 'domains': [[(1, 2, 3)]]}), "TypeError"),
+    # Invalid data for domains - tuple with 1 value
+    (pd.DataFrame({'name': ['Protein1'], 'domains': [[(1,)]]}), "TypeError"),
+])
+def test_manual_domain_error_handling(dataframe, error):
+    """
+    Test the function to ensure type checking for dataframe input.
+    """
+    protein_name = 'Protein1'
+    if error == "TypeError":
+        with pytest.raises(TypeError):
+            find_user_specified_domains(protein_name, dataframe), "Expected a TypeError for invalid DataFrame input"
+    if error == "ValueError":
+        with pytest.raises(ValueError):
+            find_user_specified_domains(protein_name, dataframe), "Expected a ValueError for invalid domain data"
 
 def test_update_csv_with_fragments():
     """

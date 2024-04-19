@@ -73,7 +73,7 @@ def merge_overlapping_domains(domains):
             # Check if the current domain overlaps with the last one in the list
             if domain.start <= last.end:
                 # Merge the two domains by updating the end of the last domain
-                combined_domains[-1] = Domain(last.num, last.start, max(last.end, domain.end), last.type)
+                combined_domains[-1] = Domain(last.id, last.start, max(last.end, domain.end), last.type)
             else:
                 combined_domains.append(domain)
 

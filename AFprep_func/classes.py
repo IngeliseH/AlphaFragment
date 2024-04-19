@@ -14,7 +14,7 @@ class Domain:
     Represents a domain in a protein sequence, defined by start/end positions and a type.
 
     Attributes:
-        - num (str): Identifier for the domain.
+        - id (str): Identifier for the domain.
         - start (int): Start position of the domain in the sequence. Must be >= 0.
         - end (int): End position of the domain in the sequence. Must be >= 0.
         - domain_type (str): Type of the domain.
@@ -22,7 +22,7 @@ class Domain:
     Raises:
         - ValueError: If `start` or `end` is less than 0, or 'start' > 'end'.
     """
-    def __init__(self, num, start, end, domain_type):
+    def __init__(self, id, start, end, domain_type):
         """
         Initializes a new instance of the Domain class.
         """
@@ -30,7 +30,7 @@ class Domain:
             raise ValueError("Domain start and end must be greater than 0.")
         if start > end:
             raise ValueError("Domain start cannot be after end.")
-        self.num = num
+        self.id = id
         self.start = start
         self.end = end
         self.type = domain_type
@@ -38,9 +38,9 @@ class Domain:
     def __str__(self):
         """
         Returns a string representation of the Domain instance, formatting it
-        as 'domain_type + num' followed by the range '(start, end)'.
+        as 'domain_type + id' followed by the range '(start, end)'.
         """
-        return f"{self.type}{self.num} ({self.start}, {self.end})"
+        return f"{self.type}{self.id} ({self.start}, {self.end})"
 
     def __eq__(self, other):
         """
@@ -54,7 +54,7 @@ class Domain:
         """
         if not isinstance(other, Domain):
             return NotImplemented
-        return (self.num == other.num and
+        return (self.id == other.id and
                 self.start == other.start and
                 self.end == other.end and
                 self.type == other.type)
@@ -63,7 +63,7 @@ class Domain:
         """
         Returns a formal string representation of the Domain instance.
         """
-        return f"Domain(num={self.num}, start={self.start}, end={self.end}, domain_type='{self.type}')"
+        return f"Domain(id={self.id}, start={self.start}, end={self.end}, domain_type='{self.type}')"
 
 class Protein:
     """

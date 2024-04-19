@@ -6,7 +6,7 @@ object, and updating the CSV with protein fragments information.
 Functions:
   - initialize_proteins_from_csv: Initializes Protein objects from data in a CSV
     file.
-  - add_user_specified_domains: Identifies domains listed in a CSV file for a
+  - find_user_specified_domains: Identifies domains listed in a CSV file for a
     corresponding Protein object.
   - update_csv_with_fragments: Updates a CSV file with information about protein
     fragments.
@@ -121,32 +121,53 @@ def initialize_proteins_from_csv(csv_path):
     print(f"Proteins with errors or no data available: {proteins_with_errors}")
     return proteins, df
 
-def add_user_specified_domains(protein, df):
+def find_user_specified_domains(protein_name, df):
     """
-    Finds domains listed in a csv file for a particular protein.
+    Finds domains listed in a dataframe for a particular protein.
 
     Parameters:
-      - protein (Protein): Protein object to add domains to.
-      - df (dataframe): DataFrame with protein names and user-defined domains
-        listed as a list of (start, end) tuples in a column "domains".
+      - protein_name (str): The name of the protein to find domains for.
+      - df (dataframe): DataFrame with protein names in a column 'name' and
+        user-defined domains in a column "domains", as a list of (start, end)
+        tuples for each protein.
     
     Notes:
       - Domains are identified by start and end positions within the protein sequence.
     """
-    protein_name = protein.name
+    # Check that dataframe input is valid
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("The 'df' argument must be a pandas dataframe.")
+    if 'name' not in df.columns or 'domains' not in df.columns:
+        missing_cols = [col for col in ['name', 'domains'] if col not in df.columns]
+        raise ValueError(f"Cannot add manually specified domains - missing columns in dataframe: {', '.join(missing_cols)}")
+    if protein_name not in df['name'].values:
+        print(f"No user-specified domains found for protein {protein_name}.")
+        return []  # Return empty list if protein is not found
+
     manual_domains = []
-    next_domain_num = 1
-    if protein_name in df['name'].values:
-        domain_data = df.loc[df['name'] == protein_name, 'domains'].iloc[0]
-        if pd.notnull(domain_data):
+    domain_data = df.loc[df['name'] == protein_name, 'domains'].iloc[0]
+    if not domain_data:
+      print(f"No user-specified domains found for protein {protein_name}.")
+      return []  # Return empty list if domain data is null
+    
+    # Check if domain data is a string and convert to list if possible
+    if isinstance(domain_data, str):
+        try:
             domain_data = literal_eval(domain_data)
-            for domain_start, domain_end in domain_data:
-                manual_domains.append(Domain(f"manual_D{next_domain_num}", domain_start, domain_end, "manually_defined"))
-                next_domain_num += 1
-            print(f"{len(domain_data)} manually specified domains found for {protein.name}: {manual_domains}")
-    else:
-        print(f"No user-specified domains found for protein {protein.name}.")
+        except (SyntaxError, ValueError) as e:
+            raise ValueError(f"Error parsing domain data: {str(e)}")
+
+    # Check that domain data is a list of 2-tuples
+    if not isinstance(domain_data, list):
+        raise TypeError("The 'domains' column must contain a list of (start, end) tuples.")
+    for domain in domain_data:
+        if not isinstance(domain, tuple) or len(domain) != 2 or not all(isinstance(num, int) for num in domain):
+            raise TypeError("Each domain must be a 2-tuple of integers.")
+        # Add manually defined domains to the list
+        manual_domains.append(Domain(f"manual_D{len(manual_domains) + 1}", domain[0], domain[1], "manually_defined"))
+
     return manual_domains
+
 
 def update_csv_with_fragments(df, output_csv, proteins):
     """

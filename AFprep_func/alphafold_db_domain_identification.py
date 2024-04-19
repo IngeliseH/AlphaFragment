@@ -120,7 +120,7 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
           - 'custom' - Allows specification of custom PAE thresholds via the
             custom_params argument.
       - custom_params (dict, optional): Required if method is 'custom', ignored
-        otherwise. Must include:
+        otherwise. Must include the following keys, with integer values for each:
           - 'res_dist_cutoff' (int) - The residue distance threshold to
             differentiate between close and further residue evaluations.
             Meaningless if close_pae_val == further_pae_val, or if set below 4

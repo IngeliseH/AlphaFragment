@@ -70,11 +70,11 @@ def test_request_exceptions_handling(mock_requests, exception):
     # Test with no domains
     ([], 5, None),
     # Test with one domain, residue inside
-    ([Domain("D1", 1, 10, 'AF1', 'AF')], 5, Domain("D1", 1, 10, 'AF2', 'AF')),
+    ([Domain("AF1", 1, 10, 'AF')], 5, Domain("AF1", 1, 10, 'AF')),
     # Test with multiple domains, residue in second domain
-    ([Domain("D1", 1, 5, 'AF1', 'AF'), Domain("D2", 6, 10, 'AF2', 'AF')], 7, Domain("D2", 6, 10, 'AF')),
+    ([Domain("AF1", 1, 5, 'AF'), Domain("AF2", 6, 10, 'AF')], 7, Domain("AF2", 6, 10, 'AF')),
     # Test with multiple domains, residue not in any domain
-    ([Domain("D1", 1, 5, 'AF1', 'AF'), Domain("D2", 6, 10, 'AF2', 'AF')], 11, None)
+    ([Domain("AF1", 1, 5, 'AF'), Domain("AF2", 6, 10, 'AF')], 11, None)
 ])
 def test_find_domain_by_res(domains, residue, expected):
     """

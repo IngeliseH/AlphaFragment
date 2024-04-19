@@ -14,7 +14,7 @@ def test_domain_initialization():
     - Initialization where the end is before the start, which should also raise a ValueError.
     """
     domain = Domain("D1", 10, 20, "TYPE")
-    assert domain.num == "D1", f"Domain num did not initialize correctly, expected 'D1', got {domain.num}"
+    assert domain.id == "D1", f"Domain id did not initialize correctly, expected 'D1', got {domain.num}"
     assert domain.start == 10, f"Domain start did not initialize correctly, expected 10, got {domain.start}"
     assert domain.end == 20, f"Domain end did not initialize correctly, expected 20, got {domain.end}"
     assert domain.type == "TYPE", f"Domain type did not initialize correctly, expected 'TYPE', got {domain.type}"

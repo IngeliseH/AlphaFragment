@@ -36,7 +36,7 @@ def test_merge_overlapping_domains(domains, expected):
     result = merge_overlapping_domains(domains)
     assert len(result) == len(expected), "Number of resulting domains does not match expected"
     for res_domain, exp_domain in zip(result, expected):
-        assert res_domain.num == exp_domain.num, f"Domain num mismatch: expected {exp_domain.num}, got {res_domain.num}"
+        assert res_domain.id == exp_domain.id, f"Domain id mismatch: expected {exp_domain.id}, got {res_domain.id}"
         assert res_domain.start == exp_domain.start, f"Start mismatch: expected {exp_domain.start}, got {res_domain.start}"
         assert res_domain.end == exp_domain.end, f"End mismatch: expected {exp_domain.end}, got {res_domain.end}"
         assert res_domain.type == exp_domain.type, f"Type mismatch: expected {exp_domain.type}, got {res_domain.type}"

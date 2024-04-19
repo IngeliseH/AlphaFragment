@@ -175,7 +175,7 @@ def test_large_protein_many_domains():
     Test that the function can handle a very long protein with a large number of domains and fragments
     """
     # Generating a large number of domains
-    domain_list = [Domain(num=str(i), start=i * 100, end=i * 100 + 49, domain_type='AF') for i in range(100)]
+    domain_list = [Domain(id=str(i), start=i * 100, end=i * 100 + 49, domain_type='AF') for i in range(100)]
     fragments = [(i * 100 + 25, i * 100 + 75) for i in range(100)]
     protein = Protein("VeryLargeProtein", "accession", "sequence", first_res=1, last_res=10000, domain_list=domain_list, fragment_list=fragments)
     fig = plot_fragmentation_output(protein, protein.fragment_list)

@@ -114,7 +114,7 @@ def draw_label(label, x_left, x_right, y, bracket_height, ax):
   ax.text((x_left + x_right) / 2, text_y_position, label, ha='center', va='top', fontsize=8, rotation=45)
 
 
-def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(12, 4), color_mode='type'):
+def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(12, 4), color_mode='type', label_UniProt=True):
     """
     Creates and optionally saves a visualization of protein domains and fragments.
     Domains are plotted as colored rectangles, and fragments as red
@@ -132,6 +132,9 @@ def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(1
       - color_mode ('type' or 'cycle): Whether to color domains by type (AlphaFold,
         UniProt, manually defined), or using a series of colours to distinguish
         nearby domains
+      - label_UniProt (bool, optional): Whether to label UniProt domains with their
+        domain id (description from UniProt). Defaults to True.
+
 
     Returns:
       - matplotlib.figure.Figure: The figure object containing the plot.
@@ -153,10 +156,10 @@ def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(1
     for domain in protein.domain_list:
         plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode)
     
-        if domain.type == 'UniProt':
-          # Draw curly bracket
+        if label_UniProt and domain.type == 'UniProt':
+          # Draw label
           bracket_height = 0.05
-          draw_label(domain.num, domain.start, domain.end, base_y_position - domain_height / 2, bracket_height, ax)
+          draw_label(domain.id, domain.start, domain.end, base_y_position - domain_height / 2, bracket_height, ax)
 
     for index, fragment in enumerate(fragments):
         plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)

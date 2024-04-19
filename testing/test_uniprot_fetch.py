@@ -42,10 +42,10 @@ def test_fetch_uniprot_info(accession_id, mock_url, response, status_code, expec
     ("P12345", {'features': []}, [], []),
     # Valid data with multiple domains
     ("P12345",
-     {'features': [{'type': 'DOMAIN', 'begin': '1', 'end': '50', 'description': 'Test domain 1'},
+     {'features': [{'type': 'DOMAIN', 'begin': '1', 'end': '50', 'description': 'Domain_1_description'},
                    {'type': 'CHAIN', 'begin': '1', 'end': '100'},  # Should be ignored
-                   {'type': 'DOMAIN', 'begin': '51', 'end': '100', 'description': 'Test domain 2'}]},
-     [Domain('Test domain 1', 1, 50, 'DOMAIN'), Domain('Test domain 2', 51, 100, 'DOMAIN')],
+                   {'type': 'DOMAIN', 'begin': '51', 'end': '100', 'description': 'Domain_2_description'}]},
+     [Domain('Domain_1_description', 1, 50, 'UniProt'), Domain('Domain_2_description', 51, 100, 'UniProt')],
      "Expected extracted domains")
 ])
 def test_find_uniprot_domains(accession_id, uniprot_data, expected_domains, expected_output):

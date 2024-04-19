@@ -13,12 +13,13 @@ Dependencies:
     AlphaFold predicted structure data from the AFDB.
   - AFprep_func.alphafold_db_domain_identification.find_domains_from_pae: For
     identifying domains from AlphaFold predicted structures.
-  - AFprep_func.process_proteins_csv.add_user_specified_domains: For adding
+  - AFprep_func.process_proteins_csv.find_user_specified_domains: For adding
     manually specified domains from the input dataframe.
 """
+from AFprep_func.classes import Protein
 from AFprep_func.uniprot_fetch import find_uniprot_domains
 from AFprep_func.alphafold_db_domain_identification import read_afdb_json, find_domains_from_pae
-from AFprep_func.process_proteins_csv import add_user_specified_domains
+from AFprep_func.process_proteins_csv import find_user_specified_domains
 
 def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
                     protein_data=None, pae_method="cautious", pae_custom_params=None):
@@ -73,11 +74,17 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
         domain identified in the protein, with 'type' indicating the origin of
         the domain data ('UniProt', 'AlphaFold', 'manually_defined').
     """
+    #check that protein is instance of Protein
+    if not isinstance(protein, Protein):
+        raise TypeError("The 'protein' argument must be an instance of the Protein class.")
     if manual and protein_data is None:
         print("Cannot add manually specified domains - the 'df' argument is required.")
         manual = False
     elif manual and 'domains' not in protein_data.columns:
         print("Cannot add manually specified domains - the 'domains' column does not exist in the dataframe.")
+        manual = False
+    elif manual and 'name' not in protein_data.columns:
+        print("Cannot add manually specified domains - the 'name' column does not exist in the dataframe, so domains cannot be matched with proteins.")
         manual = False
 
     domains = []
@@ -100,7 +107,7 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
     
     # Add manually specified domains
     if manual:
-        manual_domains = add_user_specified_domains(protein, protein_data) or []
+        manual_domains = find_user_specified_domains(protein.name, protein_data) or []
         domains.extend(manual_domains)
 
     return domains
