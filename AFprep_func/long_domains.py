@@ -13,7 +13,8 @@ Functions:
 Dependencies:
   - AFprep_func.classes.ProteinSubsection: Used to represent sections of a protein,
     including domains and fragments.
-  - AFprep_func.classes.Domain: Used to represent protein domains.
+  - AFprep_func.fragmentation_methods.validate_fragmentation_parameters: Used to
+    validate the input parameters for protein fragmentation.
   - AFprep_func.fragmentation_methods.check_valid_cutpoint: Utilized to ensure
     proposed fragmentation points are valid based on domain boundaries and protein.
   - AFprep_func.fragmentation_methods.merge_overlapping_domains: Used to merge

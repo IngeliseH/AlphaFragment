@@ -11,16 +11,18 @@ Functions:
     specified parameters.
 
 Dependencies:
+  - AFprep_func.fragmentation_methods.validate_fragmentation_parameters: Validates
+    the parameters used for protein fragmentation.
   - AFprep_func.fragmentation_methods.recursive_fragmentation: Used for recursively fragmenting
     protein sections that are not classified as long domains.
+  - AFprep_func.fragmentation_methods.merge_overlapping_domains: Merges overlapping
+    domains within a list of domains, and outputs as a new list
   - AFprep_func.long_domains.handle_long_domains: Handles the fragmentation of long domains
     within the protein.
-  - AFprep_func.classes.Protein: Used to check the input is a valid Protein object.
 """
 
 from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains
 from AFprep_func.long_domains import handle_long_domains
-from AFprep_func.classes import Protein
 
 def fragment_protein(protein, min_len = 150, max_len = 250, overlap = {'min':0, 'ideal':10, 'max':30}):
     """
