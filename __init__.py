@@ -1,0 +1,13 @@
+from AFprep_func.classes import Protein, Domain, ProteinSubsection
+from AFprep_func.process_proteins_csv import find_user_specified_domains, initialize_proteins_from_csv, update_csv_with_fragments
+from AFprep_func.alphafold_db_domain_identification import read_afdb_json, find_domain_by_res, find_domains_from_pae
+from AFprep_func.uniprot_fetch import fetch_uniprot_info, find_uniprot_domains
+from AFprep_func.compile_domains import compile_domains
+from AFprep_func.fragmentation_methods import check_valid_cutpoint, merge_overlapping_domains, recursive_fragmentation, validate_fragmentation_parameters
+from AFprep_func.long_domains import handle_long_domains
+from AFprep_func.fragment_protein import fragment_protein
+from AFprep_func.plot_fragments import draw_label, plot_domain, plot_fragment, plot_fragmentation_output
+from AFprep_func.fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown
+
+__version__ = '1.0.0'
+__author__ = 'Ingelise Holland-Kaye'

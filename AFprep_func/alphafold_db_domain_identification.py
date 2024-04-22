@@ -11,12 +11,12 @@ Functions:
 
 Dependencies:
   - requests: Used for making HTTP requests to the AlphaFold Database.
-  - AFprep_func.classes.Domain: The Domain class used to represent protein domains.
+  - .classes.Domain: The Domain class used to represent protein domains.
 """
 
 #importing required packages
 import requests
-from AFprep_func.classes import Domain
+from .classes import Domain
 
 def read_afdb_json(accession_id, database_version="v4"):
     """

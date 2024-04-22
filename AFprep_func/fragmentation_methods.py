@@ -14,7 +14,7 @@ Dependencies:
     - Domain: A class representing a domain within a protein sequence.
     - Protein: A class representing a protein sequence.
 """
-from AFprep_func.classes import Domain, Protein
+from .classes import Domain, Protein
 
 def validate_fragmentation_parameters(protein, min_len, max_len, overlap):
     """

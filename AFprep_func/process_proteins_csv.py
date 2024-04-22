@@ -16,17 +16,16 @@ Dependencies:
   - ast.literal_eval: For safely evaluating string literals containing Python
     expressions.
   - collections.Counter: For checking column names are not duplicated.
-  - AFprep_func.classes.Protein: The Protein class for representing protein data.
-  - AFprep_func.classes.Domain: The Domain class for representing protein domains.
-  - AFprep_func.uniprot_fetch.fetch_uniprot_info: For fetching protein data from
-    UniProt.
+  - .classes.Protein: The Protein class for representing protein data.
+  - .classes.Domain: The Domain class for representing protein domains.
+  - .uniprot_fetch.fetch_uniprot_info: For fetching protein data from UniProt.
 """
 
 import pandas as pd
 from ast import literal_eval
 from collections import Counter
-from AFprep_func.classes import Protein, Domain
-from AFprep_func.uniprot_fetch import fetch_uniprot_info
+from .classes import Protein, Domain
+from .uniprot_fetch import fetch_uniprot_info
 
 def initialize_proteins_from_csv(csv_path):
     """

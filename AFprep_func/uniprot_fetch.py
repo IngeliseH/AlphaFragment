@@ -2,20 +2,20 @@
 This module provides functionalities for fetching and processing protein
 information from the UniProt database.
 
-Dependencies: 
-  - requests: Required for making HTTP requests to the UniProt API.
-  - AFprep_func.classes: Contains the Domain class used to represent protein
-    domains.
-
 Functions:
   - fetch_uniprot_info(accession_id): Fetches information for a given protein
     accession code from the UniProt database.
   - fetch_uniprot_domains(protein): Identifies and returns the domains of a
     protein based on the fetched UniProt data
+
+Dependencies: 
+  - requests: Required for making HTTP requests to the UniProt API.
+  - .classes: Contains the Domain class used to represent protein
+    domains.
 """
 
 import requests
-from AFprep_func.classes import Domain
+from .classes import Domain
 
 def fetch_uniprot_info(accession_id):
     """

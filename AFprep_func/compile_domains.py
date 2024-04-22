@@ -7,19 +7,19 @@ Functions:
   - compile_domains: Compiles a list of Domain objects for a given protein
 
 Dependencies:
-  - AFprep_func.uniprot_fetch.find_uniprot_domains: For fetching domain data from
+  - .uniprot_fetch.find_uniprot_domains: For fetching domain data from
     UniProt.
-  - AFprep_func.alphafold_db_domain_identification.read_afdb_json: For reading
+  - .alphafold_db_domain_identification.read_afdb_json: For reading
     AlphaFold predicted structure data from the AFDB.
-  - AFprep_func.alphafold_db_domain_identification.find_domains_from_pae: For
+  - .alphafold_db_domain_identification.find_domains_from_pae: For
     identifying domains from AlphaFold predicted structures.
-  - AFprep_func.process_proteins_csv.find_user_specified_domains: For adding
+  - .process_proteins_csv.find_user_specified_domains: For adding
     manually specified domains from the input dataframe.
 """
-from AFprep_func.classes import Protein
-from AFprep_func.uniprot_fetch import find_uniprot_domains
-from AFprep_func.alphafold_db_domain_identification import read_afdb_json, find_domains_from_pae
-from AFprep_func.process_proteins_csv import find_user_specified_domains
+from .classes import Protein
+from .uniprot_fetch import find_uniprot_domains
+from .alphafold_db_domain_identification import read_afdb_json, find_domains_from_pae
+from .process_proteins_csv import find_user_specified_domains
 
 def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
                     protein_data=None, pae_method="cautious", pae_custom_params=None):

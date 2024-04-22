@@ -5,7 +5,7 @@ Test file for the fragment_file_creation module.
 import pytest
 from unittest.mock import mock_open, patch
 from AFprep_func.classes import Protein
-from AFprep_func.fragment_file_creation import get_protein_combinations, output_fasta, output_pulldown
+from AFprep_func.fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown
 
 # Define sample proteins and list as a fixture
 protein1 = Protein(name="ProteinA", accession_id="O123", sequence="ABCDEFGHIJKLMNOP", fragment_list=[(0,7), (6,16)])
@@ -56,14 +56,14 @@ def test_get_protein_combinations(proteins, method, one_protein, combinations_cs
     ("one", None, "ProteinA", 8),
     ("specific", "dummy/path.csv", None, 4),
 ])
-def test_output_fasta_creates_files(proteins, method, combinations_csv, one_protein, expected_calls):
+def test_output_fastas_creates_files(proteins, method, combinations_csv, one_protein, expected_calls):
     """
-    Test the output_fasta function to ensure the correct number of files are created, with different methods.
+    Test the output_fastas function to ensure the correct number of files are created, with different methods.
     """
     mock_csv_data = "ProteinA,ProteinB\n"
     with patch("AFprep_func.fragment_file_creation.os.makedirs"), \
          patch("AFprep_func.fragment_file_creation.open", mock_open(read_data=mock_csv_data)) as mocked_file:
-        output_fasta(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
+        output_fastas(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
         handle = mocked_file()
         handle.write.assert_called(), "Expected write calls, but none were made"
         assert handle.write.call_count == expected_calls, f"Expected {expected_calls} file write operation, got {handle.write.call_count}"

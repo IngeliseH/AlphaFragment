@@ -11,11 +11,12 @@ Dependencies:
     - csv: For reading CSV files.
     - os: For creating directories and files.
     - combinations: For generating combinations of proteins.
+    - Protein: A class representing a protein with sequence and domain information.
 """
 import csv
 import os
 from itertools import combinations
-from AFprep_func.classes import Protein
+from .classes import Protein
 
 def get_protein_combinations(proteins, method, combinations_csv, one_protein):
     """

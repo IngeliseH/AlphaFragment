@@ -11,18 +11,18 @@ Functions:
     list of ProteinSubsection objects.
 
 Dependencies:
-  - AFprep_func.classes.ProteinSubsection: Used to represent sections of a protein,
+  - .classes.ProteinSubsection: Used to represent sections of a protein,
     including domains and fragments.
-  - AFprep_func.fragmentation_methods.validate_fragmentation_parameters: Used to
+  - .fragmentation_methods.validate_fragmentation_parameters: Used to
     validate the input parameters for protein fragmentation.
-  - AFprep_func.fragmentation_methods.check_valid_cutpoint: Utilized to ensure
+  - .fragmentation_methods.check_valid_cutpoint: Utilized to ensure
     proposed fragmentation points are valid based on domain boundaries and protein.
-  - AFprep_func.fragmentation_methods.merge_overlapping_domains: Used to merge
+  - A.fragmentation_methods.merge_overlapping_domains: Used to merge
     overlapping domains within a protein.
 """
 
-from AFprep_func.classes import ProteinSubsection
-from AFprep_func.fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
+from .classes import ProteinSubsection
+from .fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
 
 def handle_long_domains(protein, min_len, max_len, overlap):
     """
