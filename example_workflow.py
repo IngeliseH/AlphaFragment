@@ -2,7 +2,7 @@ from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, updat
 from AFprep_func.fragment_protein import fragment_protein
 from AFprep_func.compile_domains import compile_domains
 from AFprep_func.plot_fragments import plot_fragmentation_output
-from AFprep_func.fragment_fasta_creation import generate_protein_combination_files
+from AFprep_func.fragment_file_creation import output_fastas, output_pulldown
 
 input_csv_path = "input.csv"
 output_csv_path = "output.csv"
@@ -28,7 +28,8 @@ for protein in proteins:
 # update dataframe with protein information and save to csv
 update_csv_with_fragments(df, output_csv_path, proteins)
 
-# alternatively, create fasta files with fragment combos
-generate_protein_combination_files(proteins)
+# create fasta files with fragment combos
+output_fastas(proteins)
 
-#to add - make output csv file compatible with AlphaPulldown
+# alternatively, create AlphaPulldown input file with fragment combos
+output_pulldown(proteins)

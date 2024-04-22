@@ -4,7 +4,7 @@ these, for use as input to AlphaFold or AlphaPulldown.
 
 Functions:
     - get_protein_combinations: Generates a list of protein pairs based on the method selected.
-    - output_fasta: Creates fasta files for each combination of protein fragments.
+    - output_fastas: Creates fasta files for each combination of protein fragments.
     - output_pulldown: Creates a txt file with protein fragment combinations compatible with AlphaPulldown.
 
 Dependencies:
@@ -79,7 +79,7 @@ def get_protein_combinations(proteins, method, combinations_csv, one_protein):
 
     return sorted(protein_pairs, key=lambda pair: (pair[0].name, pair[1].name))
 
-def output_fasta(proteins, method='all', combinations_csv=None, one_protein=None):
+def output_fastas(proteins, method='all', combinations_csv=None, one_protein=None):
     """
     Creates a folder for each protein pair, containing fasta files for each combination
     of fragments for that pair.
