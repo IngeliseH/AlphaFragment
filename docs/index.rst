@@ -18,6 +18,7 @@ Welcome to AFprep's documentation!
    long_domains
    fragment_protein
    plot_fragments
+   fragment_file_creation
 
  
 
