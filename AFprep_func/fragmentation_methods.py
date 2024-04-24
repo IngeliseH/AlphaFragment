@@ -43,16 +43,17 @@ def validate_fragmentation_parameters(protein, min_len, max_len, overlap):
 
     # Check that the min_len is less than the max_len
     if min_len > max_len:
-        raise ValueError(f"Minimum fragment length ({min_len}) must be less than maximum fragment length ({max_len}).")
-    
+        raise ValueError(f"Minimum fragment length ({min_len}) must be less than "
+                         f"maximum fragment length ({max_len}).")
+
     # Check that the min_len is greater than 0
     if min_len <= 0:
         raise ValueError("Minimum fragment length must be greater than 0.")
-    
+
     # Check that overlap is a dictionary
     if not isinstance(overlap, dict):
         raise TypeError("Overlap must be a dictionary.")
-    
+
     # Check that the overlap dictionary contains the required keys
     if not all(key in overlap for key in ['min', 'ideal', 'max']):
         raise ValueError("Overlap dictionary must contain keys 'min', 'ideal', and 'max'.")
@@ -63,16 +64,17 @@ def validate_fragmentation_parameters(protein, min_len, max_len, overlap):
 
     # Check that the minimum overlap is less than or equal to the maximum overlap
     if overlap['min'] > overlap['max']:
-        raise ValueError(f"Minimum overlap ({overlap['min']}) must be less than or equal to maximum overlap ({overlap['max']}).")
+        raise ValueError(f"Minimum overlap ({overlap['min']}) must be less than "
+                         f"or equal to maximum overlap ({overlap['max']}).")
 
     # Check that the ideal overlap is within the min and max overlap bounds
-    if not (overlap['min'] <= overlap['ideal'] <= overlap['max']):
+    if not overlap['min'] <= overlap['ideal'] <= overlap['max']:
         raise ValueError("Ideal overlap must be within the min and max overlap bounds.")
 
     # Check that the maximum overlap is less than the minimum fragment length
     if overlap['max'] >= min_len:
-        raise ValueError(f"Maximum overlap ({overlap['max']}) must be less than the minimum fragment length ({min_len}) to avoid overlap-length conflicts.")
-
+        raise ValueError(f"Maximum overlap ({overlap['max']}) must be less than the minimum "
+                         f"fragment length ({min_len}) to avoid overlap-length conflicts.")
 
 def merge_overlapping_domains(domains):
     """
@@ -97,7 +99,8 @@ def merge_overlapping_domains(domains):
             # Check if the current domain overlaps with the last one in the list
             if domain.start <= last.end:
                 # Merge the two domains by updating the end of the last domain
-                combined_domains[-1] = Domain(last.id, last.start, max(last.end, domain.end), last.type)
+                combined_domains[-1] = Domain(last.id, last.start,
+                                              max(last.end, domain.end), last.type)
             else:
                 combined_domains.append(domain)
 
@@ -105,10 +108,10 @@ def merge_overlapping_domains(domains):
 
 def check_valid_cutpoint(res, domains, sequence_end):
     """
-    Checks if a residue position is a valid cutpoint.
+    Checks if a slicing index is a valid cutpoint.
 
     Parameters:
-        - res (int): The residue position to check.
+        - res (int): The residue position to check (will be sliced before this residue).
         - domains (list of Domain): The domains within the protein.
         - sequence_end (int): The last residue position in the protein sequence.
 
@@ -116,18 +119,18 @@ def check_valid_cutpoint(res, domains, sequence_end):
         - bool: True if the residue position is a valid cutpoint; False otherwise.
     """
     # Check if res is beyond the end or before the start of the sequence
-    if res > sequence_end:
+    if res > sequence_end + 1:
         return False
     if res < 0:
         return False
 
-    # If res is at end of sequence, doesn't matter if it is in a domain
-    if res == (sequence_end):
+    # If slicing index will cut at end of sequence, this is always valid
+    if res == (sequence_end+1):
         return True
 
     for domain in domains:
         # Check if current and previous res are within the same domain
-        # (if both are in same domain, cutting at res would split the domain)
+        # (if both are in same domain, cutting before res would split the domain)
         if domain.start <= res <= domain.end and domain.start <= res-1 <= domain.end:
             return False
 
@@ -165,7 +168,7 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         # Use ideal overlap if possible
         if check_valid_cutpoint(res - overlap['ideal'], domains, protein.last_res):
             return res - overlap['ideal']
-        # Force None if moving fragment end would allow better overlap
+        # Force None if moving current fragment end would allow better overlap with new fragment
         for forwards_res in range(overlap['max'], overlap['min'] - 1, -1):
             if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
                 return None
@@ -177,18 +180,18 @@ def recursive_fragmentation(protein, domains, fragment_start, min_len, max_len,
         # If no valid cutpoint is found within overlap boundaries, return None
         return None
 
-    # Base case: if previous fragment end is the end of the protein, we've
-    # reached the end and return the cutpoints
     if cutpoints is None:
         cutpoints = []
 
+    # Iterate over possible fragment end cutpoints from min_len to max_len
     for res in range(fragment_start + min_len,
-                     min(fragment_start + max_len, protein.last_res) + 1):
+                     min(fragment_start + max_len, protein.last_res + 1) + 1):
         if check_valid_cutpoint(res, domains, protein.last_res):
-            if res == protein.last_res:
-                # If the cutpoint is at the end of the protein, finalize here.
+            # If the current fragment end is at the end of the protein, finalize here.
+            if res == protein.last_res + 1:
                 cutpoints.append((fragment_start, res))
                 return cutpoints
+            # If a valid cutpoint to start the next fragment is found, add it to the list and continue
             next_start = find_next_start(res)
             if next_start:
                 cutpoints.append((fragment_start, res))

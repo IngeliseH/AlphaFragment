@@ -45,7 +45,7 @@ def test_fetch_uniprot_info(accession_id, mock_url, response, status_code, expec
      {'features': [{'type': 'DOMAIN', 'begin': '1', 'end': '50', 'description': 'Domain_1_description'},
                    {'type': 'CHAIN', 'begin': '1', 'end': '100'},  # Should be ignored
                    {'type': 'DOMAIN', 'begin': '51', 'end': '100', 'description': 'Domain_2_description'}]},
-     [Domain('Domain_1_description', 1, 50, 'UniProt'), Domain('Domain_2_description', 51, 100, 'UniProt')],
+     [Domain('Domain_1_description', 0, 49, 'UniProt'), Domain('Domain_2_description', 50, 99, 'UniProt')],
      "Expected extracted domains")
 ])
 def test_find_uniprot_domains(accession_id, uniprot_data, expected_domains, expected_output):

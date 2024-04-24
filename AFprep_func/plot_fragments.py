@@ -5,7 +5,9 @@ Functions:
   - plot_domain: Plots a rectangle representing a single protein domain
   - plot_fragment: Plots a rectangle representing a single protein fragment
   - draw_label: Adds a label to the plot
-  - plot_fragmentation_output: Creates and optionally saves a visualization of protein domains and fragments
+  - calculate_tick_freq: Calculates the frequency of x axis ticks based on sequence length
+  - plot_fragmentation_output: Creates and optionally saves a visualization of
+    protein domains and fragments
 
 Dependencies:
   - itertools: Used for cycling through colors for the protein domains.
@@ -43,16 +45,16 @@ def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, 
     type_colors = {'AF': 'orange', 'UniProt': 'green', 'manually_defined': 'blue'}
     default_color = 'gray'
     if color_mode == 'type':
-      if domain.type in type_colors:
-        color = type_colors[domain.type]
-      else:
-        print(f"Domain type {domain.type} not in type_colours. Used default color {default_color} instead.")
-        color = default_color
+        if domain.type in type_colors:
+            color = type_colors[domain.type]
+        else:
+            print(f"Domain type {domain.type} not in type_colours. Used default color {default_color} instead.")
+            color = default_color
     elif color_mode == 'cycle':
         color = next(domain_color_cycle)
 
-    rect = patches.Rectangle((domain.start, base_y_position - domain_height / 2),
-                             domain.end - domain.start,
+    rect = patches.Rectangle((domain.start+0.5, base_y_position - domain_height / 2),
+                             domain.end-domain.start+1,
                              domain_height,
                              edgecolor='none',
                              facecolor=color,
@@ -78,11 +80,12 @@ def plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
     Note:
       - This function adds to the provided axis but does not show it. The display
         is managed by the caller.
+      - Adds 0.5 to either end of the fragment to center it on the residue position.
     """
     start, end = fragment
     vertical_position = (base_y_position - (fragment_height / 2) +
                      (offset if index % 2 == 0 else -offset))
-    fragment_rect = patches.Rectangle((start, vertical_position),
+    fragment_rect = patches.Rectangle((start + 0.5, vertical_position),
                                       end - start,
                                       fragment_height,
                                       edgecolor='black',
@@ -91,30 +94,64 @@ def plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
     ax.add_patch(fragment_rect)
 
 def draw_label(label, x_left, x_right, y, bracket_height, ax):
-  """
-  Adds a bracket to the plot labelling a specified region with the given text
+    """
+    Adds a bracket to the plot labelling a specified region with the given text
 
-  Parameters:
-    - label (str): The text to be displayed on the bracket.
-    - x_left (float): The left x-coordinate of the bracket.
-    - x_right (float): The right x-coordinate of the bracket.
-    - y (float): The y-coordinate of the bracket.
-    - bracket_height (float): The height of the bracket.
-    - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the bracket.
+    Parameters:
+      - label (str): The text to be displayed on the bracket.
+      - x_left (float): The left x-coordinate of the bracket.
+      - x_right (float): The right x-coordinate of the bracket.
+      - y (float): The y-coordinate of the bracket.
+      - bracket_height (float): The height of the bracket.
+      - ax (matplotlib.axes.Axes): The matplotlib axis on which to plot the bracket.
   
-  Note:
-    - This function adds to the provided axis but does not show it. The display
-      is managed by the caller.
-  """
-  mid_x = (x_left + x_right) / 2
-  ax.plot([x_left, mid_x], [y, y - bracket_height], color='black', lw=1)
-  ax.plot([x_right, mid_x], [y, y - bracket_height], color='black', lw=1)
-  
-  text_y_position = y - bracket_height
-  ax.text((x_left + x_right) / 2, text_y_position, label, ha='center', va='top', fontsize=8, rotation=45)
+    Note:
+      - This function adds to the provided axis but does not show it. The display
+        is managed by the caller.
+    """
+    mid_x = (x_left + x_right) / 2
+    ax.plot([x_left, mid_x], [y, y - bracket_height], color='black', lw=1)
+    ax.plot([x_right, mid_x], [y, y - bracket_height], color='black', lw=1)
 
+    text_y_position = y - bracket_height
+    ax.text((x_left + x_right) / 2, text_y_position, label, ha='center',
+            va='top', fontsize=8, rotation=45)
 
-def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(12, 4), color_mode='type', label=[]):
+def calculate_tick_freq(n):
+    """
+    Calculates the frequency of x axis ticks for a given number of residues.
+
+    Parameters:
+      - n (int): The number of residues in the protein sequence.
+
+    Returns:
+      - int: The frequency of x-axis ticks.
+    """
+    # Check if the number is a positive integer
+    if not isinstance(n, int) or n <= 0:
+        raise ValueError("Input must be a positive integer")
+
+    # Convert integer to string to easily access and count digits
+    n_str = str(n)
+    digit_count = len(n_str)  # Count the number of digits
+    leading_digit = int(n_str[0])  # Get the leading digit
+    
+    # Special case for single digit numbers
+    if digit_count == 1:
+        return 1
+
+    # Apply conditions based on the leading digit and number length
+    if leading_digit == 1:
+        return 10 ** (digit_count - 2)
+    elif leading_digit in {5, 6, 7, 8, 9}:
+        return 10 ** (digit_count - 1)
+    elif leading_digit in {2, 3, 4}:
+        return 5*10 ** (digit_count - 2)
+    else:
+        raise ValueError("Unexpected leading digit")
+
+def plot_fragmentation_output(protein, fragments, save_location=None,
+                              figsize=(12, 4), color_mode='type', label=None):
     """
     Creates and optionally saves a visualization of protein domains and fragments.
     Domains are plotted as colored rectangles, and fragments as red
@@ -142,31 +179,45 @@ def plot_fragmentation_output(protein, fragments, save_location=None, figsize=(1
     Note:
       - If `save_location` is provided and the directory does not exist, it will
         be created.
-      - x-axis represents the protein sequence position
+      - x-axis represents the protein sequence position, with 1-based indexing.
     """
 
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55
     domain_height = 0.4
     fragment_height = 0.05
-    offset = 0.02  # Vertical offset for fragments
+    offset = 0.025  # Vertical offset for fragments
     domain_color_cycle = itertools.cycle(['skyblue', 'pink', 'cyan', 'gold',
                                      'purple', 'silver', 'tan'])
 
     for domain in protein.domain_list:
         plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode)
-    
+
         if label and domain.type in label:
-          # Draw label
-          bracket_height = 0.05
-          draw_label(domain.id, domain.start, domain.end, base_y_position - domain_height / 2, bracket_height, ax)
+            # Draw label
+            bracket_height = 0.05
+            draw_label(domain.id, domain.start+0.5, domain.end+1.5,
+                       base_y_position - domain_height / 2,
+                       bracket_height, ax)
 
     for index, fragment in enumerate(fragments):
         plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
 
-    ax.set_xlim(0, protein.last_res)
+    ax.set_xlim(0, protein.last_res + 2)
     ax.set_ylim(0, 0.8)
     ax.set_xlabel('Protein Sequence Position')
+    # Setting the X-axis
+    ax.set_xlim(1, protein.last_res + 1)  # +1 to shift end limit to 1-based index
+
+    # Setting ticks
+    tick_freq = calculate_tick_freq(protein.last_res)
+    ticks = [x for x in range(0, protein.last_res + 1, tick_freq)]  # Shift by 1 for 1-based index
+    ticks.remove(0)
+    ticks.append(1)
+    ticks.append(protein.last_res + 1)
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(tick) for tick in ticks])
+
     ax.set_yticks([])
     ax.set_title(f'Protein Domains and Fragments in {protein.name}')
 

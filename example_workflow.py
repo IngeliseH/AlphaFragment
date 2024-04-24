@@ -20,16 +20,14 @@ for protein in proteins:
     # fragment the protein
     fragments = fragment_protein(protein)
     for fragment in fragments:
-        protein.add_fragment(fragment)
+        (protein.add_fragment(start, end) for start, end in fragment)
 
     # create graphic of domain locations and fragmentation results
     plot_fragmentation_output(protein, fragments, image_save_location, label=['UniProt', 'manually_defined'])
 
 # update dataframe with protein information and save to csv
 update_csv_with_fragments(df, output_csv_path, proteins)
-
 # create fasta files with fragment combos
 output_fastas(proteins)
-
 # alternatively, create AlphaPulldown input file with fragment combos
 output_pulldown(proteins)

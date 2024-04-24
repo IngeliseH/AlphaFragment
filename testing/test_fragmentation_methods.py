@@ -45,19 +45,21 @@ def test_merge_overlapping_domains(domains, expected):
     "res, domains, sequence_end, expected",
     [
         # Within Domain - not allowed
-        (5, [Domain(1, 1, 10, 'TYPE')], 10, False),
+        (7, [Domain(1, 5, 10, 'TYPE')], 15, False),
         # At domain end, allowed
-        (10, [Domain(1, 1, 10, 'TYPE')], 10, True),
+        (11, [Domain(1, 5, 10, 'TYPE')], 15, True),
         # At domain start, allowed
-        (1, [Domain(1, 1, 10, 'TYPE')], 10, True),
+        (5, [Domain(1, 5, 10, 'TYPE')], 15, True),
         # Between Domains
-        (11, [Domain(1, 1, 10, 'TYPE'), Domain(2, 12, 20, 'TYPE')], 20, True),
+        (11, [Domain(1, 1, 10, 'TYPE'), Domain(2, 11, 20, 'TYPE')], 20, True),
         # Cut before sequence start
         (-1, [], 10, False),
+        # Cut at sequence start
+        (0, [], 10, True),
         # Cut beyond sequence end
-        (11, [], 10, False),
+        (12, [], 10, False),
         # Cut at sequence end
-        (10, [], 10, True),
+        (11, [], 10, True),
         # End of one domain is start of another (= 1 res overlap, so not allowed)
         (10, [Domain(1, 5, 10, 'TYPE'), Domain(2, 10, 15, 'TYPE')], 15, False),
     ]

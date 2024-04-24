@@ -49,10 +49,10 @@ def read_afdb_json(accession_id, database_version="v4"):
         with a uniprot id this will only take fragment 1
     """
     # Check for non-applicable accession_id before attempting the request
-    if accession_id.lower() == "na":
-        print("No valid accession ID provided. Skipping fetch operation.")
+    if not accession_id or accession_id.lower() == "na":
+        print("No valid accession ID provided. Skipping AlphaFoldDB fetch.")
         return None
-    
+
     alphafold_id = f'AF-{accession_id}-F1'
     json_url = (
         f'https://alphafold.ebi.ac.uk/files/{alphafold_id}'
@@ -139,7 +139,8 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
 
     Returns:
       - A list of Domain objects, each representing a domain with a unique
-        identifier and the range of residues it encompasses.
+        identifier and the range of residues it encompasses. Domain positions use
+        Pythonic 0-based indexing.
 
     Function logic:
       - Residues are grouped into the same domain based on a comparison of their
@@ -155,15 +156,26 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
         residues. All residues in between the two being assessed will also be
         automatically included in the domain - no gaps are allowed within domains.
       - Very close residues will always have high confidence in their relative
-        positions, so are not evaluated.
+        positions, so the 3 neighbouring residues on either side of a residue are
+        not evaluated.
 
     Raises:
       - ValueError: If the method is 'custom' and custom_params is not provided
         or missing necessary keys, if an invalid method is specified, or if the
         pae data is in the wrong format (not a square matrix of numbers).
+    
+    Note:
+      - Domain positions are 0-based, so the start and end residues are 1 less
+        than the actual residue numbers.
     """
     # Check if 'pae' is a non-empty matrix, each row is a list, and contains only numeric entries
-    if not pae or not isinstance(pae, list) or any(not isinstance(row, list) or any(not isinstance(item, (int, float)) for item in row) for row in pae):
+    if (not pae or
+        not isinstance(pae, list) or
+        any(
+          not isinstance(row, list) or
+          any(not isinstance(item, (int, float)) for item in row)
+          for row in pae
+          )):
         raise ValueError("Input 'pae' must be a non-empty matrix of numbers.")
 
     # Check if 'pae' is a square matrix
@@ -181,8 +193,10 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
         close_pae_val = parameters[method]['close_pae_val']
         further_pae_val = parameters[method]['further_pae_val']
     elif method == 'custom':
-        if not custom_params or not all(key in custom_params for key in ['res_dist_cutoff', 'close_pae_val', 'further_pae_val']):
-            raise ValueError("For custom method, 'custom_params' must be a dictionary with keys 'res_dist_cutoff', 'close_pae_val', 'further_pae_val'.")
+        if not custom_params or not all(key in custom_params for key in
+                                        ['res_dist_cutoff', 'close_pae_val', 'further_pae_val']):
+            raise ValueError("For custom method, 'custom_params' must be a dictionary "
+                             "with keys 'res_dist_cutoff', 'close_pae_val', 'further_pae_val'.")
         res_dist_cutoff = custom_params['res_dist_cutoff']
         close_pae_val = custom_params['close_pae_val']
         further_pae_val = custom_params['further_pae_val']

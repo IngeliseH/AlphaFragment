@@ -22,15 +22,15 @@ class Domain:
     Raises:
         - ValueError: If `start` or `end` is less than 0, or 'start' > 'end'.
     """
-    def __init__(self, id, start, end, domain_type):
+    def __init__(self, identifier, start, end, domain_type):
         """
         Initializes a new instance of the Domain class.
         """
         if start <0 or end < 0:
-            raise ValueError("Domain start and end must be greater than 0.")
+            raise ValueError("Domain start and end cannot be less than 0.")
         if start > end:
             raise ValueError("Domain start cannot be after end.")
-        self.id = id
+        self.id = identifier
         self.start = start
         self.end = end
         self.type = domain_type
@@ -80,7 +80,8 @@ class Protein:
         - last_res (int): Index of the last residue, defaults to the sequence length.
         - domain_list (list of Domain instances, optional): Domains within the protein.
         - fragment_list (list of tuples, optional): Fragments identified in the
-          protein sequence, represented as a tuple in the form (start_pos, end_pos)
+          protein sequence, represented as a tuple in the form (start_pos, end_pos),
+          using pythonic slice notation (ie inclusive of start, exclusive of end).
     """
     def __init__(self, name, accession_id, sequence, first_res=0, last_res=None,
                 domain_list=None, fragment_list=None):
@@ -91,7 +92,12 @@ class Protein:
         self.accession_id = accession_id
         self.sequence = sequence
         self.first_res = first_res
-        self.last_res = last_res if last_res is not None else len(sequence)
+        if last_res is not None:
+            self.last_res = last_res
+        elif last_res is None and sequence:
+            self.last_res = len(sequence) - 1
+        else:
+            self.last_res = None
         self.domain_list = domain_list if domain_list is not None else []
         self.fragment_list = fragment_list if fragment_list is not None else []
 
@@ -109,29 +115,39 @@ class Protein:
             raise ValueError("domain must be an instance of Domain.")
         self.domain_list.append(domain)
 
-    def add_fragment(self, start, end):
+    def add_fragment(self, *args):
         """
-        Adds a fragment to the protein's fragment list. Ensures that the
-        fragment's start and end positions are positive integers and that the
-        start is less than the end. Also checks for continuity with
+        Adds a fragment to the protein's fragment list. Allows input as either 
+        separate start and end integers or a tuple (start, end).
+        Ensures that the fragment's start and end positions are positive integers
+        and that the start is less than the end. Also checks for continuity with
         the last fragment added.
 
         Parameters:
-            - start (int): The start position of the fragment in the protein sequence.
-              Must be > 0.
-            - end (int): The end position of the fragment in the protein sequence.
-              Must be > start.
+            - args: Can be two integers (start, end) or a single tuple (start, end).
 
         Raises:
             - ValueError: If start or end are not positive integers or if start
-              is not less than end. Also raises ValueError if the fragment does not
-              follow sequentially after the last added fragment.
+              is not less than end. Also if the fragment does not
+              follow sequentially after the last added fragment, or does not fit within
+              sequence bounds
         """
-        if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
-            raise ValueError("Start and end must be positive integers, and start "
-                             "must be less than end.")
+        if len(args) == 1 and isinstance(args[0], tuple):
+            start, end = args[0]
+        elif len(args) == 2:
+            start, end = args
+        else:
+            raise ValueError("Invalid arguments. Provide (start, end) as either two arguments or a tuple.")
 
-        if self.fragment_list and start <= self.fragment_list[-1][0]:
+        if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
+            raise ValueError("Start and end must be positive integers, and start must be less than end.")
+        
+        if end > self.last_res + 1:
+            raise ValueError("End of the new fragment must be within the protein sequence bounds.")
+        if start < self.first_res:
+            raise ValueError("Start of the new fragment must be within the protein sequence bounds.")
+
+        if self.fragment_list and start < self.fragment_list[-1][0]:
             raise ValueError("Start of the new fragment must be greater than the "
                              "start of the previous fragment.")
 
@@ -186,18 +202,21 @@ class ProteinSubsection(Protein):
         - parent_protein (Protein): The original protein from which the subsection is derived.
         - start (int): Start position of the subsection in the parent protein sequence.
         - end (int): End position of the subsection in the parent protein sequence.
+
+    Note:
+        - Start and end positions are expected to be in 0-based indexing, and inclusive of start and end.
     """
     def __init__(self, parent_protein, start, end):
         """
         Initializes a new ProteinSubsection instance, including all parent domains and fragments.
         Validates that the start and end indices are within the parent protein's sequence boundaries.
         """
-        if start < 0 or end > len(parent_protein.sequence) or start >= end:
+        if start < 0 or end > len(parent_protein.sequence) -1 or start >= end:
             raise ValueError(f"Invalid start ({start}) or end ({end}) for the parent protein sequence length {len(parent_protein.sequence)}. Start must be less than end.")
 
         super().__init__(parent_protein.name,
                          parent_protein.accession_id,
-                         parent_protein.sequence[start:end],
+                         parent_protein.sequence[start:end+1],
                          start,
                          end,
                          parent_protein.domain_list,

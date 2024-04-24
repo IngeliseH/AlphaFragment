@@ -52,8 +52,11 @@ def test_get_protein_combinations(proteins, method, one_protein, combinations_cs
             assert combinations == expected_output, f"Expected: {expected_output}, got: {result}"
 
 @pytest.mark.parametrize("method, combinations_csv, one_protein, expected_calls", [
-    ("all", None, None, 12),
-    ("one", None, "ProteinA", 8),
+    # All v all method - expecting 10 files (3 self pairs for each, 4 ProteinA-ProteinB pairs)
+    ("all", None, None, 10),
+    # One v all method - expecting 7 files (3 self pairs for ProteinA, 4 ProteinA-ProteinB pairs)
+    ("one", None, "ProteinA", 7),
+    # Specific combinations method - specifying ProteinA-ProteinB so expecting 4 files (4 ProteinA-ProteinB pairs)
     ("specific", "dummy/path.csv", None, 4),
 ])
 def test_output_fastas_creates_files(proteins, method, combinations_csv, one_protein, expected_calls):
@@ -63,7 +66,7 @@ def test_output_fastas_creates_files(proteins, method, combinations_csv, one_pro
     mock_csv_data = "ProteinA,ProteinB\n"
     with patch("AFprep_func.fragment_file_creation.os.makedirs"), \
          patch("AFprep_func.fragment_file_creation.open", mock_open(read_data=mock_csv_data)) as mocked_file:
-        output_fastas(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
+        output_fastas(proteins, None, method, combinations_csv=combinations_csv, one_protein=one_protein)
         handle = mocked_file()
         handle.write.assert_called(), "Expected write calls, but none were made"
         assert handle.write.call_count == expected_calls, f"Expected {expected_calls} file write operation, got {handle.write.call_count}"
@@ -78,5 +81,10 @@ def test_output_pulldown_creates_correct_file(proteins):
         handle.write.assert_called()
         calls = handle.write.call_args_list
         assert len(calls) > 0, "Expected write calls, but none were made"
-        first_line = calls[0][0][0].split('\n')[0]  # Split and get the first line
-        assert first_line == "O123,1-8;O123,1-8", f"Incorrect first line of output, got: {first_line}"
+        lines = calls[0][0][0].split('\n') # Split output into lines
+        print(lines)
+        first_line = lines[0]
+        assert first_line == "O123,1-7;O123,1-7", f"Incorrect first line of output, got: {first_line}"
+        # Check that the correct number of lines are written
+        # Expecting 10 - 3 for each self pair ((1,1), (1,2), (2,2)), 4 for ProteinA-ProteinB ((1,1), (1,2), (2,1), (2,2))
+        assert len(lines) == 10, f"Expected 10 lines of output, got {len(lines)}: {calls}"

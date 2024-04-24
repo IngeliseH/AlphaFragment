@@ -73,6 +73,14 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
       - List of Domain objects: A list of Domain objects, each representing a
         domain identified in the protein, with 'type' indicating the origin of
         the domain data ('UniProt', 'AlphaFold', 'manually_defined').
+    
+    Raises:
+      - TypeError: If the protein argument is not an instance of the Protein class.
+
+    Note:
+      - Domain indexing is 0-based, so the start and end positions of the domains
+        will be 1 less than standard residue positions. Manually provided domains
+        are expected to be given in 1-based indexing.
     """
     #check that protein is instance of Protein
     if not isinstance(protein, Protein):
@@ -88,26 +96,30 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
         manual = False
 
     domains = []
-    
+
     # Find and add domains from UniProt
     if uniprot:
         uniprot_domains = find_uniprot_domains(protein) or []
         domains.extend(uniprot_domains)
-    
+
     # Identify and add domains from AlphaFold structure predictions
     if alphafold:
         protein_pae = read_afdb_json(protein.accession_id)
         if protein_pae:
-            alphafold_domains = find_domains_from_pae(protein_pae, method=pae_method, custom_params=pae_custom_params) or []
+            alphafold_domains = find_domains_from_pae(protein_pae, method=pae_method,
+                                                      custom_params=pae_custom_params) or []
             if alphafold_domains:
-                print(f"{len(alphafold_domains)} domains found in AlphaFold structure for {protein.name}: {alphafold_domains}")
+                print(f"{len(alphafold_domains)} domains found in AlphaFold structure for "
+                      f"{protein.name}: {alphafold_domains}")
                 domains.extend(alphafold_domains)
             else:
                 print(f"No domains found in AlphaFold structure for protein {protein.name}.")
-    
+
     # Add manually specified domains
     if manual:
         manual_domains = find_user_specified_domains(protein.name, protein_data) or []
+        print(f"{len(manual_domains)} domains found in csv for "
+                      f"{protein.name}: {manual_domains}")
         domains.extend(manual_domains)
 
     return domains

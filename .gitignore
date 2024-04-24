@@ -1,7 +1,6 @@
 .DS_Store
 /env
-AFprep_func/*.csv
-AFprep_func/uniprot gene list updated.xlsx
 AFprep.egg-info/
 AFprep_func/__pycache__/
 /output
+sample_data/

@@ -45,10 +45,10 @@ def fetch_uniprot_info(accession_id):
       - A timeout is set to 30 seconds for the HTTP request to prevent hanging.
     """
     # Check for non-applicable accession_id before attempting the request
-    if accession_id.lower() == "na":
+    if not accession_id or accession_id.lower() == "na":
         print("No valid accession ID provided. Skipping UniProt fetch operation.")
         return None
-    
+
     request_url = f"https://www.ebi.ac.uk/proteins/api/features/{accession_id}"
     try:
         response = requests.get(request_url, headers={"Accept": "application/json"}, timeout=30)
@@ -56,12 +56,15 @@ def fetch_uniprot_info(accession_id):
         return response.json()  # Parse and return JSON response
     except requests.exceptions.HTTPError as e:
         # Specific handling for HTTP errors, like 404 or 500
-        print(f"HTTP Error: Could not retrieve data for accession code {accession_id}. Error message: {e}")
+        print(f"HTTP Error: Could not retrieve data for accession code "
+              f"{accession_id}. Error message: {e}")
     except requests.exceptions.Timeout:
-        print(f"Timeout Error: The request timed out while attempting to fetch data for {accession_id}.")
+        print(f"Timeout Error: The request timed out while attempting to fetch "
+              f"data for {accession_id}.")
     except requests.exceptions.RequestException as e:
         # Broad exception for other request issues, such as network problems
-        print(f"Error: A problem occurred when trying to fetch data for {accession_id}. Error message: {e}")
+        print(f"Error: A problem occurred when trying to fetch data for "
+              f"{accession_id}. Error message: {e}")
     return None
 
 def find_uniprot_domains(protein):
@@ -75,7 +78,8 @@ def find_uniprot_domains(protein):
 
     Returns:
       - list of Domain objects: A list containing Domain objects for each domain
-        found in the UniProt data.
+        found in the UniProt data. Domain positions are given using Pythonic 0-based
+        indexing, so will be 1 less than the UniProt positions.
 
     Errors and Exceptions:
       - If no data can be retrieved from UniProt for by the `fetch_uniprot_info`
@@ -84,21 +88,23 @@ def find_uniprot_domains(protein):
         a ValueError will be raised.
 
     Notes:
-      - The function intentionally excludes domains of types 'CHAIN', 'MUTAGEN', and 'CONFLICT'. This is because:
-        - CHAIN types cover the entire sequence and do not represent discrete structural domains, making them
-          unsuitable for analyses that require domain fragmentation.
-        - MUTAGEN and CONFLICT types are related to sequence variations and conflicts, respectively, and are not
-          considered structurally relevant domains for the purpose of protein analysis and domain identification.
-      - In specific cases where it is necessary to include these excluded domain types, or to specify domains not
-        found or incorrectly annotated in UniProt, users can manually specify domains in the input CSV file used
-        with other functions of this module.
+      - The function intentionally excludes domains of types 'CHAIN', 'MUTAGEN', and
+        'CONFLICT'. This is because:
+        - CHAIN types cover the entire sequence and do not represent discrete structural
+          domains, making them unsuitable for analyses that require domain fragmentation.
+        - MUTAGEN and CONFLICT types are related to sequence variations and conflicts,
+          respectively, and are not considered structurally relevant domains for the
+          purpose of protein analysis and domain identification.
+      - In specific cases where it is necessary to include these excluded domain types,
+        or to specify domains not found or incorrectly annotated in UniProt, users
+        can manually specify domains in the input CSV file used with other functions of
+        this module.
     """
     data = fetch_uniprot_info(protein.accession_id)
     uniprot_domains = []
 
     if data is None:
-        print(f"No data fetched for protein {protein.name} with accession ID: {protein.accession_id}")
-        return
+        return None
 
     for feature in data['features']:
         if feature['type'] not in ['CHAIN', 'MUTAGEN', 'CONFLICT']:
@@ -110,10 +116,10 @@ def find_uniprot_domains(protein):
                 print(f"Invalid start/end in feature for protein {protein.name}: {feature}")
                 continue
 
-            uniprot_domains.append(Domain(description, start, end, "UniProt"))
+            uniprot_domains.append(Domain(description, start-1, end-1, "UniProt"))
     if uniprot_domains:
-        print(f"{len(uniprot_domains)} domains found in UniProt for {protein.name}: {uniprot_domains}")
+        print(f"{len(uniprot_domains)} domains found in UniProt for "
+              f"{protein.name}: {uniprot_domains}")
     else:
         print(f"No domains found in UniProt for protein {protein.name}.")
     return uniprot_domains
-

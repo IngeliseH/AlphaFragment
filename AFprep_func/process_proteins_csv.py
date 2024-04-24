@@ -20,10 +20,9 @@ Dependencies:
   - .classes.Domain: The Domain class for representing protein domains.
   - .uniprot_fetch.fetch_uniprot_info: For fetching protein data from UniProt.
 """
-
-import pandas as pd
 from ast import literal_eval
 from collections import Counter
+import pandas as pd
 from .classes import Protein, Domain
 from .uniprot_fetch import fetch_uniprot_info
 
@@ -78,7 +77,8 @@ def initialize_proteins_from_csv(csv_path):
     column_counter = Counter(df.columns)
     duplicates = [col for col, count in column_counter.items() if count > 1]
     if duplicates:
-        raise ValueError(f"Duplicate column names detected after normalization: {', '.join(duplicates)}")
+        raise ValueError("Duplicate column names detected after normalization: "
+                         f"{', '.join(duplicates)}")
 
     # Check for required columns
     required_columns = ['name', 'accession_id']
@@ -109,16 +109,20 @@ def initialize_proteins_from_csv(csv_path):
         elif manual_sequence:  # Use manually provided sequence if fetch fails
             print(f"UniProt fetch failed for {protein_name}; using manually provided sequence.")
             sequence = manual_sequence
-        
+
         # Initialize Protein object if sequence is available
         if sequence:
-          proteins.append(Protein(name=protein_name, accession_id=accession_id, sequence=sequence))
+            proteins.append(Protein(name=protein_name, accession_id=accession_id,
+                                    sequence=sequence))
         else:
-          print(f"Unable to obtain a sequence for {protein_name} from UniProt or manual provision.")
-          proteins_with_errors.append(protein_name)
+            print(f"Unable to obtain a sequence for {protein_name} from UniProt "
+                  f"or manual provision. Cannot initialize Protein object.")
+            proteins_with_errors.append(protein_name)
 
-    print(f"Successfully initialized proteins: {[protein.name for protein in proteins]}")
-    print(f"Proteins with errors or no data available: {proteins_with_errors}")
+    if proteins:
+        print(f"Successfully initialized proteins: {[protein.name for protein in proteins]}")
+    if proteins_with_errors:
+        print(f"Proteins with errors or no data available: {proteins_with_errors}")
     return proteins, df
 
 def find_user_specified_domains(protein_name, df):
@@ -129,51 +133,69 @@ def find_user_specified_domains(protein_name, df):
       - protein_name (str): The name of the protein to find domains for.
       - df (dataframe): DataFrame with protein names in a column 'name' and
         user-defined domains in a column "domains", as a list of (start, end)
-        tuples for each protein.
-    
+        tuples for each protein, using 1-based indexing.
+
+    Returns:
+      - list of Domain objects: A list of Domain objects representing the
+        manually defined domains for the protein, using 0-based indexing.
+
+    Raises:
+      - TypeError: If the input DataFrame or domain_data has incorrect type.
+      - ValueError: If the DataFrame is missing required columns or if the domain
+        data cannot be parsed.
+
     Notes:
-      - Domains are identified by start and end positions within the protein sequence.
+      - Domains are expected to be provided using 1-based indexing but will be
+        processed and output with 0-based indexing.
     """
-    # Check that dataframe input is valid
+    def create_domain(identifier, start, end):
+        """ Helper to create a Domain object, converting from 1-based to 0-based indexing."""
+        if not (isinstance(start, int) and isinstance(end, int)):
+            raise TypeError("Each domain must consist of two integers, but "
+                            f"received: {start}, {end}")
+        return Domain(identifier, start-1, end-1, "manually_defined")
+
+    # Validate DataFrame input
     if not isinstance(df, pd.DataFrame):
         raise TypeError("The 'df' argument must be a pandas dataframe.")
     if 'name' not in df.columns or 'domains' not in df.columns:
         missing_cols = [col for col in ['name', 'domains'] if col not in df.columns]
-        raise ValueError(f"Cannot add manually specified domains - missing columns in dataframe: {', '.join(missing_cols)}")
-    
-    if protein_name not in df['name'].values:
-        print(f"No user-specified domains found for protein {protein_name}.")
-        return []  # Return empty list if protein is not found - not an error
+        raise ValueError(f"Missing columns in dataframe: {', '.join(missing_cols)}")
 
-    domain_data = df.loc[df['name'] == protein_name, 'domains'].iloc[0]
+    # Filter DataFrame for the specified protein
+    protein_domains = df[df['name'] == protein_name]
+    # Return empty list if protein is not found
+    if protein_domains.empty:
+        print(f"No user-specified domains found for protein {protein_name}.")
+        return []
+
+    # Return empty list if protein is found but has no associated domains
+    domain_data = protein_domains['domains'].iloc[0]
     if not domain_data:
-      print(f"No user-specified domains found for protein {protein_name}.")
-      return []  # Return empty list if domain data is null
-    
-    # Check if domain data is a string and convert to list if possible
+        print(f"No user-specified domains found for protein {protein_name}.")
+        return []
+
+    # Validate and parse domain data if it's a string representation of a list
     if isinstance(domain_data, str):
         try:
             domain_data = literal_eval(domain_data)
         except (SyntaxError, ValueError) as e:
-            raise ValueError(f"Error parsing domain data: {str(e)}")
+            raise ValueError(f"Error parsing domain data: {str(e)}") from e
 
-    manual_domains = []
-    # Process list of tuples format
+    domains = []
+    # Create Domain objects from the domain data (list of tuples or dictionary)
     if isinstance(domain_data, list):
-        for domain in domain_data:
-            if not (isinstance(domain, tuple) and len(domain) == 2 and all(isinstance(num, int) for num in domain)):
-                raise TypeError("Each domain must be a 2-tuple of integers.")
-            manual_domains.append(Domain(f"manual_D{len(manual_domains) + 1}", domain[0], domain[1], "manually_defined"))
-    # Process dictionary format
-    elif isinstance(domain_data, dict):
-        for domain_id, positions in domain_data.items():
-            if not (isinstance(positions, tuple) and len(positions) == 2 and all(isinstance(num, int) for num in positions)):
-                raise TypeError(f"Domain {domain_id} must be associated with a 2-tuple of integers.")
-            manual_domains.append(Domain(domain_id, positions[0], positions[1], "manually_defined"))
-    else:
-        raise TypeError("Domain data must be a list of (start, end) tuples or a dictionary of (start, end) tuples each associated with a string identifier.")
+        domains = ([create_domain(f"manual_D{index + 1}", *domain) for index, domain in enumerate(domain_data)])
+    if isinstance(domain_data, dict):
+        domains = ([create_domain(domain_id, *positions) for domain_id, positions in domain_data.items()])
+    
+    if domains:
+        print(f"{len(domains)} domains found in csv for {protein_name}: {domains}")
+        return domains
 
-    return manual_domains
+    # Raise an error if the domain data is not a list or dictionary
+    raise TypeError("Domain data must be a list of (start, end) tuples or a "
+                    "dictionary of (start, end) tuples with identifiers.")
 
 
 def update_csv_with_fragments(df, output_csv, proteins):
@@ -195,6 +217,9 @@ def update_csv_with_fragments(df, output_csv, proteins):
     
     Notes:
       - Reorders columns for consistency
+      - Domains in output are referenced using 1-based indexing.
+      - Fragments in output are referenced using 1-based indexing and inclusive
+        of the start and end residues.
     """
     # Create a copy of the DataFrame to avoid modifying the original
     df_copy = df.copy()
@@ -202,11 +227,15 @@ def update_csv_with_fragments(df, output_csv, proteins):
     # Prepare dictionaries for mapping protein names to their updated attributes
     sequences_dict = {protein.name: protein.sequence for protein in proteins}
     domains_dict = {
-        protein.name: ', '.join([f"{domain.num}: {domain.start}-{domain.end}" for domain in protein.domain_list])
+        protein.name: ', '.join([f"{domain.id}: {domain.start+1}-{domain.end+1}"
+                                 for domain in protein.domain_list])
         if protein.domain_list else ''
         for protein in proteins
     }
-    fragments_dict = {protein.name: [(start, end) for start, end in protein.fragment_list] for protein in proteins}
+    fragments_dict = {
+        protein.name: [(start + 1, end) for start, end in protein.fragment_list]
+        for protein in proteins
+    }
     fragments_sequence_dict = {
         protein.name: [protein.sequence[start:end] for start, end in protein.fragment_list]
         for protein in proteins
@@ -219,10 +248,12 @@ def update_csv_with_fragments(df, output_csv, proteins):
     df_copy['fragment_sequences'] = df['name'].map(fragments_sequence_dict)
 
     # Define desired column order, adding other columns dynamically
-    desired_columns = ['name', 'accession_id', 'sequence', 'domains', 'fragment_indices', 'fragment_sequences']
+    desired_columns = ['name', 'accession_id', 'sequence', 'domains',
+                       'fragment_indices', 'fragment_sequences']
     existing_columns = df_copy.columns.tolist()
     additional_columns = [col for col in existing_columns if col not in desired_columns]
-    final_columns_order = [col for col in desired_columns if col in existing_columns] + additional_columns
+    final_columns_order = ([col for col in desired_columns if col in existing_columns]
+                           + additional_columns)
 
     # Reorder the DataFrame columns
     new_df = df_copy.reindex(columns=final_columns_order)

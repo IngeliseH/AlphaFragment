@@ -4,7 +4,7 @@ from matplotlib import colors
 from unittest.mock import patch
 import itertools
 from AFprep_func.classes import Protein, Domain
-from AFprep_func.plot_fragments import plot_domain, plot_fragment, draw_label, plot_fragmentation_output
+from AFprep_func.plot_fragments import plot_domain, plot_fragment, draw_label, calculate_tick_freq, plot_fragmentation_output
 
 @pytest.mark.parametrize("color_mode, domain_type, expected_color", [
     # color_mode 'type' with domain type 'AF'
@@ -126,6 +126,36 @@ def test_draw_label():
     assert text.get_fontsize() == 8, f"Font size of the label is not as expected, expected 8 but got {text.get_fontsize()}"
 
 
+@pytest.mark.parametrize("input, expected", [
+    # Basic tests with range of inputs
+    (5, 1),
+    (10, 1),
+    (199, 10),
+    (3000, 500),
+    (7123456, 1000000),
+    # input = 1
+    (1, 1),
+    # very large input
+    (10000000, 1000000)
+])
+def test_tick_frequency(input, expected):
+    tick_freq = calculate_tick_freq(input)
+    assert tick_freq == expected, f"Expected tick frequency of {expected} for input {input}, got {tick_freq}"
+
+@pytest.mark.parametrize("input", [
+    # String input
+    "100",
+    # Float input
+    100.0,
+    # Negative input
+    -100,
+    # Zero input
+    0
+])
+def test_tick_frequency_invalid_input(input):
+    with pytest.raises(ValueError):
+        calculate_tick_freq(input), "Invalid input should raise ValueError"
+
 @patch("os.path.exists", return_value=False)
 @patch("os.makedirs")
 @patch("matplotlib.figure.Figure.savefig")
@@ -175,7 +205,7 @@ def test_large_protein_many_domains():
     Test that the function can handle a very long protein with a large number of domains and fragments
     """
     # Generating a large number of domains
-    domain_list = [Domain(id=str(i), start=i * 100, end=i * 100 + 49, domain_type='AF') for i in range(100)]
+    domain_list = [Domain(identifier=str(i), start=i * 100, end=i * 100 + 49, domain_type='AF') for i in range(100)]
     fragments = [(i * 100 + 25, i * 100 + 75) for i in range(100)]
     protein = Protein("VeryLargeProtein", "accession", "sequence", first_res=1, last_res=10000, domain_list=domain_list, fragment_list=fragments)
     fig = plot_fragmentation_output(protein, protein.fragment_list)
@@ -194,10 +224,10 @@ def test_overlapping_domains():
 
 
 def test_visual_output():
-    # Example setup for a visual test
-    domains = [Domain("AF1", 10, 30, "AF"), Domain("UP2", 50, 90, "UniProt"), Domain("M3", 250, 500, "manually_defined"), Domain("O4", 700, 900, "other")]
-    fragments = [(0, 110), (100, 250), (240, 550), (530, 700), (690, 1000), (990, 1200)]
-    protein = Protein("LargeProtein", "accession", "sequence", first_res=1, last_res=1200, domain_list=domains, fragment_list=fragments)
+    # Set up large protein
+    domains = [Domain("AF1", 10, 30, "AF"), Domain("UP2", 50, 90, "UniProt"), Domain("M3", 250, 500, "manually_defined"), Domain("O4", 700, 900, "other"), Domain("O5", 1300, 1900, "other")]
+    fragments = [(0, 110), (100, 250), (240, 550), (530, 700), (690, 1000), (990, 1250), (1240, 1952)]
+    protein = Protein("LargeProtein", "accession", "sequence", first_res=1, last_res=1952, domain_list=domains, fragment_list=fragments)
 
     #close any existing plots
     plt.close('all')
@@ -205,4 +235,12 @@ def test_visual_output():
     fig = plot_fragmentation_output(protein, fragments)
     fig2 = plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt'])
     fig3 = plot_fragmentation_output(protein, fragments, color_mode='cycle')
+
+    # Set up small protein for checking boundaries
+    domains = [Domain("AF1", 1, 5, "AF"), Domain("UP2", 10, 15, "UniProt")]
+    fragments = [(0, 7), (6, 10), (10, 17)]
+    protein = Protein("SmallProtein", "accession", "sequence", first_res=0, last_res=16, domain_list=domains, fragment_list=fragments)
+
+    fig4 = plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt', 'manually_defined'])
+
     plt.show()  # This will display the plot window for manual verification

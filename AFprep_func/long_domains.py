@@ -113,7 +113,7 @@ def handle_long_domains(protein, min_len, max_len, overlap):
         distance_to_start = long_domain.start
         distance_to_end = protein.last_res - long_domain.end
 
-        # Determine if the long domain should be extended to the start of end of the protein
+        # Determine if the long domain should be extended to the start or end of the protein
         should_merge_start = distance_to_start < min_len
         should_merge_end = distance_to_end < min_len
 
@@ -126,24 +126,24 @@ def handle_long_domains(protein, min_len, max_len, overlap):
             other_domain_len = other_domain.end - other_domain.start + 1
             if other_domain == long_domain:
                 continue
-            if (long_domain.end < other_domain.start) and (other_domain.start - long_domain.end  < min_len):
+            if (long_domain.end < other_domain.start) and (other_domain.start - long_domain.end - 1  < min_len):
                 if long_domain_len <= other_domain_len:
                     end = max(end, other_domain.start)
-            if (long_domain.start > other_domain.end) and (long_domain.start - other_domain.end < min_len):
+            if (long_domain.start > other_domain.end) and (long_domain.start - other_domain.end - 1 < min_len):
                 if long_domain_len < other_domain_len:
                     start = min(start, other_domain.end)
 
         # Create subsection for sequence between end of previous long domain and
         # start of current one
+        # Subsections are inclusive of both start and end
         if prev_end < (start - 1):
-            subsection_sequence_start = prev_end
+            subsection_sequence_start = prev_end + 1
             subsection_sequence_end = long_domain.start - 1
-            if subsection_sequence_end - subsection_sequence_start > 0:
-                subsections.append(ProteinSubsection(protein,
-                                                     subsection_sequence_start,
-                                                     subsection_sequence_end))
+            subsections.append(ProteinSubsection(protein,
+                                                 subsection_sequence_start,
+                                                 subsection_sequence_end))
 
-        prev_end = end + 1
+        prev_end = end
 
         # Adjust to add overlap if possible
         adjusted_start = add_overlap(start, -1)
@@ -153,11 +153,15 @@ def handle_long_domains(protein, min_len, max_len, overlap):
         adjusted_start = max(0, adjusted_start)
         adjusted_end = min(protein.last_res, adjusted_end)
 
-        # Add the domain with adjusted overlap as a fragment
-        fragments.append((adjusted_start, adjusted_end))
+        # Add the domain with adjusted overlap as a fragment - converting to slicing indexing
+        fragments.append((adjusted_start, adjusted_end + 1))
 
     # Handle the tail end of the protein sequence, if any, after the last long domain
-    if prev_end < len(protein.sequence):
-        subsections.append(ProteinSubsection(protein, prev_end, len(protein.sequence)))
+    # If no long domains were found, return whole protein
+    if prev_end == 0:
+        # No long domains were found, so the entire protein is a subsection
+        subsections.append(protein)
+    elif prev_end < protein.last_res:
+        subsections.append(ProteinSubsection(protein, prev_end + 1, protein.last_res))
 
     return subsections, fragments

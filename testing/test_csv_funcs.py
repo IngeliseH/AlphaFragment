@@ -13,32 +13,32 @@ from AFprep_func.classes import Protein, Domain
     # Valid Accession ID, no manual sequence provided
     ('name,accession_id\nProtein1,P12345',
      [Protein(name='Protein1', accession_id='P12345', sequence='AAA')],
-     []),
+     None),
     # No Accession ID and no manual sequence
     ('name,accession_id\nProtein2,',
-     [],
+     None,
      ['Protein2']),
     # No Accession ID but with manual sequence
     ('name,accession_id,sequence\nProtein3,,CCC',
      [Protein(name='Protein3', accession_id='', sequence='CCC')],
-     []),
+     None),
     # Accession ID and manual sequence (manual sequence should be overridden if fetch successful)
     ('name,accession_id,sequence\nProtein4,P12345,DDD',
      [Protein(name='Protein4', accession_id='P12345', sequence='AAA')],
-     []),
+     None),
     # Invalid Accession ID and no manual sequence
     ('name,accession_id\nProtein5,INVALID',
-     [],
+     None,
      ['Protein5']),
     # Invalid Accession ID but with a manual sequence
     ('name,accession_id,sequence\nProtein6,INVALID,FFF',
      [Protein(name='Protein6', accession_id='INVALID', sequence='FFF')],
-     []),
+     None),
     # Two valid proteins to test multiple initializations
     ('name,accession_id\nProtein7,P12345\nProtein8,P12345',
      [Protein(name='Protein7', accession_id='P12345', sequence='AAA'),
       Protein(name='Protein8', accession_id='P12345', sequence='AAA')],
-     []),
+     None),
     # One valid and one invalid protein
     ('name,accession_id\nProtein9,P12345\nProtein10,INVALID',
      [Protein(name='Protein9', accession_id='P12345', sequence='AAA')],
@@ -54,13 +54,15 @@ def test_initialize_proteins_from_csv(csv_data, expected_success, expected_error
             mock_fetch.side_effect = lambda x: {'sequence': 'AAA'} if x == 'P12345' else None
             proteins, df = initialize_proteins_from_csv("fake_path")
 
-            # Check the number of successfully initialized proteins
-            assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)}"
-
             # Use capfd to capture print statements
             out, err = capfd.readouterr()
-            # Assume print outputs the number of successfully initialized proteins
-            assert f"Successfully initialized proteins: {[protein.name for protein in expected_success]}\nProteins with errors or no data available: {expected_errors}" in out
+
+            # Check number of successful initiations, and print outputs
+            if expected_success:
+                assert len(proteins) == len(expected_success), f"Expected {len(expected_success)} proteins, got {len(proteins)}"
+                assert f"Successfully initialized proteins: {[protein.name for protein in expected_success]}" in out
+            if expected_errors:
+                assert f"Proteins with errors or no data available: {expected_errors}" in out
 
 @pytest.mark.parametrize("csv_data, expected_columns, raises_error, error_message", [
     # No column headings
@@ -122,7 +124,7 @@ def test_column_presence(columns, expected_error):
     }
     df = pd.DataFrame({col: data[col] for col in columns if col in data})
     protein_name = 'Protein1'
-    expected_result = [Domain('manual_D1', 1, 10, 'manually_defined'), Domain('manual_D2', 20, 30, 'manually_defined')]
+    expected_result = [Domain('manual_D1', 0, 9, 'manually_defined'), Domain('manual_D2', 19, 29, 'manually_defined')]
     if expected_error:
         #check expected error (likely ValueError) is raised
         with pytest.raises(ValueError):
@@ -140,9 +142,9 @@ def test_column_presence(columns, expected_error):
     # Null values in 'domains'
     ('Protein1', None, []),
     # Valid input with domains in tuple format (unnamed)
-    ('Protein1', '[(1, 10), (20, 30)]', [Domain('manual_D1', 1, 10, 'manually_defined'), Domain('manual_D2', 20, 30, 'manually_defined')]),
+    ('Protein1', '[(1, 10), (20, 30)]', [Domain('manual_D1', 0, 9, 'manually_defined'), Domain('manual_D2', 19, 29, 'manually_defined')]),
     # Valid input with domains in dictionary format (named)
-    ('Protein1', "{'name1':(1,10), 'name2':(20,30)}", [Domain('name1', 1, 10, 'manually_defined'), Domain('name2', 20, 30, 'manually_defined')])
+    ('Protein1', "{'name1':(1,10), 'name2':(20,30)}", [Domain('name1', 0, 9, 'manually_defined'), Domain('name2', 19, 29, 'manually_defined')])
 ])
 def test_various_inputs(protein_name, domain_data, expected_result):
     """
@@ -155,27 +157,26 @@ def test_various_inputs(protein_name, domain_data, expected_result):
     result = find_user_specified_domains(protein_name, df)
     assert result == expected_result, f"Expected result {expected_result}, got {result}"
 
-@pytest.mark.parametrize("dataframe, error", [
+@pytest.mark.parametrize("protein_name, dataframe, error", [
     # Invalid 'dataframe' input - not a DataFrame
-    ("not a dataframe", "TypeError"),
+    ('Protein1', "not a dataframe", "TypeError"),
     # Invalid data for domains - integer
-    (pd.DataFrame({'name': ['Protein1'], 'domains': [123]}), "TypeError"),
+    ('Protein2', pd.DataFrame({'name': ['Protein2'], 'domains': [123]}), "TypeError"),
     # Invalid data for domains - string
-    (pd.DataFrame({'name': ['Protein1'], 'domains': ['not a list']}), "ValueError"),
+    ('Protein3', pd.DataFrame({'name': ['Protein3'], 'domains': ['not a list']}), "ValueError"),
     # Invalid data for domains - valid tuple but not in a list
-    (pd.DataFrame({'name': ['Protein1'], 'domains': [(1, 2)]}), "TypeError"),
+    ('Protein4', pd.DataFrame({'name': ['Protein4'], 'domains': [(1, 2)]}), "TypeError"),
     # Invalid data for domains - tuple of strings
-    (pd.DataFrame({'name': ['Protein1'], 'domains': [[('a', 'b')]]}), "TypeError"),
+    ('Protein5', pd.DataFrame({'name': ['Protein5'], 'domains': [[('a', 'b')]]}), "TypeError"),
     # Invalid data for domains - tuple with 3 values
-    (pd.DataFrame({'name': ['Protein1'], 'domains': [[(1, 2, 3)]]}), "TypeError"),
+    ('Protein6', pd.DataFrame({'name': ['Protein6'], 'domains': [[(1, 2, 3)]]}), "TypeError"),
     # Invalid data for domains - tuple with 1 value
-    (pd.DataFrame({'name': ['Protein1'], 'domains': [[(1,)]]}), "TypeError"),
+    ('Protein7', pd.DataFrame({'name': ['Protein7'], 'domains': [[(1,)]]}), "TypeError"),
 ])
-def test_manual_domain_error_handling(dataframe, error):
+def test_manual_domain_error_handling(protein_name, dataframe, error):
     """
     Test the function to ensure type checking for dataframe input.
     """
-    protein_name = 'Protein1'
     if error == "TypeError":
         with pytest.raises(TypeError):
             find_user_specified_domains(protein_name, dataframe), "Expected a TypeError for invalid DataFrame input"

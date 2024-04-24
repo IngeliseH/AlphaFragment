@@ -80,17 +80,36 @@ def test_protein_empty_sequence():
     Test Protein class initialization with an empty sequence
     """
     protein = Protein("TestProtein", "P00001", "")
-    assert protein.last_res == 0, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
+    assert protein.last_res == None, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
 
-def test_protein_non_sequential_fragments():
-    """
-    Test that the add_fragment method of the Protein class raises a ValueError
-    when non-sequential fragments are added
-    """
-    protein = Protein("TestProtein", "P00001", "MKKLLPT")
-    protein.add_fragment(1, 3)
-    with pytest.raises(ValueError):
-        protein.add_fragment(0, 2), "add_fragment did not raise a ValueError for non-sequential fragments being added"
+@pytest.mark.parametrize("fragment, expected_exception, message", [
+    # Valid sequential fragments
+    ((30, 40), None, ""),
+    # Overlap with previous fragment
+    ((15, 60), None, ""),
+    # Start same as previous
+    ((10, 50), None, ""),
+    # Fragment start is greater than end
+    ((30, 25), ValueError, "Start and end must be positive integers, and start must be less than end."),
+    # Invalid input type - not a tuple (or two integers)
+    (30, ValueError, "Invalid arguments. Provide (start, end) as either two arguments or a tuple."),
+    # Invalid input type - not both integers
+    (('a', 60), ValueError, "Start and end must be positive integers, and start must be less than end."),
+    # Non-sequential fragment
+    ((1, 5), ValueError, "Start of the new fragment must be greater than the start of the previous fragment.")
+])
+def test_add_fragment(fragment, expected_exception, message):
+    protein = Protein("TestProtein", "fake_id", "A"*100)
+    #Add initial (valid) fragment
+    protein.add_fragment(10, 20)
+    if expected_exception:
+        with pytest.raises(ValueError) as exc_info:
+            protein.add_fragment(fragment), "Expected ValueError not raised."
+        assert message in str(exc_info.value), f"Unexpected error message: {exc_info.value}. Expected: {message}"
+    else:
+        protein.add_fragment(fragment)
+        # Verify by checking the last added fragment
+        assert protein.fragment_list[-1] == fragment, "Fragment was not added correctly."
 
 # Tests for ProteinSubsection
 def test_protein_subsection_initialization():
@@ -100,7 +119,7 @@ def test_protein_subsection_initialization():
     parent_protein = Protein("Protein1", "P12345", "MKKLLPT")
     subsection = ProteinSubsection(parent_protein, 0, 3)
     assert subsection.name == parent_protein.name, f"ProteinSubsection name did not initialize correctly, expected 'Protein1', got {subsection.name}"
-    assert subsection.sequence == "MKK", f"ProteinSubsection sequence did not initialize correctly, expected 'MKK', got {subsection.sequence}"
+    assert subsection.sequence == "MKKL", f"ProteinSubsection sequence did not initialize correctly, expected 'MKK', got {subsection.sequence}"
 
     # Test that using the ProteinSubsection class with start > end raises a ValueError
     with pytest.raises(ValueError):
@@ -112,9 +131,9 @@ def test_protein_subsection_initialization():
     with pytest.raises(ValueError):
         ProteinSubsection(parent_protein, 0, 10), "ProteinSubsection with end > parent_protein.last_res did not raise a ValueError"
 
-    # Test start and end end exactly at the bounds of the parent sequence
+    # Test start and end exactly at the bounds of the parent sequence
     try:
-        subsection = ProteinSubsection(parent_protein, 0, len(parent_protein.sequence))
+        subsection = ProteinSubsection(parent_protein, 0, parent_protein.last_res)
         assert subsection.sequence == parent_protein.sequence, f"ProteinSubsection sequence did not initialize correctly at the bounds of the parent sequence, expected {parent_protein.sequence}, got {subsection.sequence}"
     except ValueError:
-        pytest.fail("Unexpected ValueError for a valid end boundary.")
+        pytest.fail("Unexpected ValueError for a valid end boundary")

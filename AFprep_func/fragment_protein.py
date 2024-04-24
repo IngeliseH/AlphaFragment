@@ -24,7 +24,7 @@ Dependencies:
 from .fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains
 from .long_domains import handle_long_domains
 
-def fragment_protein(protein, min_len = 150, max_len = 250, overlap = {'min':0, 'ideal':10, 'max':30}):
+def fragment_protein(protein, min_len = 150, max_len = 250, overlap = None, len_increase = 10):
     """
     Fragments a given protein into smaller, manageable sections. Initially, it
     identifies long domains within the protein and organises fragments around
@@ -44,13 +44,18 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = {'min':0, 
         maximum overlap values, in the format:
         {'min':min_overlap, 'ideal':ideal_overlap, 'max':max_overlap}
         where min_overlap, ideal_overlap and max_overlap are all integers, with
-        min_overlap<=ideal_overlap<=max_overlap. Default is
-        {'min':0, 'ideal':10, 'max':30}
+        min_overlap<=ideal_overlap<=max_overlap. Default is None, in which case
+        the default values are used: {'min':0, 'ideal':10, 'max':30}
+      - len_increase (int, optional): The amount by which to incrementally increase
+        the maximum fragment length if a solution cannot be found. Default is 10.
 
     Returns:
       - list of tuples: A sorted list of tuples, where each tuple represents a
         fragment with its start and end positions within the protein sequence.
     """
+    if not overlap:
+        overlap = {'min':0, 'ideal':10, 'max':30}
+
     # Validate the input parameters
     validate_fragmentation_parameters(protein, min_len, max_len, overlap)
 
@@ -60,17 +65,17 @@ def fragment_protein(protein, min_len = 150, max_len = 250, overlap = {'min':0, 
         merged_domains = merge_overlapping_domains(subsection.domain_list)
         subsection_fragments = None
         while subsection_fragments is None:
-            #deal with short proteins/sections by classifying as one fragment
-            #included in while loop so as max length increases this is still happening
+            # Deal with short proteins/sections by classifying as one fragment
+            # included in while loop so as max length increases this is still happening
             if len(subsection.sequence) <= max_len:
-                subsection_fragments = [(subsection.first_res, subsection.last_res)]
+                subsection_fragments = [(subsection.first_res, subsection.last_res+1)]
                 continue
 
             subsection_fragments = recursive_fragmentation(subsection, merged_domains,
                                                            subsection.first_res,
                                                            min_len, max_len, overlap)
             if subsection_fragments is None:
-                max_len = min(max_len+10, len(subsection.sequence))
+                max_len = min(max_len + len_increase, len(subsection.sequence))
         fragments.extend(subsection_fragments)
 
     fragments.sort()
