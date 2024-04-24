@@ -1,6 +1,9 @@
+"""
+Test file for the compile_domains module
+"""
+from unittest.mock import patch
 import pytest
 import pandas as pd
-from unittest.mock import patch
 from AFprep_func.classes import Protein, Domain
 from AFprep_func.compile_domains import compile_domains
 
@@ -28,6 +31,9 @@ invalid_protein_data = pd.DataFrame({'name': ['TestProtein']})
     (True, True, True, None, 3, "Cannot add manually specified domains - the 'df' argument is required."),
 ])
 def test_compile_domains(uniprot, alphafold, manual, protein_data, expected_count, expected_print, capsys):
+    """
+    Test for the compile_domains function with different combinations of data sources.
+    """
     uniprot_data = [Domain('domain1', 0, 10, 'UniProt')]
     alphafold_data = [Domain('domain2', 20, 30, 'AF'), Domain('domain3', 40, 50, 'AF')]
     manual_data = [Domain('domain4', 60, 70, 'manual'), Domain('domain5', 80, 90, 'manual'), Domain('domain6', 95, 100, 'manual')]
@@ -46,5 +52,8 @@ def test_compile_domains(uniprot, alphafold, manual, protein_data, expected_coun
 
 # Test that the function raises a TypeError if the protein argument is not an instance of the Protein class
 def test_compile_domains_wrong_protein():
+    """
+    Test that the compile_domains function raises a TypeError if the 'protein' argument is not an instance of the Protein class.
+    """
     with pytest.raises(TypeError, match="The 'protein' argument must be an instance of the Protein class."):
         compile_domains("not a protein", manual = False)

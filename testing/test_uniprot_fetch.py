@@ -1,10 +1,10 @@
 """
-Test file contains test cases for the uniprot_fetch module
+Test file for the uniprot_fetch module
 """
+from unittest.mock import patch
 import pytest
 import requests_mock
 from requests.exceptions import ConnectionError as RequestsConnectionError
-from unittest.mock import patch
 from AFprep_func.uniprot_fetch import fetch_uniprot_info, find_uniprot_domains
 from AFprep_func.classes import Protein, Domain
 

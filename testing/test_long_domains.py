@@ -63,7 +63,7 @@ def test_handle_long_domains(protein_domains, protein_sequence, long_domain_num,
         start, end = fragments_and_subsections[region]
         next_start, next_end = fragments_and_subsections[region + 1]
         actual_overlap = start + (end - start + 1) - next_start
-        assert overlap['min'] <= actual_overlap <= overlap['max'], f"Fragment overlap out of bounds, expected overlap between ({start}, {end}) and ({next_start}, {next_end}) to be between {min_overlap} and {max_overlap}, got overlap {overlap} for fragments/subsections {fragments_and_subsections}"
+        assert overlap['min'] <= actual_overlap <= overlap['max'], f"Fragment overlap out of bounds, expected overlap between ({start}, {end}) and ({next_start}, {next_end}) to be between {overlap['min']} and {overlap['max']}, got overlap {actual_overlap} for fragments/subsections {fragments_and_subsections}"
 
 def test_adjacent_long_domains():
     """

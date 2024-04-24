@@ -1,8 +1,11 @@
+"""
+Test file for the plot_fragments module
+"""
+from unittest.mock import patch
+import itertools
 import pytest
 from matplotlib import pyplot as plt
 from matplotlib import colors
-from unittest.mock import patch
-import itertools
 from AFprep_func.classes import Protein, Domain
 from AFprep_func.plot_fragments import plot_domain, plot_fragment, draw_label, calculate_tick_freq, plot_fragmentation_output
 
@@ -126,7 +129,7 @@ def test_draw_label():
     assert text.get_fontsize() == 8, f"Font size of the label is not as expected, expected 8 but got {text.get_fontsize()}"
 
 
-@pytest.mark.parametrize("input, expected", [
+@pytest.mark.parametrize("num, expected", [
     # Basic tests with range of inputs
     (5, 1),
     (10, 1),
@@ -138,11 +141,14 @@ def test_draw_label():
     # very large input
     (10000000, 1000000)
 ])
-def test_tick_frequency(input, expected):
-    tick_freq = calculate_tick_freq(input)
-    assert tick_freq == expected, f"Expected tick frequency of {expected} for input {input}, got {tick_freq}"
+def test_tick_frequency(num, expected):
+    """
+    Test that the tick frequency function correctly calculates the tick frequency based on the number of residues
+    """
+    tick_freq = calculate_tick_freq(num)
+    assert tick_freq == expected, f"Expected tick frequency of {expected} for input {num}, got {tick_freq}"
 
-@pytest.mark.parametrize("input", [
+@pytest.mark.parametrize("num", [
     # String input
     "100",
     # Float input
@@ -152,9 +158,12 @@ def test_tick_frequency(input, expected):
     # Zero input
     0
 ])
-def test_tick_frequency_invalid_input(input):
+def test_tick_frequency_invalid_input(num):
+    """
+    Test that the tick frequency function raises a ValueError when invalid input is provided
+    """
     with pytest.raises(ValueError):
-        calculate_tick_freq(input), "Invalid input should raise ValueError"
+        calculate_tick_freq(num), "Invalid input should raise ValueError"
 
 @patch("os.path.exists", return_value=False)
 @patch("os.makedirs")
@@ -165,7 +174,7 @@ def test_plot_fragmentation_output_saving(mock_savefig, mock_makedirs, mock_exis
     """
     fragments = [(50, 75), (180, 200)]
     save_location = "/fake/path"
-    
+
     domain1 = Domain("1", 1, 100, 'AF')
     domain2 = Domain("2", 120, 200, 'UniProt')
     protein = Protein("TestProtein", "accession", "sequence", first_res=1, last_res=300, domain_list=[domain1, domain2], fragment_list=fragments)
@@ -194,7 +203,7 @@ def test_plot_fragmentation_output_integration():
     domain1 = Domain("1", 1, 100, 'AF')
     domain2 = Domain("2", 120, 200, 'UniProt')
     protein = Protein("TestProtein", "accession", "sequence", first_res=1, last_res=300, domain_list=[domain1, domain2], fragment_list=fragments)
-    
+
     fig = plot_fragmentation_output(protein, protein.fragment_list)
     ax = fig.axes[0]
 
@@ -224,6 +233,9 @@ def test_overlapping_domains():
 
 
 def test_visual_output():
+    """
+    Test the visual output of the plot_fragmentation_output function
+    """
     # Set up large protein
     domains = [Domain("AF1", 10, 30, "AF"), Domain("UP2", 50, 90, "UniProt"), Domain("M3", 250, 500, "manually_defined"), Domain("O4", 700, 900, "other"), Domain("O5", 1300, 1900, "other")]
     fragments = [(0, 110), (100, 250), (240, 550), (530, 700), (690, 1000), (990, 1250), (1240, 1952)]
@@ -232,15 +244,15 @@ def test_visual_output():
     #close any existing plots
     plt.close('all')
 
-    fig = plot_fragmentation_output(protein, fragments)
-    fig2 = plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt'])
-    fig3 = plot_fragmentation_output(protein, fragments, color_mode='cycle')
+    plot_fragmentation_output(protein, fragments)
+    plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt'])
+    plot_fragmentation_output(protein, fragments, color_mode='cycle')
 
     # Set up small protein for checking boundaries
     domains = [Domain("AF1", 1, 5, "AF"), Domain("UP2", 10, 15, "UniProt")]
     fragments = [(0, 7), (6, 10), (10, 17)]
     protein = Protein("SmallProtein", "accession", "sequence", first_res=0, last_res=16, domain_list=domains, fragment_list=fragments)
 
-    fig4 = plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt', 'manually_defined'])
+    plot_fragmentation_output(protein, fragments, label=['AF', 'UniProt', 'manually_defined'])
 
     plt.show()  # This will display the plot window for manual verification

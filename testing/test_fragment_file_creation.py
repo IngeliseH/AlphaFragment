@@ -1,9 +1,8 @@
 """
 Test file for the fragment_file_creation module.
 """
-
-import pytest
 from unittest.mock import mock_open, patch
+import pytest
 from AFprep_func.classes import Protein
 from AFprep_func.fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown
 
@@ -12,6 +11,9 @@ protein1 = Protein(name="ProteinA", accession_id="O123", sequence="ABCDEFGHIJKLM
 protein2 = Protein(name="ProteinB", accession_id="P456", sequence="QRSTUVWXYZ", fragment_list=[(0,2), (1,10)])
 @pytest.fixture
 def proteins():
+    """
+    Fixture to return a list of sample Protein objects.
+    """
     return [protein1, protein2]
 
 @pytest.mark.parametrize("method, one_protein, combinations_csv, expected_output, expected_error", [
@@ -49,7 +51,7 @@ def test_get_protein_combinations(proteins, method, one_protein, combinations_cs
             patch("csv.reader", return_value=[['ProteinA', 'ProteinB']]):
             combinations = get_protein_combinations(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
             assert len(combinations) == len(expected_output)
-            assert combinations == expected_output, f"Expected: {expected_output}, got: {result}"
+            assert combinations == expected_output, f"Expected: {expected_output}, got: {combinations}"
 
 @pytest.mark.parametrize("method, combinations_csv, one_protein, expected_calls", [
     # All v all method - expecting 10 files (3 self pairs for each, 4 ProteinA-ProteinB pairs)

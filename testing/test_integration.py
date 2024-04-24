@@ -1,3 +1,6 @@
+"""
+Test file for the end-to-end workflow of the package
+"""
 import os
 import pandas as pd
 from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, update_csv_with_fragments
@@ -8,6 +11,10 @@ from AFprep_func.fragment_file_creation import output_fastas, output_pulldown
 
 
 def test_end_to_end_workflow():
+    """
+    Test the end-to-end workflow of the package, from reading an input CSV to generating
+    output files and visualizations.
+    """
     # Setup
     input_csv_path = '../sample_data/sample_input.csv'
     output_csv_path = '../sample_data/sample_output.csv'
@@ -45,7 +52,7 @@ def test_end_to_end_workflow():
     assert os.path.exists(output_csv_path), "Output CSV file was not created"
     assert os.path.exists(output_pulldown_path), "Output pulldown file was not created"
     assert len(os.listdir(image_save_location)) == len(proteins), "Not all protein images were generated"
-  
+
     # Cleanup
     os.remove(input_csv_path)
     os.remove(output_csv_path)

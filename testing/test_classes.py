@@ -14,18 +14,18 @@ def test_domain_initialization():
     - Initialization where the end is before the start, which should also raise a ValueError.
     """
     domain = Domain("D1", 10, 20, "TYPE")
-    assert domain.id == "D1", f"Domain id did not initialize correctly, expected 'D1', got {domain.num}"
+    assert domain.id == "D1", f"Domain id did not initialize correctly, expected 'D1', got {domain.id}"
     assert domain.start == 10, f"Domain start did not initialize correctly, expected 10, got {domain.start}"
     assert domain.end == 20, f"Domain end did not initialize correctly, expected 20, got {domain.end}"
     assert domain.type == "TYPE", f"Domain type did not initialize correctly, expected 'TYPE', got {domain.type}"
-    
+
     # Test initialization of a domain where start and end are the same (useful
     # for marking specific points of interest to see where these fall in fragments)
     single_residue_domain = Domain("SingleResidue", 5, 5, "POINT")
     assert single_residue_domain.start == 5, f"Single residue domain start did not initialize correctly, expected 5, got {single_residue_domain.start}"
     assert single_residue_domain.end == 5, f"Single residue domain end did not initialize correctly, expected 5, got {single_residue_domain.end}"
     assert single_residue_domain.type == "POINT", f"Single residue domain type did not initialize correctly, expected 'POINT', got {single_residue_domain.type}"
-    
+
     # Test that using the Domain class with start/end below 0 raises a ValueError
     with pytest.raises(ValueError):
         Domain("D2", -1, 20, "TYPE"), "Domain with start below 0 did not raise a ValueError"
@@ -80,7 +80,7 @@ def test_protein_empty_sequence():
     Test Protein class initialization with an empty sequence
     """
     protein = Protein("TestProtein", "P00001", "")
-    assert protein.last_res == None, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
+    assert protein.last_res is None, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
 
 @pytest.mark.parametrize("fragment, expected_exception, message", [
     # Valid sequential fragments
@@ -99,6 +99,9 @@ def test_protein_empty_sequence():
     ((1, 5), ValueError, "Start of the new fragment must be greater than the start of the previous fragment.")
 ])
 def test_add_fragment(fragment, expected_exception, message):
+    """
+    Test the add_fragment method of the Protein class with different fragment inputs.
+    """
     protein = Protein("TestProtein", "fake_id", "A"*100)
     #Add initial (valid) fragment
     protein.add_fragment(10, 20)
