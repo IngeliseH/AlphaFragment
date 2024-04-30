@@ -22,10 +22,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install dependencies and package
       run: |
         python -m pip install --upgrade pip
-        pip install pandas requests matplotlib pytest pylint
+        pip install .
+        pip install pandas requests matplotlib pytest pylint requests_mock
 
     - name: Lint with pylint
       run: |
