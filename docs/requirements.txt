@@ -1,0 +1,4 @@
+sphinx>=7.2.6
+pandas>=2.2.0
+requests>=2.31.0
+matplotlib>=3.8.4

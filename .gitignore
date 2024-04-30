@@ -1,1 +1,5 @@
 .DS_Store
+/env
+functions/__pycache__/
+output/
+sample_data/
