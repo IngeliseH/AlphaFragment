@@ -31,7 +31,7 @@ jobs:
     - name: Lint with pylint
       run: |
         # Run pylint, configuring it to not fail the workflow on certain errors
-        pylint --exit-zero --disable=R0913,R0914,C0301 ./functions/
+        pylint --exit-zero --disable=R0913,R0914,C0301 ./src/alphafragment
 
     - name: Run pytest
       run: |
