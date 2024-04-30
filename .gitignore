@@ -1,6 +1,5 @@
 .DS_Store
 /env
-AFprep.egg-info/
-AFprep_func/__pycache__/
+functions/__pycache__/
 /output
 sample_data/

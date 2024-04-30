@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AFprep"
+name = "AlphaFragment"
 description = "Scripts to prepare optimised input fragment boundaries/fasta files for AlphaFold"
 authors = [
     {name = "Ingelise Holland-Kaye", email = "ingelise.holland-kaye@reuben.ox.ac.uk"},

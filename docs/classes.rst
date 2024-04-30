@@ -1,7 +1,7 @@
 Setting up custom classes
 =========================
 
-.. automodule:: AFprep_func.classes
+.. automodule:: functions.classes
    :members:
    :undoc-members:
    :show-inheritance:

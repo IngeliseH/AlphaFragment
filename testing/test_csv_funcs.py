@@ -5,8 +5,8 @@ from io import StringIO
 from unittest.mock import patch
 import pytest
 import pandas as pd
-from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, find_user_specified_domains, update_csv_with_fragments
-from AFprep_func.classes import Protein, Domain
+from functions.process_proteins_csv import initialize_proteins_from_csv, find_user_specified_domains, update_csv_with_fragments
+from functions.classes import Protein, Domain
 
 @pytest.mark.parametrize("csv_data, expected_success, expected_errors", [
     # Valid Accession ID, no manual sequence provided

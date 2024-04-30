@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'AFprep'
+project = 'AlphaFragment'
 copyright = '2024, Ingelise Holland-Kaye'
 author = 'Ingelise Holland-Kaye'
 

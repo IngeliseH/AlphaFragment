@@ -5,8 +5,8 @@ from unittest.mock import patch
 import pytest
 import requests_mock
 from requests.exceptions import ConnectionError as RequestsConnectionError
-from AFprep_func.uniprot_fetch import fetch_uniprot_info, find_uniprot_domains
-from AFprep_func.classes import Protein, Domain
+from functions.uniprot_fetch import fetch_uniprot_info, find_uniprot_domains
+from functions.classes import Protein, Domain
 
 @pytest.mark.parametrize("accession_id, mock_url, response, status_code, expected, exception", [
     # Valid ID with empty features

@@ -2,8 +2,8 @@
 Test file for the long_domains module
 """
 import pytest
-from AFprep_func.classes import Protein, Domain
-from AFprep_func.long_domains import handle_long_domains
+from functions.classes import Protein, Domain
+from functions.long_domains import handle_long_domains
 
 @pytest.mark.parametrize(
     "protein_domains, protein_sequence, long_domain_num, subsection_num",

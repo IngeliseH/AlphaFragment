@@ -4,8 +4,8 @@ Test file for the compile_domains module
 from unittest.mock import patch
 import pytest
 import pandas as pd
-from AFprep_func.classes import Protein, Domain
-from AFprep_func.compile_domains import compile_domains
+from functions.classes import Protein, Domain
+from functions.compile_domains import compile_domains
 
 valid_protein_data = pd.DataFrame({
     'name': ['TestProtein'],

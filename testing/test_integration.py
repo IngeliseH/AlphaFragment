@@ -3,11 +3,11 @@ Test file for the end-to-end workflow of the package
 """
 import os
 import pandas as pd
-from AFprep_func.process_proteins_csv import initialize_proteins_from_csv, update_csv_with_fragments
-from AFprep_func.fragment_protein import fragment_protein
-from AFprep_func.compile_domains import compile_domains
-from AFprep_func.plot_fragments import plot_fragmentation_output
-from AFprep_func.fragment_file_creation import output_fastas, output_pulldown
+from functions.process_proteins_csv import initialize_proteins_from_csv, update_csv_with_fragments
+from functions.fragment_protein import fragment_protein
+from functions.compile_domains import compile_domains
+from functions.plot_fragments import plot_fragmentation_output
+from functions.fragment_file_creation import output_fastas, output_pulldown
 
 
 def test_end_to_end_workflow():

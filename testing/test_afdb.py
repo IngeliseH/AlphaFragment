@@ -4,8 +4,8 @@ This test file contains tests for the alphafold_db_domain_identification module.
 import pytest
 import requests_mock
 from requests.exceptions import Timeout, ConnectionError as RequestsConnectionError
-from AFprep_func.classes import Domain
-from AFprep_func.alphafold_db_domain_identification import read_afdb_json, find_domain_by_res, find_domains_from_pae
+from functions.classes import Domain
+from functions.alphafold_db_domain_identification import read_afdb_json, find_domain_by_res, find_domains_from_pae
 
 @pytest.fixture
 def mock_requests():

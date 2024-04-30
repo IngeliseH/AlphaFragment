@@ -2,7 +2,7 @@
 Test file for classes in the AFprep_func package.
 """
 import pytest
-from AFprep_func.classes import Domain, Protein, ProteinSubsection  # Adjust the import as necessary.
+from functions.classes import Domain, Protein, ProteinSubsection  # Adjust the import as necessary.
 
 # Tests for Domain
 def test_domain_initialization():

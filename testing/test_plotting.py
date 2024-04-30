@@ -6,8 +6,8 @@ import itertools
 import pytest
 from matplotlib import pyplot as plt
 from matplotlib import colors
-from AFprep_func.classes import Protein, Domain
-from AFprep_func.plot_fragments import plot_domain, plot_fragment, draw_label, calculate_tick_freq, plot_fragmentation_output
+from functions.classes import Protein, Domain
+from functions.plot_fragments import plot_domain, plot_fragment, draw_label, calculate_tick_freq, plot_fragmentation_output
 
 @pytest.mark.parametrize("color_mode, domain_type, expected_color", [
     # color_mode 'type' with domain type 'AF'
