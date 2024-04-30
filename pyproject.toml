@@ -2,10 +2,6 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package_dir = {"": "src"}
-packages = find:
-
 [project]
 name = "AlphaFragment"
 description = "Scripts to prepare optimised input fragment boundaries/fasta files for AlphaFold"
