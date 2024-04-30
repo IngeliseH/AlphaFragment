@@ -100,7 +100,7 @@ def find_domain_by_res(domains, res):
             return domain
     return None
 
-def find_domains_from_pae(pae,  method='cautious', custom_params=None):
+def find_domains_from_pae(pae,  method='definite', custom_params=None):
     """
     Analyzes Predicted Aligned Error (PAE) data to group residues into domains.
     This function iterates through residue pairs, determining their domain
@@ -111,8 +111,8 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
     Parameters:
       - pae (list of lists): A 2D matrix of PAE values between residue pairs,
         where pae[i][j] is the PAE between residues i and j.
-      - method (str, optional): Strategy for grouping residues into domains.
-        Options are:
+      - method (str, optional): Strategy for grouping residues into domains. Default is
+        definite. Options are:
           - 'cautious' - Groups residues into domains with moderate PAE
             thresholds, aiming to balance sensitivity and specificity.
           - 'definite' - Only groups residues into domains if there is very high
@@ -131,11 +131,11 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
           - 'close_pae_val' (int) - The PAE threshold which residue pairs must
             fall below to be considered within the same domain, if the distance
             between them is between 4 and res_dist_cutoff. Set to 4 for cautious
-            grouping method and 2 for definite grouping method.
+            grouping method and 4 for definite grouping method.
           - 'further_pae_val' (int) - The PAE threshold which residue pairs must
             fall below to be considered within the same domain, if the distance
             between them is greater than res_dist_cutoff. Set to 11 for close
-            grouping method and 2 for definite grouping method.
+            grouping method and 4 for definite grouping method.
 
     Returns:
       - A list of Domain objects, each representing a domain with a unique
@@ -185,7 +185,7 @@ def find_domains_from_pae(pae,  method='cautious', custom_params=None):
     # Default parameters for cautious and definite methods
     parameters = {
         'cautious': {'res_dist_cutoff': 10, 'close_pae_val': 4, 'further_pae_val': 11},
-        'definite': {'res_dist_cutoff': 0, 'close_pae_val': 2, 'further_pae_val': 2}
+        'definite': {'res_dist_cutoff': 0, 'close_pae_val': 4, 'further_pae_val': 4}
     }
 
     if method in ['cautious', 'definite']:
