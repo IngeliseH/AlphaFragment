@@ -29,6 +29,10 @@ from AFprep_func.classes import Protein, Domain
     ('name,accession_id\nProtein5,INVALID',
      None,
      ['Protein5']),
+    # No accession id and no manual sequence
+    ('name,accession_id\nProtein5,',
+     None,
+     ['Protein5']),
     # Invalid Accession ID but with a manual sequence
     ('name,accession_id,sequence\nProtein6,INVALID,FFF',
      [Protein(name='Protein6', accession_id='INVALID', sequence='FFF')],
