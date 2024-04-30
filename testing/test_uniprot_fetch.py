@@ -54,6 +54,6 @@ def test_find_uniprot_domains(accession_id, uniprot_data, expected_domains, expe
     """
     protein = Protein(name="Test Protein", accession_id=accession_id, sequence="")
     # Mock the fetch function to return our test data without making an actual API call
-    with patch('AFprep_func.uniprot_fetch.fetch_uniprot_info', return_value=uniprot_data):
+    with patch('alphafragment.uniprot_fetch.fetch_uniprot_info', return_value=uniprot_data):
         result = find_uniprot_domains(protein)
         assert result == expected_domains, f"Failed to find expected domains {expected_domains} in test protein. Should have returned {expected_output}. Actual result was {result}"

@@ -47,7 +47,7 @@ def test_get_protein_combinations(proteins, method, one_protein, combinations_cs
             get_protein_combinations(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
     else:
         mock_csv_data = "ProteinA,ProteinB\n"
-        with patch("AFprep_func.fragment_file_creation.open", mock_open(read_data=mock_csv_data)), \
+        with patch("alphafragment.fragment_file_creation.open", mock_open(read_data=mock_csv_data)), \
             patch("csv.reader", return_value=[['ProteinA', 'ProteinB']]):
             combinations = get_protein_combinations(proteins, method, combinations_csv=combinations_csv, one_protein=one_protein)
             assert len(combinations) == len(expected_output)
@@ -66,8 +66,8 @@ def test_output_fastas_creates_files(proteins, method, combinations_csv, one_pro
     Test the output_fastas function to ensure the correct number of files are created, with different methods.
     """
     mock_csv_data = "ProteinA,ProteinB\n"
-    with patch("AFprep_func.fragment_file_creation.os.makedirs"), \
-         patch("AFprep_func.fragment_file_creation.open", mock_open(read_data=mock_csv_data)) as mocked_file:
+    with patch("alphafragment.fragment_file_creation.os.makedirs"), \
+         patch("alphafragment.fragment_file_creation.open", mock_open(read_data=mock_csv_data)) as mocked_file:
         output_fastas(proteins, None, method, combinations_csv=combinations_csv, one_protein=one_protein)
         handle = mocked_file()
         handle.write.assert_called(), "Expected write calls, but none were made"
@@ -77,7 +77,7 @@ def test_output_pulldown_creates_correct_file(proteins):
     """
     Test the output_pulldown function to ensure the correct file is created (with the 'all' combination method).
     """
-    with patch("AFprep_func.fragment_file_creation.open", mock_open()) as mocked_file:
+    with patch("alphafragment.fragment_file_creation.open", mock_open()) as mocked_file:
         output_pulldown(proteins, method="all")
         handle = mocked_file()
         handle.write.assert_called()

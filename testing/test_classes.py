@@ -1,5 +1,5 @@
 """
-Test file for classes in the AFprep_func package.
+Test file for classes in the AlphaFragment package.
 """
 import pytest
 from alphafragment.classes import Domain, Protein, ProteinSubsection
