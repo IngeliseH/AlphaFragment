@@ -135,7 +135,7 @@ def calculate_tick_freq(n):
     n_str = str(n)
     digit_count = len(n_str)  # Count the number of digits
     leading_digit = int(n_str[0])  # Get the leading digit
-    
+
     # Special case for single digit numbers
     if digit_count == 1:
         return 1
@@ -143,12 +143,11 @@ def calculate_tick_freq(n):
     # Apply conditions based on the leading digit and number length
     if leading_digit == 1:
         return 10 ** (digit_count - 2)
-    elif leading_digit in {5, 6, 7, 8, 9}:
+    if leading_digit in {5, 6, 7, 8, 9}:
         return 10 ** (digit_count - 1)
-    elif leading_digit in {2, 3, 4}:
+    if leading_digit in {2, 3, 4}:
         return 5*10 ** (digit_count - 2)
-    else:
-        raise ValueError("Unexpected leading digit")
+    raise ValueError("Unexpected leading digit")
 
 def plot_fragmentation_output(protein, fragments, save_location=None,
                               figsize=(12, 4), color_mode='type', label=None):
@@ -211,7 +210,7 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
 
     # Setting ticks
     tick_freq = calculate_tick_freq(protein.last_res)
-    ticks = [x for x in range(0, protein.last_res + 1, tick_freq)]  # Shift by 1 for 1-based index
+    ticks = list(range(0, protein.last_res + 1, tick_freq))  # Shift by 1 for 1-based index
     ticks.remove(0)
     ticks.append(1)
     ticks.append(protein.last_res + 1)

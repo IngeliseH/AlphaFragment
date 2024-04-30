@@ -171,7 +171,7 @@ def output_pulldown(proteins, output_name='pulldown_input.txt', method='all',
                         f"{protein2.accession_id},{start2+1}-{end2}")
                 pulldown_lines.append(line)
                 fragment_pairs.append((start1, end1, start2, end2))
-                
+
     with open(output_name, 'w',  encoding='utf-8') as file:
         file.write('\n'.join(pulldown_lines))
     print(f"File created: {output_name}")

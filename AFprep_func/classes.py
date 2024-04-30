@@ -141,7 +141,7 @@ class Protein:
 
         if not (isinstance(start, int) and isinstance(end, int) and 0 <= start < end):
             raise ValueError("Start and end must be positive integers, and start must be less than end.")
-        
+
         if end > self.last_res + 1:
             raise ValueError("End of the new fragment must be within the protein sequence bounds.")
         if start < self.first_res:

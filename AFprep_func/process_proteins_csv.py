@@ -188,7 +188,7 @@ def find_user_specified_domains(protein_name, df):
         domains = ([create_domain(f"manual_D{index + 1}", *domain) for index, domain in enumerate(domain_data)])
     if isinstance(domain_data, dict):
         domains = ([create_domain(domain_id, *positions) for domain_id, positions in domain_data.items()])
-    
+
     if domains:
         print(f"{len(domains)} domains found in csv for {protein_name}: {domains}")
         return domains
