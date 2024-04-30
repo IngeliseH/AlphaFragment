@@ -2,8 +2,8 @@
 Test file for the fragment_protein module.
 """
 import pytest
-from functions.fragment_protein import fragment_protein
-from functions.classes import Protein, Domain
+from alphafragment.fragment_protein import fragment_protein
+from alphafragment.classes import Protein, Domain
 
 @pytest.mark.parametrize(
     "protein", [

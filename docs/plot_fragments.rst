@@ -1,7 +1,7 @@
 Plot fragmentation output
 =========================
 
-.. automodule:: functions.plot_fragments
+.. automodule:: alphafragment.plot_fragments
    :members:
    :undoc-members:
    :show-inheritance:

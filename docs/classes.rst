@@ -1,7 +1,7 @@
 Setting up custom classes
 =========================
 
-.. automodule:: functions.classes
+.. automodule:: alphafragment.classes
    :members:
    :undoc-members:
    :show-inheritance:

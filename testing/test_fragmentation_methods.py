@@ -2,8 +2,8 @@
 Test file for the fragmentation_methods module.
 """
 import pytest
-from functions.classes import Domain, Protein
-from functions.fragmentation_methods import validate_fragmentation_parameters, merge_overlapping_domains, check_valid_cutpoint, recursive_fragmentation
+from alphafragment.classes import Domain, Protein
+from alphafragment.fragmentation_methods import validate_fragmentation_parameters, merge_overlapping_domains, check_valid_cutpoint, recursive_fragmentation
 
 @pytest.mark.parametrize(
     "domains, expected",

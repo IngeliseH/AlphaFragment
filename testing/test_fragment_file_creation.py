@@ -3,8 +3,8 @@ Test file for the fragment_file_creation module.
 """
 from unittest.mock import mock_open, patch
 import pytest
-from functions.classes import Protein
-from functions.fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown
+from alphafragment.classes import Protein
+from alphafragment.fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown
 
 # Define sample proteins and list as a fixture
 protein1 = Protein(name="ProteinA", accession_id="O123", sequence="ABCDEFGHIJKLMNOP", fragment_list=[(0,7), (6,16)])

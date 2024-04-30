@@ -1,7 +1,7 @@
 Dealing with long domains
 =========================
 
-.. automodule:: functions.long_domains
+.. automodule:: alphafragment.long_domains
    :members:
    :undoc-members:
    :show-inheritance:
