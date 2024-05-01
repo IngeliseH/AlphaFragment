@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 import pandas as pd
 from alphafragment.classes import Protein, Domain
-from alphafragment.compile_domains import compile_domains
+from alphafragment.domain_compilation import compile_domains
 
 valid_protein_data = pd.DataFrame({
     'name': ['TestProtein'],
@@ -37,10 +37,10 @@ def test_compile_domains(uniprot, alphafold, manual, protein_data, expected_coun
     uniprot_data = [Domain('domain1', 0, 10, 'UniProt')]
     alphafold_data = [Domain('domain2', 20, 30, 'AF'), Domain('domain3', 40, 50, 'AF')]
     manual_data = [Domain('domain4', 60, 70, 'manual'), Domain('domain5', 80, 90, 'manual'), Domain('domain6', 95, 100, 'manual')]
-    with patch('alphafragment.compile_domains.find_uniprot_domains', return_value=uniprot_data), \
-         patch('alphafragment.compile_domains.read_afdb_json', return_value='dummy_pae'), \
-         patch('alphafragment.compile_domains.find_domains_from_pae', return_value=alphafold_data), \
-         patch('alphafragment.compile_domains.find_user_specified_domains', return_value=manual_data):
+    with patch('alphafragment.domain_compilation.find_uniprot_domains', return_value=uniprot_data), \
+         patch('alphafragment.domain_compilation.read_afdb_json', return_value='dummy_pae'), \
+         patch('alphafragment.domain_compilation.find_domains_from_pae', return_value=alphafold_data), \
+         patch('alphafragment.domain_compilation.find_user_specified_domains', return_value=manual_data):
 
         protein = Protein("TestProtein", "mock_accid", "sequence")
         domains = compile_domains(protein, uniprot=uniprot, alphafold=alphafold, manual=manual, protein_data=protein_data)

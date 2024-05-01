@@ -13,7 +13,7 @@ Welcome to AlphaFragment's documentation!
    process_proteins_csv
    alphafold_db_domain_identification
    uniprot_fetch
-   compile_domains
+   domain_compilation
    fragmentation_methods
    long_domains
    fragment_protein
