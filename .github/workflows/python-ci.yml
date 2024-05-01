@@ -36,7 +36,8 @@ jobs:
 
     - name: Run pytest with coverage check
       run: |
-        pytest ./testing/ --cov=./src/alphafragment --cov-report=xml  # Generate coverage reports in XML format
+        # Run pytest with coverage check
+        pytest --cov=./src/alphafragment --cov-report=xml ./testing/
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
