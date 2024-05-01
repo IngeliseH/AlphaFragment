@@ -11,8 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false  # Ensure all versions are tested even if one fails
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -26,13 +27,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install .
-        pip install pandas requests matplotlib pytest pylint requests_mock
+        pip install pandas requests matplotlib pytest pylint requests_mock pytest-cov
 
     - name: Lint with pylint
       run: |
-        # Run pylint, configuring it to not fail the workflow on certain errors
+        # Run pylint, configuring it to not fail the workflow on certain errors (lines too long, too many variables or arguments)
         pylint --exit-zero --disable=R0913,R0914,C0301 ./src/alphafragment
 
-    - name: Run pytest
+    - name: Run pytest with coverage check
       run: |
-        pytest ./testing/
+        pytest ./testing/ --cov=./src/alphafragment --cov-report=xml  # Generate coverage reports in XML format
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: coverage.xml
+        fail_ci_if_error: true
