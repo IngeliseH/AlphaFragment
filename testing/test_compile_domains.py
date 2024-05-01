@@ -10,7 +10,6 @@ from alphafragment.domain_compilation import compile_domains
 valid_protein_data = pd.DataFrame({
     'name': ['TestProtein'],
     'domains': [[(60, 70), (80, 90), (95, 100)]]})
-invalid_protein_data = pd.DataFrame({'name': ['TestProtein']})
 
 @pytest.mark.parametrize("uniprot,alphafold,manual,protein_data,expected_count,expected_print", [
     # Uniprot only
@@ -23,8 +22,10 @@ invalid_protein_data = pd.DataFrame({'name': ['TestProtein']})
     (True, True, True, valid_protein_data, 6, "2 domains found in AlphaFold structure for TestProtein: [Domain(id=domain2, start=20, end=30, domain_type='AF'), Domain(id=domain3, start=40, end=50, domain_type='AF')]"),
     # Manual only, with no data provided
     (False, False, True, None, 0, "Cannot add manually specified domains - the 'df' argument is required."),
-    # Manual only, with invalid data
-    (False, False, True, invalid_protein_data, 0, "Cannot add manually specified domains - the 'domains' column does not exist in the dataframe."),
+    # Manual only, with invalid data - no domains column
+    (False, False, True, pd.DataFrame({'name': ['TestProtein']}), 0, "Cannot add manually specified domains - the 'domains' column does not exist in the dataframe."),
+    # Manual only, with invalid data - no name column
+    (False, False, True, pd.DataFrame({'domains': [[(60, 70), (80, 90), (95, 100)]]}), 0, "Cannot add manually specified domains - the 'name' column does not exist in the dataframe"),
     # None, with valid data to check data not added when manual False
     (False, False, False, valid_protein_data, 0, ""),
     # Check that other data is still added when manual is True but data is not provided

@@ -132,3 +132,12 @@ def test_overlap_validation_error_handling(overlap, expected_error):
     with pytest.raises(expected_error):
         validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
                                           10, 20, overlap), f"validate_fragmentation_parameters function did not raise {expected_error} with invalid overlap parameters: {overlap}"
+
+def test_min_len_validation_error_handling():
+    """
+    Tests that the validate_fragmentation_parameters function raises correct
+    errors for invalid min_len parameters.
+    """
+    with pytest.raises(ValueError):
+        validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
+                                          -10, 20, {'min': 1, 'ideal': 2, 'max': 5})

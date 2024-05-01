@@ -47,8 +47,10 @@ def test_domain_equality():
     domain1 = Domain("D1", 10, 20, "TYPE")
     domain2 = Domain("D1", 10, 20, "TYPE")
     domain3 = Domain("D1", 10, 21, "TYPE")
+    domain4 = (10, 20, "TYPE")
     assert domain1 == domain2, "Equal domains did not return True for equality check"
     assert domain1 != domain3, "Different domains returned True for equality check"
+    assert domain1 != domain4, "Domain and non-Domain object returned True for equality check"
 
 # Tests for Protein
 def test_protein_initialization():
@@ -62,6 +64,13 @@ def test_protein_initialization():
     assert protein.first_res == 0, f"Protein first_res did not initialize correctly, expected 0, got {protein.first_res}"
     assert protein.last_res == 7, f"Protein last_res did not initialize correctly, expected 7, got {protein.last_res}"
 
+def test_protein_empty_sequence():
+    """
+    Test Protein class initialization with an empty sequence
+    """
+    protein = Protein("TestProtein", "P00001", "")
+    assert protein.last_res is None, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
+
 def test_protein_add_domain():
     """
     Test that the add_domain method of the Protein class works as expected
@@ -74,13 +83,6 @@ def test_protein_add_domain():
     # Test that using the add_domain function with a non Domain class object raises a ValueError
     with pytest.raises(ValueError):
         protein.add_domain("not a domain"), "add_domain did not raise a ValueError for a non-Domain object"
-
-def test_protein_empty_sequence():
-    """
-    Test Protein class initialization with an empty sequence
-    """
-    protein = Protein("TestProtein", "P00001", "")
-    assert protein.last_res is None, f"Protein last_res did not initialize correctly for an empty sequence, expected 0, got {protein.last_res}"
 
 @pytest.mark.parametrize("fragment, expected_exception, message", [
     # Valid sequential fragments
@@ -96,7 +98,9 @@ def test_protein_empty_sequence():
     # Invalid input type - not both integers
     (('a', 60), ValueError, "Start and end must be positive integers, and start must be less than end."),
     # Non-sequential fragment
-    ((1, 5), ValueError, "Start of the new fragment must be greater than the start of the previous fragment.")
+    ((1, 5), ValueError, "Start of the new fragment must be greater than the start of the previous fragment."),
+    # Fragment outside of protein bounds - after end
+    ((50, 110), ValueError, "End of the new fragment must be within the protein sequence bounds.")
 ])
 def test_add_fragment(fragment, expected_exception, message):
     """
@@ -113,6 +117,49 @@ def test_add_fragment(fragment, expected_exception, message):
         protein.add_fragment(fragment)
         # Verify by checking the last added fragment
         assert protein.fragment_list[-1] == fragment, "Fragment was not added correctly."
+
+def test_protein_equality():
+    """
+    Test that the __eq__ method of the Protein class works as expected
+    """
+    protein1 = Protein("ProteinA", "P12345", "MKQLEDKVEE", 0, 9)
+    # Identical protein
+    protein2 = Protein("ProteinA", "P12345", "MKQLEDKVEE", 0, 9)
+    # Different last_res and sequence
+    protein3 = Protein("ProteinA", "P12345", "MKQLEDKVEEF", 0, 10)
+    # Different accession_id
+    protein4 = Protein("ProteinA", "P12346", "MKQLEDKVEE", 0, 9)
+    # Different name
+    protein5 = Protein("ProteinB", "P12345", "MKQLEDKVEE", 0, 9)
+    # Non-Protein object
+    protein6 = (0, 9, "MKQLEDKVEE")
+
+    assert protein1 == protein2, "Proteins with identical attributes should be equal"
+    assert protein1 != protein3, "Proteins with different last_res should not be equal"
+    assert protein1 != protein4, "Proteins with different accession_id should not be equal"
+    assert protein1 != protein5, "Proteins with different names should not be equal"
+    assert protein1 != protein6, "Protein and non-Protein object should not be equal"
+
+def test_protein_str():
+    """
+    Test that the __str__ method of the Protein class works as expected
+    """
+    protein = Protein("ProteinA", "P12345", "MKQLEDKVEE", 0, 9)
+    expected_str = "Protein Name: ProteinA, Accession ID: P12345, Domains: 0, Fragments: 0"
+    assert str(protein) == expected_str, "The string representation of the protein is incorrect"
+
+def test_protein_repr():
+    """
+    Test that the __repr__ method of the Protein class works as expected
+    """
+    domain = Domain("Domain1", 1, 5, "A")
+    protein = Protein("ProteinA", "P12345", "MKQLEDKVEELKQHVID", 0, 16, [domain])
+    domain_reprs = [repr(d) for d in protein.domain_list]
+    expected_repr = (f"Protein(name='ProteinA', accession_id='P12345', "
+                     f"sequence='MKQLEDKVEE...', first_res=0, last_res=16, "
+                     f"domain_list={domain_reprs}, fragment_list=[])")
+    actual_repr = repr(protein).replace("Domain(...)", "repr(domain)")
+    assert actual_repr == expected_repr, "The repr representation of the protein is incorrect"
 
 # Tests for ProteinSubsection
 def test_protein_subsection_initialization():

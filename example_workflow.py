@@ -1,6 +1,6 @@
 from alphafragment.process_proteins_csv import initialize_proteins_from_csv, update_csv_with_fragments
 from alphafragment.fragment_protein import fragment_protein
-from alphafragment.compile_domains import compile_domains
+from alphafragment.domain_compilation import compile_domains
 from alphafragment.plot_fragments import plot_fragmentation_output
 from alphafragment.fragment_file_creation import output_fastas, output_pulldown
 

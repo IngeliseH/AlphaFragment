@@ -193,10 +193,16 @@ def find_domains_from_pae(pae,  method='definite', custom_params=None):
         close_pae_val = parameters[method]['close_pae_val']
         further_pae_val = parameters[method]['further_pae_val']
     elif method == 'custom':
+        # Check if custom parameters are provided
         if not custom_params or not all(key in custom_params for key in
                                         ['res_dist_cutoff', 'close_pae_val', 'further_pae_val']):
             raise ValueError("For custom method, 'custom_params' must be a dictionary "
                              "with keys 'res_dist_cutoff', 'close_pae_val', 'further_pae_val'.")
+        # Check if the values are integers
+        if not all(isinstance(custom_params[key], int) for key in
+                   ['res_dist_cutoff', 'close_pae_val', 'further_pae_val']):
+            raise ValueError("Custom parameters must be integers.")
+        # Assign custom parameters
         res_dist_cutoff = custom_params['res_dist_cutoff']
         close_pae_val = custom_params['close_pae_val']
         further_pae_val = custom_params['further_pae_val']

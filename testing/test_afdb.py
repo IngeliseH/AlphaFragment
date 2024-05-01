@@ -66,6 +66,14 @@ def test_request_exceptions_handling(mock_requests, exception):
     result = read_afdb_json("valid_id", "v4")
     assert result is None, f"Expected None for exception {exception}, got {result}"
 
+@pytest.mark.parametrize("accession_id", [None, 'na', '', 'NA'])
+def test_read_afdb_json_with_invalid_accession_id(accession_id):
+    """
+    Test that read_afdb_json returns None when provided with an invalid or non-applicable accession_id.
+    """
+    result = read_afdb_json(accession_id)
+    assert result is None, f"Expected None for invalid accession_id '{accession_id}', but got {result}"
+
 @pytest.mark.parametrize("domains, residue, expected", [
     # Test with no domains
     ([], 5, None),
@@ -84,28 +92,49 @@ def test_find_domain_by_res(domains, residue, expected):
     result = find_domain_by_res(domains, residue)
     assert result == expected
 
-@pytest.mark.parametrize("pae, method, custom_params, expected_exception", [
+@pytest.mark.parametrize("pae, method, expected_exception", [
     # PAE input that is not a matrix (list of integers)
-    ([1, 2, 3, 4], 'cautious', None, ValueError),
+    ([1, 2, 3, 4], 'cautious', ValueError),
     # PAE input that is not square
-    ([[1, 2], [3, 4], [5, 6]], 'cautious', None, ValueError),
+    ([[1, 2], [3, 4], [5, 6]], 'cautious', ValueError),
     # PAE contains non-numeric values
-    ([[1, 2], [3, 'a']], 'cautious', None, ValueError),
+    ([[1, 2], [3, 'a']], 'cautious', ValueError),
     # Invalid method
-    ([[1, 2], [3, 4]], 'invalid', None, ValueError),
-    # Custom method with non-dict parameters
-    ([[1, 2], [3, 4]], 'custom', [1, 2], ValueError),
-    # Custom method with non-numeric parameters
-    ([[1, 2], [3, 4]], 'custom', {'res_dist_cutoff': 'five', 'close_pae_val': 'two'}, ValueError),
-    # Custom method missing necessary params
-    ([[1, 2], [3, 4]], 'custom', {'res_dist_cutoff': 5}, ValueError),
+    ([[1, 2], [3, 4]], 'invalid', ValueError)
 ])
-def test_error_handling(pae, method, custom_params, expected_exception):
+def test_error_handling(pae, method, expected_exception):
     """
-    Ensures that the domain finding function correctly raises exceptions for various invalid inputs, including incorrect PAE matrices, methods, and parameters.
+    Ensures that the domain finding function correctly raises exceptions for various general input errors, including incorrect PAE matrices and methods.
     """
     with pytest.raises(expected_exception):
-        find_domains_from_pae(pae, method, custom_params), f"Expected {expected_exception} for input {pae}, got no exception"
+        find_domains_from_pae(pae, method)
+
+@pytest.mark.parametrize("custom_params, expected_exception", [
+    # Complete and correct custom parameters
+    ({"res_dist_cutoff": 5, "close_pae_val": 1, "further_pae_val": 2}, None),
+    # Custom method with non-dict parameters
+    ([1, 2], ValueError),
+    # Custom method missing necessary params
+    ({'res_dist_cutoff': 5}, ValueError),
+    # Non-numeric value in parameters
+    ({"res_dist_cutoff": "five", "close_pae_val": 0.5, "further_pae_val": 2}, ValueError),
+])
+def test_handling_custom_parameters(custom_params, expected_exception):
+    """
+    Tests the handling of custom parameters in the find_domains_from_pae function,
+    both in correct cases and where errors should be raised.
+    """
+    pae = [[1, 2], [3, 4]]  # Common PAE matrix used in all cases
+    method = 'custom'        # Common method used in all cases
+
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            find_domains_from_pae(pae, method, custom_params)
+    else:
+        # Test should pass without raising an exception
+        result = find_domains_from_pae(pae, method, custom_params)
+        assert isinstance(result, list), f"Expected a list of domains for valid inputs, got {type(result)}"
+
 
 @pytest.mark.parametrize("pae, expected_length", [
     # A very small matrix

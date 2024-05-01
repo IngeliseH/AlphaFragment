@@ -17,6 +17,10 @@ from alphafragment.classes import Protein, Domain
     ("P12345", "https://www.ebi.ac.uk/proteins/api/features/P12345", None, 500, None, None),
     # Connection error
     ("P12345", "https://www.ebi.ac.uk/proteins/api/features/P12345", None, None, None, RequestsConnectionError),
+    # No accession ID provided
+    ("", "", None, None, None, None),
+    # Accession ID = NA
+    ("NA", "", None, None, None, None)
 ])
 def test_fetch_uniprot_info(accession_id, mock_url, response, status_code, expected, exception):
     """
@@ -28,7 +32,6 @@ def test_fetch_uniprot_info(accession_id, mock_url, response, status_code, expec
         else:
             m.get(mock_url, json=response, status_code=status_code)
 
-        # Assuming 'fetch_uniprot_info' is the function being tested from your module
         result = fetch_uniprot_info(accession_id)
         if exception:
             assert result is None, f"Expected None when an exception occurs, but got {result}"
