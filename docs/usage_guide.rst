@@ -1,5 +1,6 @@
+===========
 Usage Guide
-==============
+===========
 
 This section provides a guide to using the AlphaFragment package. This workflow
 demonstrates how to process protein data from a CSV file, identify domains,
@@ -8,15 +9,7 @@ fragment proteins, and visualize the results.
 Workflow
 ----------------------------
 
-1. **Installing AlphaFragment**
-
-   Ensure that AlphaFragment is installed in your Python environment:
-
-   .. code-block:: bash
-
-       pip install alphafragment
-
-2. **Setting Up Your Python Script**
+1. **Setting Up Your Python Script**
 
    Begin by setting up your Python script with the necessary paths for input and output:
 
@@ -26,7 +19,7 @@ Workflow
        output_csv_path = "output.csv"
        image_save_location = "folder_path"
 
-3. **Initializing Protein Data from CSV**
+2. **Initializing Protein Data from CSV**
 
    Import protein data from a CSV file. This step converts the CSV into a list
    of Protein objects and a DataFrame containing all data in the input file.
@@ -37,7 +30,7 @@ Workflow
 
        proteins, df = initialize_proteins_from_csv(input_csv_path)
 
-4. **Protein Domain Identification and Fragmentation**
+3. **Protein Domain Identification and Fragmentation**
 
    For each protein in the dataset, identify domains and fragment the protein accordingly:
 
@@ -54,7 +47,7 @@ Workflow
            for fragment in fragments:
                (protein.add_fragment(start, end) for start, end in fragment)
 
-5. **Visualization of Fragmentation**
+4. **Visualization of Fragmentation**
 
    Create a graphic that illustrates the domain locations and fragmentation results:
 
@@ -65,7 +58,7 @@ Workflow
        for protein in proteins:
            plot_fragmentation_output(protein, fragments, image_save_location, label=['UniProt', 'manually_defined'])
 
-6. **Updating and Saving Output Data**
+5. **Updating and Saving Output Data**
 
    Update the DataFrame with protein information and save the updated data to a CSV file:
 
@@ -75,7 +68,7 @@ Workflow
 
        update_csv_with_fragments(df, output_csv_path, proteins)
 
-7. **Output Generation**
+6. **Output Generation**
 
    Generate FASTA files and AlphaPulldown input files for further analysis:
 
