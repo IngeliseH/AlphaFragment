@@ -2,7 +2,7 @@
    sphinx-quickstart on Fri Mar 22 12:53:39 2024.
 
 Welcome to AlphaFragment's documentation!
-==================================
+=========================================
 
 :caption: Contents:
 
