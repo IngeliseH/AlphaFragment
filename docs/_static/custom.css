@@ -1,0 +1,13 @@
+.rst-content .logo {
+    width: 20%;    /* Adjust the width percentage based on your preference */
+    max-width: 200px; /* Maximum size */
+    min-width: 100px; /* Minimum size */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.homepage-banner img {
+    width: 100%; /* Full width */
+    height: auto; /* Adjust height automatically */
+    display: block; /* Remove any default margin or padding */
+    margin-bottom: 20px; /* Space below the banner */
+}

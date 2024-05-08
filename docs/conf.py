@@ -13,13 +13,11 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../src'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'AlphaFragment'
 copyright = '2024, Ingelise Holland-Kaye'
 author = 'Ingelise Holland-Kaye'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -38,10 +36,26 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+
+# Path to the logo
+html_logo = "_static/logo.png"
+
+# Define the static path
+html_static_path = ['_static']
+
+# Optionally, you can make the logo the only element in the header
+html_theme_options = {
+    'logo_only': True,
+    'display_version': True,
+}
+
+# Setting image sizes
+html_css_files = [
+    'custom.css',
+]
