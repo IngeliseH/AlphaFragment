@@ -1,5 +1,5 @@
-Plot fragmentation output
-=========================
+Plotting fragmentation output
+=============================
 
 .. automodule:: alphafragment.plot_fragments
    :members:

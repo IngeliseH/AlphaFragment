@@ -9,7 +9,7 @@
 
 Welcome to the official documentation for **AlphaFragment**, a Python package
 designed to optimally fragment proteins and streamline the preparation of
-protein data for structural analysis.
+protein data for structure prediction.
 
 .. toctree::
    :maxdepth: 2

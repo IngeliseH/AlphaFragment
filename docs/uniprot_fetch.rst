@@ -1,5 +1,5 @@
-Handle data from UniProt
-========================
+Handling data from UniProt
+==========================
 
 .. automodule:: alphafragment.uniprot_fetch
    :members:

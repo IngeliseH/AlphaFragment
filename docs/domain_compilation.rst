@@ -1,5 +1,5 @@
-Find and compile protein domains from various sources (AlphaFold, UniProt, manually defined)
-=============================================================================================
+Compiling domains from various sources
+======================================
 
 .. automodule:: alphafragment.domain_compilation
    :members:

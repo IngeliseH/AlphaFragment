@@ -1,5 +1,5 @@
-Setting up custom classes
-=========================
+Custom classes
+==============
 
 .. automodule:: alphafragment.classes
    :members:
