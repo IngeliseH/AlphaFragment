@@ -11,7 +11,7 @@
 
 ## Documentation
 [![Documentation Status](https://readthedocs.org/projects/colabfold-input-preparation/badge/?version=latest)](https://colabfold-input-preparation.readthedocs.io/en/latest/)
-Comprehensive documentation for AlphaFragment can be found [here](https://colabfold-input-preparation.readthedocs.io/en/v1.0.0/). This includes detailed information on function logic and usage.
+Comprehensive documentation for AlphaFragment can be found [here](https://colabfold-input-preparation.readthedocs.io/en/latest/). This includes detailed information on function logic and usage.
 
 ## Usage
 A basic workflow to use AlphaFragment is included in the `example_workflow.py` file.
