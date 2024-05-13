@@ -1,13 +1,26 @@
 .. AlphaFragment documentation master file, created by
    sphinx-quickstart on Fri Mar 22 12:53:39 2024.
 
-Welcome to AlphaFragment's documentation!
-==================================
+.. raw:: html
 
-:caption: Contents:
+    <div class="homepage-banner">
+        <img src="_static/banner.png" alt="AlphaFragment Banner" style="width: 100%;">
+    </div>
+
+Welcome to the official documentation for **AlphaFragment**, a Python package
+designed to optimally fragment proteins and streamline the preparation of
+protein data for structural analysis.
 
 .. toctree::
    :maxdepth: 2
+
+   introduction
+   installation
+   usage_guide
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Detailed function documentation
 
    classes
    process_proteins_csv
@@ -20,11 +33,7 @@ Welcome to AlphaFragment's documentation!
    plot_fragments
    fragment_file_creation
 
- 
-
-
-
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`
