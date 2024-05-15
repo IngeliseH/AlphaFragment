@@ -10,8 +10,8 @@
 - **Output Preparation**: Produce output files compatible with AlphaFold and AlphaPulldown.
 
 ## Documentation
-[![Documentation Status](https://beta.readthedocs.org/projects/colabfold-input-preparation/badge/?version=latest)](https://beta.readthedocs.org/projects/colabfold-input-preparation/en/latest/)
-Comprehensive documentation for AlphaFragment can be found [here](https://beta.readthedocs.org/projects/colabfold-input-preparation/en/latest/). This includes detailed installation instructions, usage examples, and guides for contributing to the project.
+[![Documentation Status](https://beta.readthedocs.org/projects/colabfold-input-preparation/badge/?version=v1.0.2)](https://beta.readthedocs.org/projects/colabfold-input-preparation/en/v1.0.2/)
+Comprehensive documentation for AlphaFragment can be found [here](https://beta.readthedocs.org/projects/colabfold-input-preparation/en/v1.0.2/). This includes detailed installation instructions, usage examples, and guides for contributing to the project.
 
 ## Usage
 A basic workflow to use AlphaFragment is included in the `example_workflow.py` file.
