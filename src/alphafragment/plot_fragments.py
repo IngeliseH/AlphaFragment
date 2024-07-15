@@ -42,7 +42,7 @@ def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, 
     """
     if color_mode not in ['type', 'cycle']:
         raise ValueError("color_mode must be 'type' or 'cycle'")
-    type_colors = {'AF': 'orange', 'UniProt': 'green', 'manually_defined': 'blue'}
+    type_colors = {'AF': 'skyblue', 'UniProt': 'pink', 'manually_defined': 'green'}
     default_color = 'gray'
     if color_mode == 'type':
         if domain.type in type_colors:
@@ -115,7 +115,7 @@ def draw_label(label, x_left, x_right, y, bracket_height, ax):
 
     text_y_position = y - bracket_height
     ax.text((x_left + x_right) / 2, text_y_position, label, ha='center',
-            va='top', fontsize=8, rotation=45)
+            va='top', fontsize=8, rotation=90)
 
 def calculate_tick_freq(n):
     """
