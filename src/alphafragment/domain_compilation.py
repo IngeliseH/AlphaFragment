@@ -22,7 +22,7 @@ from .alphafold_db_domain_identification import read_afdb_json, find_domains_fro
 from .process_proteins_csv import find_user_specified_domains
 
 def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
-                    protein_data=None, pae_method="cautious", pae_custom_params=None):
+                    protein_data=None, pae_method="definite", pae_custom_params=None):
     """
     Compiles a list of Domain objects for a given protein, using domain data
     from UniProt, AlphaFold structure predictions, and/or manually specified
@@ -49,7 +49,7 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
             domains.
           - 'custom' - Allows specification of custom PAE thresholds via the
             custom_params argument.
-        Defaults to "cautious".
+        Defaults to "definite".
       - pae_custom_params (dict, optional): Custom PAE thresholds for the AlphaFold
         domain identification method. Only use with pae_method 'custom". Should
         be a dictionary with the following keys:
