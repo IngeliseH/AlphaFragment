@@ -58,10 +58,3 @@ def test_end_to_end_workflow():
     # Cleanup
     os.remove(input_csv_path)
     os.remove(output_csv_path)
-    for file in os.listdir(image_save_location):
-        os.remove(os.path.join(image_save_location, file))
-    os.rmdir(image_save_location)
-    os.remove(output_pulldown_path)
-    for file in os.listdir(output_fastas_path):
-        os.remove(os.path.join(output_fastas_path, file))
-    os.rmdir(output_fastas_path)

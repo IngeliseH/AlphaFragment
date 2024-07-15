@@ -131,10 +131,12 @@ def test_recursive_fragmentation_lengths_and_overlaps(domains, length, overlap):
         (20, None, TypeError),
         # overlap not a dictionary
         (None, 5, TypeError),
-        # min_len <= 0
+        # min_len < 0
         ({'min': -10, 'ideal': 15, 'max': 20}, None, ValueError),
-        # min_overlap <= 0
-        (None, {'min': -1, 'ideal': 2, 'max': 5}, ValueError),
+        # min_len == 0
+        ({'min': 0, 'ideal': 15, 'max': 20}, None, ValueError),
+        # min_overlap < 0
+        (None, {'min': -1, 'ideal': 2, 'max': 5}, ValueError)
     ]
 )
 def test_validation_error_handling(length, overlap, expected_error):
@@ -154,3 +156,27 @@ def test_validation_error_handling(length, overlap, expected_error):
         pass
     else:
         pytest.fail(f"Expected {expected_error} but no error was raised for input {length}, {overlap}")
+
+@pytest.mark.parametrize("length, overlap",
+    [
+        # ideal_len == min_len
+        ({'min': 10, 'ideal': 10, 'max': 20}, {'min': 1, 'ideal': 2, 'max': 5}),
+        # ideal_len == max_len
+        ({'min': 10, 'ideal': 20, 'max': 20}, {'min': 1, 'ideal': 2, 'max': 5}),
+        # ideal_overlap == min_overlap
+        ({'min': 10, 'ideal': 15, 'max': 20}, {'min': 1, 'ideal': 1, 'max': 5}),
+        # ideal_overlap == max_overlap
+        ({'min': 10, 'ideal': 15, 'max': 20}, {'min': 1, 'ideal': 5, 'max': 5}),
+    ]
+)
+def test_valid_parameters_no_error(length, overlap):
+    """
+    Tests that the validate_fragmentation_parameters function does not raise
+    an error for valid length and overlap parameters where the ideal values
+    are equal to the min or max values.
+    """
+    try:
+        validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
+                                          length, overlap)
+    except Exception as e:
+        pytest.fail(f"Unexpected error {e} raised for input {length}, {overlap}")

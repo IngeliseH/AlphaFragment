@@ -85,6 +85,10 @@ def validate_fragmentation_parameters(protein, length, overlap):
     if overlap['min'] > overlap['max']:
         raise ValueError(f"Minimum overlap ({overlap['min']}) must be less than "
                          f"or equal to maximum overlap ({overlap['max']}).")
+    
+    # Check that the min overlap is not negative
+    if overlap['min'] < 0:
+        raise ValueError("Minimum overlap cannot be negative.")
 
     # Check that the ideal overlap is within the min and max overlap bounds
     if not overlap['min'] <= overlap['ideal'] <= overlap['max']:
@@ -94,6 +98,7 @@ def validate_fragmentation_parameters(protein, length, overlap):
     if overlap['max'] >= length['min']:
         raise ValueError(f"Maximum overlap ({overlap['max']}) must be less than the minimum "
                          f"fragment length ({length['min']}) to avoid overlap-length conflicts.")
+
 def merge_overlapping_domains(domains):
     """
     Merges overlapping domains within a list of domains.

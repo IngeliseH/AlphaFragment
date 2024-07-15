@@ -87,3 +87,34 @@ def test_invalid_protein_input():
     """
     with pytest.raises(TypeError):
         fragment_protein("not a protein"), "Expected TypeError for invalid protein input"
+
+@pytest.mark.parametrize("length, overlap",
+    [
+        # ideal_len == min_len
+        ({'min': 20, 'ideal': 20, 'max': 50}, {'min': 5, 'ideal': 10, 'max': 15}),
+        # ideal_len == max_len
+        ({'min': 20, 'ideal': 50, 'max': 50}, {'min': 5, 'ideal': 10, 'max': 15}),
+        # ideal_overlap == min_overlap
+        ({'min': 20, 'ideal': 35, 'max': 50}, {'min': 5, 'ideal': 5, 'max': 15}),
+        # ideal_overlap == max_overlap
+        ({'min': 20, 'ideal': 35, 'max': 50}, {'min': 5, 'ideal': 15, 'max': 15}),
+    ]
+)
+def test_boundary_parameters_success(length, overlap):
+    """
+    Test that fragmentation is successful when using boundary parameters 
+    where the ideal length or overlap is equal to the min or max values.
+    """
+    protein = Protein(name="BoundaryTestProtein", accession_id="boundary_test_acc",
+                      sequence='A'*100, domain_list=[Domain(1, 10, 20, 'TYPE'), Domain(2, 30, 40, 'TYPE')])
+    try:
+        fragments = fragment_protein(protein, length, overlap)
+        for i in range(len(fragments) - 1):
+            # Check correct fragment length
+            fragment_length = fragments[i][1] - fragments[i][0]
+            assert length['min'] <= fragment_length <= length['max'], f"Fragment length of fragment {fragments[i]} out of bounds, for fragment index {i} in fragment list {fragments}"
+            # Check correct overlap between fragments
+            actual_overlap = fragments[i][1] - fragments[i + 1][0]
+            assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap of {actual_overlap} out of bounds between fragments {i} and {i+1} in fragment list {fragments}"
+    except Exception as e:
+        pytest.fail(f"Unexpected error {e} raised for input {length}, {overlap}")

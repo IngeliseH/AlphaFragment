@@ -64,7 +64,7 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10):
     # Validate the input parameters
     validate_fragmentation_parameters(protein, length, overlap)
 
-    subsections, fragments = handle_long_domains(protein, length['min'], length['max'], overlap)
+    subsections, fragments = handle_long_domains(protein, length, overlap)
 
     for subsection in subsections:
         merged_domains = merge_overlapping_domains(subsection.domain_list)
