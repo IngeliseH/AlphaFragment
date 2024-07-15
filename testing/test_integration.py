@@ -28,7 +28,7 @@ def test_end_to_end_workflow():
         'name': ['ProteinA', 'ProteinB'],
         'accession_id': ['A', 'B'],
         'sequence': ['DDDDDXDDDDDDXXXXXXXDDDDDDDDDDDDDDDDXXXXDDDDDDXXXXX', 'IIIIIIIIIIIIIIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXIIIII'],
-        'domains': [[(1,5), (7,12), (20, 35), (40, 45)], [(15,45)]]
+        'domains': [[(1, 5), (7, 12), (20, 35), (40, 45)], [(15, 45)]]
     })
     df_mock.to_csv(input_csv_path, index=False)
 
@@ -38,7 +38,9 @@ def test_end_to_end_workflow():
         domains = compile_domains(protein, protein_data=df)
         for domain in domains:
             protein.add_domain(domain)
-        fragments = fragment_protein(protein, min_len=10, max_len=20, overlap={'min':3, 'ideal':5, 'max':7})
+        length = {'min': 10, 'ideal': 15, 'max': 20}
+        overlap = {'min': 3, 'ideal': 5, 'max': 7}
+        fragments = fragment_protein(protein, length, overlap)
         print(f"fragments = {fragments}")
         for fragment in fragments:
             protein.add_fragment(fragment)
@@ -56,3 +58,10 @@ def test_end_to_end_workflow():
     # Cleanup
     os.remove(input_csv_path)
     os.remove(output_csv_path)
+    for file in os.listdir(image_save_location):
+        os.remove(os.path.join(image_save_location, file))
+    os.rmdir(image_save_location)
+    os.remove(output_pulldown_path)
+    for file in os.listdir(output_fastas_path):
+        os.remove(os.path.join(output_fastas_path, file))
+    os.rmdir(output_fastas_path)

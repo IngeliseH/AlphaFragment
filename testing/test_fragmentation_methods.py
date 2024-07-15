@@ -74,70 +74,83 @@ def test_check_valid_cutpoint(res, domains, sequence_end, expected):
     assert result == expected, f"Expected {expected} but got {result} for residue {res} with sequence end {sequence_end}"
 
 @pytest.mark.parametrize(
-    "domains, min_len, max_len, min_overlap, ideal_overlap, max_overlap",
+    "domains, length, overlap",
     [
         # Basic Functionality: No domains, simple split
-        ([], 10, 15, 1, 2, 3),
+        ([], {'min': 10, 'ideal': 15, 'max': 20}, {'min': 1, 'ideal': 2, 'max': 3}),
         # Domain Handling: No split through domain
-        ([Domain(1, 5, 10, 'TYPE')], 5, 10, 1, 2, 3),
+        ([Domain(1, 5, 10, 'TYPE')], {'min': 5, 'ideal': 7, 'max': 10}, {'min': 1, 'ideal': 2, 'max': 3}),
         # Overlap Rules: Ideal overlap not possible
-        ([], 5, 10, 1, 3, 4),
+        ([], {'min': 5, 'ideal': 7, 'max': 10}, {'min': 1, 'ideal': 3, 'max': 4}),
     ]
 )
-def test_recursive_fragmentation_lengths_and_overlaps(domains, min_len, max_len,
-                                                      min_overlap, ideal_overlap, max_overlap):
+def test_recursive_fragmentation_lengths_and_overlaps(domains, length, overlap):
     """
     Tests the recursive_fragmentation function to ensure that all fragments meet
     the length and overlap requirements specified by the parameters.
     """
-    overlap = {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
     result = recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20),
-                                     domains, 0, min_len, max_len, overlap)
+                                     domains, 0, length, overlap)
 
     # Check if any fragments were generated
     for i in range(len(result)):
         # Check fragment length
         start, end = result[i]
         fragment_length = end - start
-        assert min_len <= fragment_length <= max_len, f"Fragment length {fragment_length} out of bounds ({min_len}, {max_len}) at index {i}"
+        assert length['min'] <= fragment_length <= length['max'], f"Fragment length {fragment_length} out of bounds ({length['min']}, {length['max']}) at index {i}"
 
         # Check overlap with next fragment if not the last one
         if i < len(result) - 1:
             next_start = result[i + 1][0]
             actual_overlap = start + fragment_length - next_start
-            assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap {actual_overlap} out of bounds ({min_overlap}, {max_overlap}) between fragments {i} and {i+1}"
+            assert overlap['min'] <= actual_overlap <= overlap['max'], f"Overlap {actual_overlap} out of bounds ({overlap['min']}, {overlap['max']}) between fragments {i} and {i+1}"
 
-@pytest.mark.parametrize("overlap, expected_error",
+@pytest.mark.parametrize("length, overlap, expected_error",
     [
+        # max_len < min_len
+        ({'min': 60, 'ideal': 55, 'max': 50}, {'min': 1, 'ideal': 2, 'max': 5}, ValueError),
         # max overlap < min_overlap
-        ({'min': 2, 'ideal': 2, 'max': 0}, ValueError),
+        (None, {'min': 2, 'ideal': 2, 'max': 0}, ValueError),
         # max overlap = min_len
-        ({'min': 1, 'ideal': 2, 'max': 10}, ValueError),
+        ({'min': 10, 'ideal': 15, 'max': 20}, {'min': 1, 'ideal': 2, 'max': 10}, ValueError),
         # ideal overlap not between min and max overlap
-        ({'min': 1, 'ideal': 7, 'max': 5}, ValueError),
-        # overlap values numeric but not integers
-        ({'min': 1.5, 'ideal': 2, 'max': 5}, TypeError),
+        (None, {'min': 1, 'ideal': 7, 'max': 5}, ValueError),
+        # length values not integers
+        ({'min': 10.5, 'ideal': 15, 'max': 20}, None, TypeError),
+        # overlap values not integers
+        (None, {'min': 1.5, 'ideal': 2, 'max': 5}, TypeError),
+        # length values string
+        ({'min': '10', 'ideal': '15', 'max': '20'}, None, TypeError),
         # overlap values string
-        ({'min': '1', 'ideal': '2', 'max': '5'}, TypeError),
+        (None, {'min': '1', 'ideal': '2', 'max': '5'}, TypeError),
+        # missing keys in length
+        ({'min': 10, 'max': 20}, None, ValueError),
         # missing keys in overlap
-        ({'min': 1, 'ideal': 2}, ValueError),
+        (None, {'min': 1, 'ideal': 2}, ValueError),
+        # length not a dictionary
+        (20, None, TypeError),
         # overlap not a dictionary
-        (5, TypeError)
-])
-def test_overlap_validation_error_handling(overlap, expected_error):
+        (None, 5, TypeError),
+        # min_len <= 0
+        ({'min': -10, 'ideal': 15, 'max': 20}, None, ValueError),
+        # min_overlap <= 0
+        (None, {'min': -1, 'ideal': 2, 'max': 5}, ValueError),
+    ]
+)
+def test_validation_error_handling(length, overlap, expected_error):
     """
     Tests that the validate_fragmentation_parameters function raises correct
-    errors for invalid overlap parameters.
+    errors for invalid length and overlap parameters.
     """
-    with pytest.raises(expected_error):
+    if length is None:
+        length = {'min': 10, 'ideal': 15, 'max': 20}
+    if overlap is None:
+        overlap = {'min': 1, 'ideal': 2, 'max': 5}
+    
+    try:
         validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
-                                          10, 20, overlap), f"validate_fragmentation_parameters function did not raise {expected_error} with invalid overlap parameters: {overlap}"
-
-def test_min_len_validation_error_handling():
-    """
-    Tests that the validate_fragmentation_parameters function raises correct
-    errors for invalid min_len parameters.
-    """
-    with pytest.raises(ValueError):
-        validate_fragmentation_parameters(Protein("Protein1", "example_acc_id", 'A'*20),
-                                          -10, 20, {'min': 1, 'ideal': 2, 'max': 5})
+                                          length, overlap)
+    except expected_error:
+        pass
+    else:
+        pytest.fail(f"Expected {expected_error} but no error was raised for input {length}, {overlap}")
