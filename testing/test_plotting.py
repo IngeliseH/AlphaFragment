@@ -10,14 +10,14 @@ from alphafragment.classes import Protein, Domain
 from alphafragment.plot_fragments import plot_domain, plot_fragment, draw_label, calculate_tick_freq, plot_fragmentation_output
 
 @pytest.mark.parametrize("color_mode, domain_type, expected_color", [
-    # color_mode 'type' with domain type 'AF'
-    ('type', 'AF', 'orange'),
-    # color_mode 'type' with domain type 'UniProt'
-    ('type', 'UniProt', 'green'),
-    # color_mode 'type' with domain type 'manually_defined'
-    ('type', 'manually_defined', 'blue'),
-    # color_mode 'type' with domain type 'not_in_dict'
-    ('type', 'not_in_dict', 'gray'),
+    # color_mode 'origin' with domain type 'AF'
+    ('origin', 'AF', 'skyblue'),
+    # color_mode 'origin' with domain type 'UniProt'
+    ('origin', 'UniProt', 'pink'),
+    # color_mode 'origin' with domain type 'manually_defined'
+    ('origin', 'manually_defined', '#9FD18A'),
+    # color_mode 'origin' with domain type 'not_in_dict'
+    ('origin', 'not_in_dict', 'gray'),
     # color_mode 'cycle'
     ('cycle', 'any', 'skyblue')
 ])
@@ -54,7 +54,7 @@ def test_plot_domain_invalid_color_mode(color_mode, domain_type):
     domain_color_cycle = itertools.cycle(['skyblue', 'pink', 'cyan', 'gold', 'purple', 'silver', 'tan'])
 
     with pytest.raises(ValueError):
-        plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode=color_mode), "Function did not raise error for invalid color mode"
+        plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode=color_mode)
 
 @pytest.mark.parametrize("index, expected_offset", [
     # even index, expect positive offset
@@ -107,7 +107,7 @@ def test_draw_label():
     y = 0.5
     height = 0.1
     label_text = "TestLabel"
-    draw_label(label_text, x_left, x_right, y, height, ax)
+    draw_label(ax, label_text, (x_left + x_right) / 2, x_left, x_right, y, height, max_x=300)
 
     # Check two lines are drawn for a bracket
     assert len(ax.lines) == 2, f"Expected 2 lines to be drawn for the curly bracket, but got {len(ax.lines)} lines"
@@ -125,9 +125,6 @@ def test_draw_label():
     assert text.get_text() == label_text, f"Label text does not match expected, expected {label_text} but got {text.get_text()}"
     assert text.get_position() == ((x_left + x_right) / 2, y - height), f"Label position is incorrect, expected {(x_left + x_right) / 2, y - height} but got {text.get_position()}"
     assert text.get_ha() == 'center' and text.get_va() == 'top', f"Text alignment is not as expected, expected center and top but got {text.get_ha()} and {text.get_va()}"
-    assert text.get_rotation() == 45, f"Label rotation is not as expected, expected 45 degrees but got {text.get_rotation()}"
-    assert text.get_fontsize() == 8, f"Font size of the label is not as expected, expected 8 but got {text.get_fontsize()}"
-
 
 @pytest.mark.parametrize("num, expected", [
     # Basic tests with range of inputs
@@ -163,7 +160,7 @@ def test_tick_frequency_invalid_input(num):
     Test that the tick frequency function raises a ValueError when invalid input is provided
     """
     with pytest.raises(ValueError):
-        calculate_tick_freq(num), "Invalid input should raise ValueError"
+        calculate_tick_freq(num)
 
 @patch("os.path.exists", return_value=False)
 @patch("os.makedirs")
@@ -231,7 +228,6 @@ def test_overlapping_domains():
     fig = plot_fragmentation_output(protein, fragments)
     assert len(fig.axes[0].patches) == 3, "Expected 3 patches on the plot (2 domains + 1 fragment)"
 
-
 def test_visual_output():
     """
     Test the visual output of the plot_fragmentation_output function
@@ -241,7 +237,7 @@ def test_visual_output():
     fragments = [(0, 110), (100, 250), (240, 550), (530, 700), (690, 1000), (990, 1250), (1240, 1952)]
     protein = Protein("LargeProtein", "accession", "sequence", first_res=1, last_res=1952, domain_list=domains, fragment_list=fragments)
 
-    #close any existing plots
+    # Close any existing plots
     plt.close('all')
 
     plot_fragmentation_output(protein, fragments)

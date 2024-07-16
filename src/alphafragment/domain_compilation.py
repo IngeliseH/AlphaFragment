@@ -97,11 +97,6 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
 
     domains = []
 
-    # Find and add domains from UniProt
-    if uniprot:
-        uniprot_domains = find_uniprot_domains(protein) or []
-        domains.extend(uniprot_domains)
-
     # Identify and add domains from AlphaFold structure predictions
     if alphafold:
         protein_pae = read_afdb_json(protein.accession_id)
@@ -114,6 +109,11 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
                 domains.extend(alphafold_domains)
             else:
                 print(f"No domains found in AlphaFold structure for protein {protein.name}.")
+
+    # Find and add domains from UniProt
+    if uniprot:
+        uniprot_domains = find_uniprot_domains(protein) or []
+        domains.extend(uniprot_domains)
 
     # Add manually specified domains
     if manual:

@@ -99,6 +99,8 @@ def find_uniprot_domains(protein):
         or to specify domains not found or incorrectly annotated in UniProt, users
         can manually specify domains in the input CSV file used with other functions of
         this module.
+      - Domains are identified by their UniProt description - if no description is
+        available, the function will attempt to use the 'type' field.
     """
     data = fetch_uniprot_info(protein.accession_id)
     uniprot_domains = []
@@ -108,7 +110,9 @@ def find_uniprot_domains(protein):
 
     for feature in data['features']:
         if feature['type'] not in ['CHAIN', 'MUTAGEN', 'CONFLICT']:
-            description = feature.get('description', 'No description')
+            description = feature.get('description', None)
+            if not description:
+                description = feature.get('type', None)
             try:
                 start = int(feature['begin'])
                 end = int(feature['end'])
