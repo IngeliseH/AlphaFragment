@@ -159,7 +159,7 @@ def check_valid_cutpoint(res, domains, sequence_end):
 
     return True
 
-def recursive_fragmentation(protein, domains, fragment_start, length, overlap, cutpoints=None):
+def recursive_fragmentation(protein, domains, fragment_start, length, overlap, original_max_len, cutpoints=None):
     """
     Recursively splits a protein sequence into overlapping fragments, avoiding
     breaking domains.
@@ -179,6 +179,7 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
           {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
           where min_overlap, ideal_overlap, and max_overlap are all integers,
           with min_overlap <= ideal_overlap <= max_overlap.
+        - original_max_len (int): The original maximum fragment length.
         - cutpoints (list of tuples, optional): Accumulator for storing fragment
           cutpoints.
 
@@ -189,27 +190,32 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
     validate_fragmentation_parameters(protein, length, overlap)
 
     def find_next_start(res):
-        # Use ideal overlap if possible
-        if check_valid_cutpoint(res - overlap['ideal'], domains, protein.last_res):
-            return res - overlap['ideal']
-        # Force None if moving current fragment end would allow better overlap with new fragment
-        for forwards_res in range(overlap['max'], overlap['min'] - 1, -1):
-            if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
-                return None
-        # Attempt to find a valid cutpoint by first increasing, then decreasing overlap
-        for adjusted_overlap in (list(range(overlap['ideal'] + 1, overlap['max'] + 1)) +
-                                 list(range(overlap['ideal'] - 1, overlap['min'] - 1, -1))):
-            if check_valid_cutpoint(res - adjusted_overlap, domains, protein.last_res):
-                return res - adjusted_overlap
+        # Attempt to find a valid cutpoint by increasing overlap from ideal to max
+        for overlap_adjusted in range(overlap['ideal'], overlap['max'] + 1):
+            if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
+                return res - overlap_adjusted
+        # Check for largest valid cutpoint
+        possible_current_overlap = None
+        for overlap_adjusted in range(overlap['ideal'] - 1, overlap['min'] - 1, -1):
+            if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
+                possible_current_overlap = res - overlap_adjusted
+                break
+        if possible_current_overlap:
+            # Force None if moving current fragment end would allow better overlap with new fragment
+            for forwards_res in range((overlap['ideal'] - possible_current_overlap), (overlap['max'] - possible_current_overlap + 1)):
+                if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
+                    return None
+            return res - overlap_adjusted
         # If no valid cutpoint is found within overlap boundaries, return None
         return None
 
     if cutpoints is None:
         cutpoints = []
 
-    # Iterate over possible fragment end cutpoints, iterating from ideal length to max, then ideal to min
-    for l in (list(range(length['ideal'], length['max'] + 1)) +
-              list(range(length['ideal'] - 1, length['min'] - 1, -1))):
+    # Iterate over possible fragment end cutpoints, iterating from ideal length to (original) max, then ideal to min, then original max to increased max if applicable
+    for l in (list(range(length['ideal'], original_max_len + 1)) +
+              list(range(length['ideal'] - 1, length['min'] - 1, -1)) +
+              list(range(original_max_len + 1, length['max'] + 1))):
 
         res = fragment_start + l
 
@@ -225,7 +231,7 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
 
                 # Recursively process the next segment
                 result = recursive_fragmentation(protein, domains, next_start,
-                                                 length, overlap, cutpoints)
+                                                 length, overlap, original_max_len, cutpoints)
 
                 # If a valid fragmentation pattern is found, return the result
                 if result is not None:
