@@ -138,7 +138,7 @@ def output_fastas(proteins, save_location=None, method='all', combinations_csv=N
 def output_pulldown(proteins, output_name='pulldown_input.txt', fasta_name='pulldown_sequences.fasta', method='all',
                     combinations_csv=None, one_protein=None):
     """
-    Creates a txt file with protein fragment combinations compatible with AlphaPulldown.
+    Creates a fasta and txt file with protein fragment combinations compatible with AlphaPulldown.
 
     Parameters:
         - proteins (list): A list of Protein objects.
@@ -166,12 +166,6 @@ def output_pulldown(proteins, output_name='pulldown_input.txt', fasta_name='pull
     if not fasta_name.endswith('.fasta'):
         fasta_name += '.fasta'
 
-    # Make fasta file for all protein sequences, each with >accession_id\nsequence separated by blank line
-    with open(fasta_name, 'w', encoding='utf-8') as file:
-        for protein in proteins_complete:
-            file.write(f">{protein.accession_id}\n{protein.sequence}\n\n")
-    print(f"File created: {fasta_name}")
-
     protein_pairs = get_protein_combinations(proteins_complete, method, combinations_csv, one_protein)
 
     pulldown_lines = []
@@ -190,3 +184,9 @@ def output_pulldown(proteins, output_name='pulldown_input.txt', fasta_name='pull
     with open(output_name, 'w',  encoding='utf-8') as file:
         file.write('\n'.join(pulldown_lines))
     print(f"File created: {output_name}")
+
+        # Make fasta file for all protein sequences, each with >accession_id\nsequence separated by blank line
+    with open(fasta_name, 'w', encoding='utf-8') as file:
+        for protein in proteins_complete:
+            file.write(f">{protein.accession_id}\n{protein.sequence}\n\n")
+    print(f"File created: {fasta_name}")

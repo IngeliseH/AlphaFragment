@@ -90,7 +90,7 @@ def test_recursive_fragmentation_lengths_and_overlaps(domains, length, overlap):
     the length and overlap requirements specified by the parameters.
     """
     result = recursive_fragmentation(Protein("Protein1", "example_acc_id", 'A'*20),
-                                     domains, 0, length, overlap)
+                                     domains, 0, length, overlap, original_max_len=length['max'])
 
     # Check if any fragments were generated
     for i in range(len(result)):
