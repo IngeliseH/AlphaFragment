@@ -197,6 +197,7 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
 
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55
+    standard_domain_height = 0.36
     fragment_height = 0.05
     offset = 0.025
     domain_color_cycle = itertools.cycle(['#57BBEA', '#ED7AB0', '#8DC640', '#F68B1F',
@@ -208,13 +209,13 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
 
     for domain in protein.domain_list:
         if domain.type == 'AF':
-            domain_height =0.4
+            domain_height = 0.4
         else:
-            domain_height = 0.36
+            domain_height = standard_domain_height
         # retain the updated type_colors dictionary to maintain color consistency if 'type' color mode is used, and for use in legend
         type_colors = plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode, type_colors)
 
-    y = base_y_position - domain_height / 2
+    y = base_y_position - standard_domain_height / 2
     tentative_label_positions = []
     max_x = protein.last_res  # Maximum x-coordinate for the label to prevent spillover
     intertext_distance = protein.last_res / 70 # Minimum distance between labels
