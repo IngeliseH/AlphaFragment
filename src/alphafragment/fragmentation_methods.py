@@ -220,8 +220,8 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
         - start_time (float, optional): The start time of the operation.
 
     Returns:
-        - list of tuples or None: The list of fragment cutpoints if successful;
-          otherwise, None if the time limit is exceeded.
+        - list of tuples or "TIME_LIMIT_EXCEEDED": The list of fragment cutpoints if successful;
+          otherwise, "TIME_LIMIT_EXCEEDED" if the time limit is exceeded, or None if no valid fragmentation pattern is found.
     """
     validate_fragmentation_parameters(protein, length, overlap)
 
@@ -234,7 +234,7 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
 
     # Check if the time limit has been reached
     if time_limit and (time.time() - start_time) > time_limit:
-        return None  # Signal that the time limit has been exceeded
+        return "TIME_LIMIT_EXCEEDED"  # Signal that the time limit has been exceeded
 
     # Iterate over possible fragment end cutpoints
     for l in (list(range(length['ideal'], length['max'] + 1)) +
@@ -257,6 +257,9 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
                                                  length, overlap, cutpoints, time_limit, start_time)
 
                 # If a valid fragmentation pattern is found, return the result
+                if result == "TIME_LIMIT_EXCEEDED":
+                    return "TIME_LIMIT_EXCEEDED"  # Propagate the time limit signal
+
                 if result is not None:
                     return result
                 # If the recursive call did not find a valid pattern, remove the

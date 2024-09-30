@@ -90,20 +90,25 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
                                                                time_limit=time_limit,
                                                                start_time=start_time)
 
-                if subsection_fragments is None:
+                if subsection_fragments == "TIME_LIMIT_EXCEEDED":
                     # If the time limit is exceeded, split the protein and add the new subsections to the list
                     subsections_to_process = break_in_half(subsection, length, overlap)
                     if subsections_to_process is None:
-                        raise RuntimeError("Fragmentation process terminated: Unable to split protein or subsection.")
-                    
+                        subsection_fragments = [(subsection.first_res, subsection.last_res + 1)]
+                        print("Recommended to increase time limit. Fragmentation ineffective.")
+                        break
                     next_subsections.extend(subsections_to_process)
                     break  # Exit the while loop to process the new subsections
-
-                max_len = min(max_len + len_increase, len(subsection.sequence))
-                length['max'] = max_len
+                elif subsection_fragments is None:
+                    # If no valid fragmentation pattern was found, increase max length and try again
+                    max_len = min(max_len + len_increase, len(subsection.sequence))
+                    length['max'] = max_len
+                else:
+                    # Successfully found fragments, exit the loop
+                    break
 
             # If the subsection was successfully fragmented, add the fragments to the list
-            if subsection_fragments:
+            if subsection_fragments and subsection_fragments != "TIME_LIMIT_EXCEEDED":
                 fragments.extend(subsection_fragments)
 
         # Update the list of subsections for the next round of processing
