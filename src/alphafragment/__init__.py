@@ -3,8 +3,8 @@ from .process_proteins_csv import find_user_specified_domains, initialize_protei
 from .alphafold_db_domain_identification import read_afdb_json, find_domain_by_res, find_domains_from_pae
 from .uniprot_fetch import fetch_uniprot_info, find_uniprot_domains
 from .domain_compilation import compile_domains
-from .fragmentation_methods import check_valid_cutpoint, merge_overlapping_domains, recursive_fragmentation, validate_fragmentation_parameters
+from .fragmentation_methods import validate_fragmentation_parameters, merge_overlapping_domains, check_valid_cutpoint, find_next_start, recursive_fragmentation, break_in_half
 from .long_domains import handle_long_domains
 from .fragment_protein import fragment_protein
-from .plot_fragments import draw_label, plot_domain, plot_fragment, plot_fragmentation_output
+from .plot_fragments import draw_label, plot_domain, plot_fragment, calculate_tick_freq, plot_fragmentation_output
 from .fragment_file_creation import get_protein_combinations, output_fastas, output_pulldown

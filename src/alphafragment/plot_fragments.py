@@ -17,10 +17,10 @@ Dependencies:
 
 import itertools
 import os
-import matplotlib.pyplot as plt
-from matplotlib import patches
 import textwrap
 import re
+import matplotlib.pyplot as plt
+from matplotlib import patches
 
 def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode='origin', type_colors={}):
     """
@@ -50,10 +50,10 @@ def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, 
 
     if color_mode not in ['origin', 'cycle', 'type']:
         raise ValueError("color_mode must be 'origin', 'cycle', or 'type'")
-    
+
     origin_colors = {'AF': 'skyblue', 'UniProt': 'pink', 'manually_defined': '#9FD18A'}
     default_color = 'gray'
-    
+
     if color_mode == 'origin':
         color = origin_colors.get(domain.type, default_color)
     elif color_mode == 'type':
@@ -197,6 +197,7 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
 
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55
+    standard_domain_height = 0.36
     fragment_height = 0.05
     offset = 0.025
     domain_color_cycle = itertools.cycle(['#57BBEA', '#ED7AB0', '#8DC640', '#F68B1F',
@@ -208,13 +209,13 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
 
     for domain in protein.domain_list:
         if domain.type == 'AF':
-            domain_height =0.4
+            domain_height = 0.4
         else:
-            domain_height = 0.36
+            domain_height = standard_domain_height
         # retain the updated type_colors dictionary to maintain color consistency if 'type' color mode is used, and for use in legend
         type_colors = plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode, type_colors)
 
-    y = base_y_position - domain_height / 2
+    y = base_y_position - standard_domain_height / 2
     tentative_label_positions = []
     max_x = protein.last_res  # Maximum x-coordinate for the label to prevent spillover
     intertext_distance = protein.last_res / 70 # Minimum distance between labels
@@ -229,7 +230,7 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
             if domain.type in label:
                 bracket_height = 0.05
                 x_left, x_right = domain.start + 0.5, domain.end + 1.5
-                
+
                 # Adjust horizontal position to avoid overlap
                 x = (x_left + x_right) / 2
                 # Check if any value in label_positions is within set distance of x
@@ -241,8 +242,8 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
         adjusted_positions = [max_x]
         for pos in reversed(tentative_label_positions):
             while any(abs(x - pos) < intertext_distance for x in adjusted_positions):
-                    pos -= intertext_distance / 4
-            pos = min(pos, max_x-intertext_distance)  # Ensure the label does not spill out of the plot axes
+              pos -= intertext_distance / 4
+            pos = min(pos, max_x-intertext_distance)  # Ensure label does not spill out of plot axes
             adjusted_positions.append(pos)
         adjusted_positions = list(reversed(adjusted_positions))
         i = 0

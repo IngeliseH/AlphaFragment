@@ -122,7 +122,8 @@ def output_fastas(proteins, save_location=None, method='all', combinations_csv=N
         for i, (start1, end1) in enumerate(protein1.fragment_list):
             for j, (start2, end2) in enumerate(protein2.fragment_list):
                 #don't create duplicate files (fragment1, fragment2) == (fragment2, fragment1)
-                if (start1, end1, start2, end2) in fragment_pairs or (start2, end2, start1, end1) in fragment_pairs:
+                if (start1, end1, start2, end2) in fragment_pairs or (
+                    start2, end2, start1, end1) in fragment_pairs:
                     continue
 
                 #if not duplicate, create file
@@ -174,7 +175,8 @@ def output_pulldown(proteins, output_name='pulldown_input.txt', fasta_name='pull
         for _, (start1, end1) in enumerate(protein1.fragment_list):
             for _, (start2, end2) in enumerate(protein2.fragment_list):
                 # don't create duplicate files (fragment1, fragment2) == (fragment2, fragment1)
-                if (start1, end1, start2, end2) in fragment_pairs or (start2, end2, start1, end1) in fragment_pairs:
+                if (start1, end1, start2, end2) in fragment_pairs or (
+                    start2, end2, start1, end1) in fragment_pairs:
                     continue
                 line = (f"{protein1.accession_id},{start1+1}-{end1};"
                         f"{protein2.accession_id},{start2+1}-{end2}")
