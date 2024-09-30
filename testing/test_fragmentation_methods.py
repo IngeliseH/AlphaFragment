@@ -292,7 +292,7 @@ def test_recursive_fragmentation_ana1():
     overlap = {'min': 20, 'ideal': 30, 'max': 40}
 
     # Run recursive fragmentation with a time limit to force `break_in_half`
-    result = recursive_fragmentation(ana1_protein, domains, 0, length, overlap, time_limit=0.01)
+    result = recursive_fragmentation(ana1_protein, domains, 0, length, overlap, length['max'], time_limit=0.01)
 
     # Check if the fragmentation timed out, and use break_in_half if necessary
     if result == "TIME_LIMIT_EXCEEDED":

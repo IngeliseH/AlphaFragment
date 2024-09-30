@@ -234,22 +234,6 @@ def recursive_fragmentation(
     """
     validate_fragmentation_parameters(protein, length, overlap)
 
-    def find_next_start(res):
-        # Use ideal overlap if possible
-        if check_valid_cutpoint(res - overlap['ideal'], domains, protein.last_res):
-            return res - overlap['ideal']
-        # Force None if moving current fragment end would allow better overlap with new fragment
-        for forwards_res in range(overlap['max'], overlap['min'] - 1, -1):
-            if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
-                return None
-        # Attempt to find a valid cutpoint by first increasing, then decreasing overlap
-        for adjusted_overlap in (list(range(overlap['ideal'] + 1, overlap['max'] + 1)) +
-                                 list(range(overlap['ideal'] - 1, overlap['min'] - 1, -1))):
-            if check_valid_cutpoint(res - adjusted_overlap, domains, protein.last_res):
-                return res - adjusted_overlap
-        # If no valid cutpoint is found within overlap boundaries, return None
-        return None
-
     if cutpoints is None:
         cutpoints = []
 

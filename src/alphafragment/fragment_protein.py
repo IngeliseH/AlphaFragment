@@ -79,7 +79,7 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
             max_len = length['max']
             original_max_len = length['max']
 
-        while subsection_fragments is None:
+            while subsection_fragments is None:
                 if len(subsection.sequence) <= max_len:
                     subsection_fragments = [(subsection.first_res, subsection.last_res + 1)]
                     break
