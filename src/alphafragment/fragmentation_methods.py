@@ -10,6 +10,8 @@ Functions:
       boundaries.
     - find_next_start: Finds the next valid fragment start position.
     - recursive_fragmentation: Main function for recursively generating fragments.
+    - break_in_half: Splits a given Protein or ProteinSubsection object into two, ensuring
+      no domains are broken and that the new subsections overlap.
     
 Dependencies:
     - time: Used for setting a time limit for recursive fragmentation.
