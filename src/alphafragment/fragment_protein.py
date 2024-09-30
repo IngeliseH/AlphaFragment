@@ -26,7 +26,7 @@ import time
 from .fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains, break_in_half
 from .long_domains import handle_long_domains
 
-def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_limit=60):
+def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_limit=0.1):
     """
     Fragments a given protein into smaller, manageable sections. Initially, it
     identifies long domains within the protein and organizes fragments around
@@ -54,7 +54,8 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
         the default values are used
       - len_increase (int, optional): The amount by which to incrementally increase
         the maximum fragment length if a solution cannot be found. Default is 10.
-      - time_limit (float, optional): The maximum time allowed for recursive fragmentation, in seconds.
+      - time_limit (float, optional): The maximum time allowed for recursive
+        fragmentation, in seconds.
 
     Returns:
       - list of tuples: A sorted list of tuples, where each tuple represents a
@@ -86,12 +87,12 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
                 start_time = time.time()
                 subsection_fragments = recursive_fragmentation(subsection, merged_domains,
                                                                subsection.first_res,
-                                                               length, overlap, 
+                                                               length, overlap,
                                                                time_limit=time_limit,
                                                                start_time=start_time)
 
                 if subsection_fragments == "TIME_LIMIT_EXCEEDED":
-                    # If the time limit is exceeded, split the protein and add the new subsections to the list
+                    # If the time limit is exceeded, split protein + add new subsections to the list
                     subsections_to_process = break_in_half(subsection, length, overlap)
                     if subsections_to_process is None:
                         subsection_fragments = [(subsection.first_res, subsection.last_res + 1)]
@@ -99,7 +100,7 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
                         break
                     next_subsections.extend(subsections_to_process)
                     break  # Exit the while loop to process the new subsections
-                elif subsection_fragments is None:
+                if subsection_fragments is None:
                     # If no valid fragmentation pattern was found, increase max length and try again
                     max_len = min(max_len + len_increase, len(subsection.sequence))
                     length['max'] = max_len

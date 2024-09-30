@@ -213,7 +213,10 @@ class ProteinSubsection(Protein):
         """
         # Validate the boundaries
         if first_res < 0 or last_res > len(parent_protein.sequence) - 1 or first_res >= last_res:
-            raise ValueError(f"Invalid first_res ({first_res}) or last_res ({last_res}) for the parent protein sequence length {len(parent_protein.sequence)}. first_res must be less than last_res.")
+            raise ValueError(
+                f"Invalid first_res ({first_res}) or last_res ({last_res}) for the parent "
+                f"protein sequence length {len(parent_protein.sequence)}."
+                f"first_res must be less than last_res.")
 
         # Call the Protein constructor to initialize the subsection
         super().__init__(parent_protein.name,
@@ -221,8 +224,8 @@ class ProteinSubsection(Protein):
                          parent_protein.sequence[first_res:last_res+1],  # Subset of the sequence
                          first_res,  # first_res of the subsection
                          last_res,   # last_res of the subsection
-                         parent_protein.domain_list,  # Keep the same domain list (you might want to filter domains based on the subsection's range)
+                         parent_protein.domain_list,  # Keep the same domain list
                          parent_protein.fragment_list)  # Keep the same fragment list
-        
+
         # Store reference to the parent protein
         self.parent_protein = parent_protein

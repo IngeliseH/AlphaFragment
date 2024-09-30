@@ -128,10 +128,14 @@ def handle_long_domains(protein, length, overlap):
             other_domain_len = other_domain.end - other_domain.start + 1
             if other_domain == long_domain:
                 continue
-            if (long_domain.end < other_domain.start) and (other_domain.start - long_domain.end - 1 < length['min']):
+            if (long_domain.end < other_domain.start) and (
+                other_domain.start - long_domain.end - 1 < length['min']
+            ):
                 if long_domain_len <= other_domain_len:
                     end = max(end, other_domain.start)
-            if (long_domain.start > other_domain.end) and (long_domain.start - other_domain.end - 1 < length['min']):
+            if (long_domain.start > other_domain.end) and (
+                long_domain.start - other_domain.end - 1 < length['min']
+            ):
                 if long_domain_len < other_domain_len:
                     start = min(start, other_domain.end)
 

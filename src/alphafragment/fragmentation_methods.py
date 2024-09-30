@@ -91,7 +91,7 @@ def validate_fragmentation_parameters(protein, length, overlap):
     if overlap['min'] > overlap['max']:
         raise ValueError(f"Minimum overlap ({overlap['min']}) must be less than "
                          f"or equal to maximum overlap ({overlap['max']}).")
-    
+
     # Check that the min overlap is not negative
     if overlap['min'] < 0:
         raise ValueError("Minimum overlap cannot be negative.")
@@ -166,42 +166,44 @@ def check_valid_cutpoint(res, domains, sequence_end):
     return True
 
 def find_next_start(res, protein, domains, overlap):
-        """
-        Finds the next valid fragment start position.
+    """
+    Finds the next valid fragment start position.
 
-        Parameters:
-            - res (int): The current residue position.
-            - protein (Protein): The protein object to be fragmented.
-            - domains (list of Domain): The domains within the protein.
-            - overlap (dict): Dictionary containing the ideal, minimum, and maximum
-              overlap values, in the format:
-              {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
-              where min_overlap, ideal_overlap, and max_overlap are all integers,
-              with min_overlap <= ideal_overlap <= max_overlap.
+    Parameters:
+        - res (int): The current residue position.
+        - protein (Protein): The protein object to be fragmented.
+        - domains (list of Domain): The domains within the protein.
+        - overlap (dict): Dictionary containing the ideal, minimum, and maximum
+          overlap values, in the format:
+          {'min': min_overlap, 'ideal': ideal_overlap, 'max': max_overlap}
+          where min_overlap, ideal_overlap, and max_overlap are all integers,
+          with min_overlap <= ideal_overlap <= max_overlap.
         
-        Returns:
-            - int or None: The next valid fragment start position if found; otherwise, None.
-        """
-        # Attempt to find a valid cutpoint by increasing overlap from ideal to max
-        for overlap_adjusted in range(overlap['ideal'], overlap['max'] + 1):
-            if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
-                return res - overlap_adjusted
-        # Check for largest valid cutpoint
-        possible_current_overlap = None
-        for overlap_adjusted in range(overlap['ideal'] - 1, overlap['min'] - 1, -1):
-            if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
-                possible_current_overlap = res - overlap_adjusted
-                break
-        if possible_current_overlap:
-            # Force None if moving current fragment end would allow better overlap with new fragment
-            #for forwards_res in range((overlap['ideal'] - possible_current_overlap), (overlap['max'] - possible_current_overlap + 1)):
-            #    if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
-            #        return None
+    Returns:
+        - int or None: The next valid fragment start position if found; otherwise, None.
+    """
+    # Attempt to find a valid cutpoint by increasing overlap from ideal to max
+    for overlap_adjusted in range(overlap['ideal'], overlap['max'] + 1):
+        if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
             return res - overlap_adjusted
-        # If no valid cutpoint is found within overlap boundaries, return None
-        return None
+    # Check for largest valid cutpoint
+    possible_current_overlap = None
+    for overlap_adjusted in range(overlap['ideal'] - 1, overlap['min'] - 1, -1):
+        if check_valid_cutpoint(res - overlap_adjusted, domains, protein.last_res):
+            possible_current_overlap = res - overlap_adjusted
+            break
+    if possible_current_overlap:
+        # Force None if moving current fragment end would allow better overlap with new fragment
+        #for forwards_res in range((overlap['ideal'] - possible_current_overlap), (overlap['max'] - possible_current_overlap + 1)):
+        #    if check_valid_cutpoint(res + forwards_res, domains, protein.last_res):
+        #        return None
+        return res - overlap_adjusted
+    # If no valid cutpoint is found within overlap boundaries, return None
+    return None
 
-def recursive_fragmentation(protein, domains, fragment_start, length, overlap, cutpoints=None, time_limit=None, start_time=None):
+def recursive_fragmentation(
+    protein, domains, fragment_start, length, overlap, cutpoints=None,
+    time_limit=None, start_time=None):
     """
     Recursively splits a protein sequence into overlapping fragments, avoiding
     breaking domains. If the process exceeds a specified time limit, it returns
@@ -223,7 +225,8 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
 
     Returns:
         - list of tuples or "TIME_LIMIT_EXCEEDED": The list of fragment cutpoints if successful;
-          otherwise, "TIME_LIMIT_EXCEEDED" if the time limit is exceeded, or None if no valid fragmentation pattern is found.
+          otherwise, "TIME_LIMIT_EXCEEDED" if the time limit is exceeded, or None if no valid
+          fragmentation pattern is found.
     """
     validate_fragmentation_parameters(protein, length, overlap)
 
@@ -272,8 +275,8 @@ def recursive_fragmentation(protein, domains, fragment_start, length, overlap, c
 
 def break_in_half(protein, length, overlap):
     """
-    Splits a given Protein or ProteinSubsection object into two subsections, ensuring no domains are broken
-    and that the subsections overlap. The split is as close to the center as possible.
+    Splits a given Protein or ProteinSubsection object into two subsections, ensuring no domains are
+    broken and that the subsections overlap. The split is as close to the center as possible.
 
     Parameters:
         - protein (Protein or ProteinSubsection): The protein or protein subsection object to be split.
@@ -288,10 +291,10 @@ def break_in_half(protein, length, overlap):
         raise ValueError("Input must be either a Protein or ProteinSubsection object.")
 
     # Determine the parent protein and relevant residue indices
-    parent_protein = (protein.parent_protein 
-                      if isinstance(protein, ProteinSubsection) 
+    parent_protein = (protein.parent_protein
+                      if isinstance(protein, ProteinSubsection)
                       else protein)
-    
+
     first_res = protein.first_res
     last_res = protein.last_res
     domains = protein.domain_list
@@ -318,7 +321,7 @@ def break_in_half(protein, length, overlap):
             # Check length constraint
             if direction == 1 and (last_res - current_res < length['min']):
                 return False
-            elif direction == -1 and (current_res - first_res < length['min']):
+            if direction == -1 and (current_res - first_res < length['min']):
                 return False
         return True
 
