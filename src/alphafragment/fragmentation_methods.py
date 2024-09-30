@@ -333,14 +333,14 @@ def break_in_half(protein, length, overlap):
     if valid_cutpoint is not None:
         first_half = ProteinSubsection(
             parent_protein=parent_protein,
-            start=first_res,
-            end=valid_cutpoint
+            first_res=first_res,
+            last_res=valid_cutpoint
         )
 
         second_half = ProteinSubsection(
             parent_protein=parent_protein,
-            start=start_second_subsection,
-            end=last_res
+            first_res=start_second_subsection,
+            last_res=last_res
         )
 
         return first_half, second_half

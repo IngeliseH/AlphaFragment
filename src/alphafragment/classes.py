@@ -194,31 +194,35 @@ class Protein:
 class ProteinSubsection(Protein):
     """
     Represents a specific subsection of a protein sequence, inheriting from the
-    Protein class. Initialized based on a parent protein and specified start/end
+    Protein class. Initialized based on a parent protein and specified first_res/last_res
     positions within the parent's sequence. Takes sequence within the specified
-    region and all domains and fragments from parent.
+    region and inherits all domains and fragments from the parent.
 
     Attributes:
         - parent_protein (Protein): The original protein from which the subsection is derived.
-        - start (int): Start position of the subsection in the parent protein sequence.
-        - end (int): End position of the subsection in the parent protein sequence.
+        - first_res (int): Start position of the subsection in the parent protein sequence.
+        - last_res (int): End position of the subsection in the parent protein sequence.
 
     Note:
-        - Start and end positions are expected to be in 0-based indexing, and inclusive of start and end.
+        - first_res and last_res are expected to be in 0-based indexing, and inclusive of the start and end.
     """
-    def __init__(self, parent_protein, start, end):
+    def __init__(self, parent_protein, first_res, last_res):
         """
         Initializes a new ProteinSubsection instance, including all parent domains and fragments.
-        Validates that the start and end indices are within the parent protein's sequence boundaries.
+        Validates that the first_res and last_res indices are within the parent protein's sequence boundaries.
         """
-        if start < 0 or end > len(parent_protein.sequence) -1 or start >= end:
-            raise ValueError(f"Invalid start ({start}) or end ({end}) for the parent protein sequence length {len(parent_protein.sequence)}. Start must be less than end.")
+        # Validate the boundaries
+        if first_res < 0 or last_res > len(parent_protein.sequence) - 1 or first_res >= last_res:
+            raise ValueError(f"Invalid first_res ({first_res}) or last_res ({last_res}) for the parent protein sequence length {len(parent_protein.sequence)}. first_res must be less than last_res.")
 
+        # Call the Protein constructor to initialize the subsection
         super().__init__(parent_protein.name,
                          parent_protein.accession_id,
-                         parent_protein.sequence[start:end+1],
-                         start,
-                         end,
-                         parent_protein.domain_list,
-                         parent_protein.fragment_list)
+                         parent_protein.sequence[first_res:last_res+1],  # Subset of the sequence
+                         first_res,  # first_res of the subsection
+                         last_res,   # last_res of the subsection
+                         parent_protein.domain_list,  # Keep the same domain list (you might want to filter domains based on the subsection's range)
+                         parent_protein.fragment_list)  # Keep the same fragment list
+        
+        # Store reference to the parent protein
         self.parent_protein = parent_protein
