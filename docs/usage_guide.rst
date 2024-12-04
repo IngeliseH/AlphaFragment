@@ -2,9 +2,11 @@
 Usage Guide
 ===========
 
-This section provides a guide to using the AlphaFragment package. This workflow
-demonstrates how to process protein data from a CSV file, identify domains,
-fragment proteins, and visualize the results.
+This section provides a quick start guide to using the AlphaFragment package.
+This workflow demonstrates how to process protein data from a CSV file, identify
+domains, fragment proteins, and visualize the results. For a more thorough guide
+with explanations of how the package works and different options available, refer
+to `AlphaFragment usage guide.ipynb <AlphaFragment_usage_guide.ipynb>`_.
 
 Workflow
 ----------------------------
@@ -56,7 +58,7 @@ Workflow
        from alphafragment import plot_fragmentation_output
 
        for protein in proteins:
-           plot_fragmentation_output(protein, fragments, image_save_location, label=['UniProt', 'manually_defined'])
+           plot_fragmentation_output(protein, fragments, image_save_location)
 
 5. **Updating and Saving Output Data**
 

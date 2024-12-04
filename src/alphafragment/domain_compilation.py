@@ -118,8 +118,7 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
     # Add manually specified domains
     if manual:
         manual_domains = find_user_specified_domains(protein.name, protein_data) or []
-        print(f"{len(manual_domains)} domains found in csv for "
-                      f"{protein.name}: {manual_domains}")
+        #print(f"{len(manual_domains)} domains found in csv for {protein.name}: {manual_domains}")
         domains.extend(manual_domains)
 
     return domains

@@ -86,6 +86,9 @@ def initialize_proteins_from_csv(csv_path):
         missing_cols = [col for col in required_columns if col not in df.columns]
         raise ValueError(f"Missing required columns: {', '.join(missing_cols)}")
 
+    # remove brackets in name column, and anything inside them
+    df['name'] = df['name'].str.replace(r"\(.*\)", "", regex=True)
+
     proteins = []  # List to store successfully initialized Protein objects
     proteins_with_errors = []  # List to store protein names with no UniProt data available
 
@@ -133,7 +136,7 @@ def find_user_specified_domains(protein_name, df):
       - protein_name (str): The name of the protein to find domains for.
       - df (dataframe): DataFrame with protein names in a column 'name' and
         user-defined domains in a column "domains", as a list of (start, end)
-        tuples for each protein, using 1-based indexing.
+        tuples or (key, (start, end)) tuples for each protein, using 1-based indexing.
 
     Returns:
       - list of Domain objects: A list of Domain objects representing the
@@ -152,7 +155,7 @@ def find_user_specified_domains(protein_name, df):
         """ Helper to create a Domain object, converting from 1-based to 0-based indexing."""
         if not (isinstance(start, int) and isinstance(end, int)):
             raise TypeError("Each domain must consist of two integers, but "
-                            f"received: {start}, {end}")
+                            f"received: {start}, {end} for domain {identifier} in {protein_name}.")
         return Domain(identifier, start-1, end-1, "manually_defined")
 
     # Validate DataFrame input
@@ -171,7 +174,7 @@ def find_user_specified_domains(protein_name, df):
 
     # Return empty list if protein is found but has no associated domains
     domain_data = protein_domains['domains'].iloc[0]
-    if not domain_data:
+    if domain_data is None or (isinstance(domain_data, (str)) and not domain_data):
         print(f"No user-specified domains found for protein {protein_name}.")
         return []
 
@@ -181,27 +184,45 @@ def find_user_specified_domains(protein_name, df):
             domain_data = literal_eval(domain_data)
         except (SyntaxError, ValueError) as e:
             raise ValueError(f"Error parsing domain data: {str(e)}") from e
+    elif isinstance(domain_data, dict):
+        raise ValueError(f"Error parsing domain data: dictionary is outdated format")
+    elif not isinstance(domain_data, (list)):
+        if pd.isna(domain_data):
+            print(f"No user-specified domains found for protein {protein_name}.")
+            return []
 
     domains = []
-    # Create Domain objects from the domain data (list of tuples or dictionary)
+    # Process domain data
     if isinstance(domain_data, list):
-        domains = ([create_domain(f"manual_D{index + 1}", *domain) for index, domain in enumerate(domain_data)])
-    if isinstance(domain_data, dict):
-        domains = ([create_domain(domain_id, *positions) for domain_id, positions in domain_data.items()])
+        if not all(isinstance(item, tuple) and len(item) == 2 for item in domain_data):
+            raise TypeError("Each domain must consist of a two element tuple, but "
+                             f"received: {domain_data} for {protein_name}.")
+        # Check if the list contains (key, (start, end)) tuples
+        if all(isinstance(domain[0], str) and isinstance(domain[1], tuple) and len(domain[1]) == 2 for domain in domain_data):
+            domains = [create_domain(domain[0], domain[1][0], domain[1][1]) for domain in domain_data]
+        elif all(isinstance(domain[0], int) and isinstance(domain[1], int) for domain in domain_data):
+            domains = [create_domain(f"manual_D{index + 1}", domain[0], domain[1]) for index, domain in enumerate(domain_data)]
+        else:
+            raise TypeError(f"Wrong domain format, received: {domain_data} for {protein_name}.")
+        #if all(isinstance(item, tuple) and len(item) == 2 and isinstance(item[1], tuple) for item in domain_data):
+        #    domains = [create_domain(key, *positions) for key, positions in domain_data]
+        # Otherwise, assume it is a list of (start, end) tuples
+        #else:
+        #    domains = [create_domain(f"manual_D{index + 1}", *domain) for index, domain in enumerate(domain_data)]
 
     if domains:
         print(f"{len(domains)} domains found in csv for {protein_name}: {domains}")
         return domains
 
     # Raise an error if the domain data is not a list or dictionary
-    raise TypeError("Domain data must be a list of (start, end) tuples or a "
-                    "dictionary of (start, end) tuples with identifiers.")
+    raise TypeError(f"Domain data must be a list of (start, end) tuples or"
+                    f" of (key, (start, end)) tuples. Received: {domain_data} for {protein_name}.")
 
 
 def update_csv_with_fragments(df, output_csv, proteins):
     """
     Reads a dataframe and outputs a csv file containing the original data, plus
-    data for protein fragment indices and sequences, and domains identifed in
+    data for protein fragment indices and sequences, and domains identified in
     the protein.
 
     Parameters:
@@ -226,12 +247,32 @@ def update_csv_with_fragments(df, output_csv, proteins):
 
     # Prepare dictionaries for mapping protein names to their updated attributes
     sequences_dict = {protein.name: protein.sequence for protein in proteins}
-    domains_dict = {
-        protein.name: ', '.join([f"{domain.id}: {domain.start+1}-{domain.end+1}"
-                                 for domain in protein.domain_list])
-        if protein.domain_list else ''
-        for protein in proteins
-    }
+
+    # Update domains_dict to output domains in the correct format
+    domains_dict = {}
+    for protein in proteins:
+        if protein.domain_list:
+            domain_counts = {}
+            domain_entries = []
+            for domain in protein.domain_list:
+                domain_id = domain.id
+                # Handle duplicate domain IDs by appending a counter
+                domain_counts[domain_id] = domain_counts.get(domain_id, 0) + 1
+                count = domain_counts[domain_id]
+                if count > 1:
+                    domain_id = f"{domain_id}_{count}"
+                # Create the domain entry with quoted keys and tuple values
+                #domain_entry = f"'{domain_id}': ({domain.start + 1}, {domain.end + 1})"
+                #domain_entries.append(domain_entry)
+                domain_entry = f"({domain_id}, ({domain.start + 1}, {domain.end + 1}))"
+                domain_entries.append(domain_entry)
+            # Construct the domains string as a valid Python dictionary
+            #domains_str = '{' + ', '.join(domain_entries) + '}'
+            domains_str = '[' + ', '.join(domain_entries) + ']'
+            domains_dict[protein.name] = domains_str
+        else:
+            domains_dict[protein.name] = ''
+
     fragments_dict = {
         protein.name: [(start + 1, end) for start, end in protein.fragment_list]
         for protein in proteins

@@ -144,10 +144,12 @@ def test_column_presence(columns, expected_error):
     ('Protein2', '[(1, 10), (20, 30)]', []),
     # Null values in 'domains'
     ('Protein1', None, []),
-    # Valid input with domains in tuple format (unnamed)
+    # Valid input with unnamed domains (list of (start, end) tuples)
     ('Protein1', '[(1, 10), (20, 30)]', [Domain('manual_D1', 0, 9, 'manually_defined'), Domain('manual_D2', 19, 29, 'manually_defined')]),
-    # Valid input with domains in dictionary format (named)
-    ('Protein1', "{'name1':(1,10), 'name2':(20,30)}", [Domain('name1', 0, 9, 'manually_defined'), Domain('name2', 19, 29, 'manually_defined')])
+    # Valid input with named domains (list of (name, (start, end)) tuples)
+    ('Protein1', "[('name1', (1,10)), ('name2', (20,30))]", [Domain('name1', 0, 9, 'manually_defined'), Domain('name2', 19, 29, 'manually_defined')]),
+    # Valid input with names in tuple format (repeated names)
+    ('Protein1', "[('name', (1,10)), ('name', (20,30))]", [Domain('name', 0, 9, 'manually_defined'), Domain('name', 19, 29, 'manually_defined')])
 ])
 def test_various_inputs(protein_name, domain_data, expected_result):
     """
