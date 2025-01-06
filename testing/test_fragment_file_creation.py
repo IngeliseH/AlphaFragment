@@ -66,7 +66,7 @@ def test_output_fastas_creates_files(proteins, method, combinations_csv, one_pro
     Test the output_fastas function to ensure the correct number of files are created, with different methods.
     """
     mock_csv_data = "ProteinA,ProteinB\n"
-    with patch("alphafragment.fragment_file_creation.os.makedirs"), \
+    with patch("os.makedirs"), \
          patch("alphafragment.fragment_file_creation.open", mock_open(read_data=mock_csv_data)) as mocked_file:
         output_fastas(proteins, None, method, combinations_csv=combinations_csv, one_protein=one_protein)
         handle = mocked_file()

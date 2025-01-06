@@ -52,7 +52,7 @@ def test_initialize_proteins_from_csv(csv_data, expected_success, expected_error
     Test the initialization of Protein objects from CSV data and capture print output.
     """
     with patch('pandas.read_csv', return_value=pd.read_csv(StringIO(csv_data))):
-        with patch('alphafragment.process_proteins_csv.fetch_uniprot_info') as mock_fetch:
+        with patch('alphafragment.uniprot_fetch.fetch_uniprot_info') as mock_fetch:
             # Setup mock to simulate fetching results
             mock_fetch.side_effect = lambda x: {'sequence': 'AAA'} if x == 'P12345' else None
             proteins, df = initialize_proteins_from_csv("fake_path")
