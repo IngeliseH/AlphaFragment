@@ -22,9 +22,6 @@ Dependencies:
     within the protein.
   - .fragmentation_methods.break_in_half: Splits a protein or subsection in half
 """
-import time
-from .fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains, break_in_half
-from .long_domains import handle_long_domains
 
 def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_limit=0.1):
     """
@@ -61,6 +58,10 @@ def fragment_protein(protein, length=None, overlap=None, len_increase=10, time_l
       - list of tuples: A sorted list of tuples, where each tuple represents a
         fragment with its start and end positions within the protein sequence.
     """
+    import time
+    from .long_domains import handle_long_domains
+    from .fragmentation_methods import validate_fragmentation_parameters, recursive_fragmentation, merge_overlapping_domains, break_in_half
+
     if not length:
         length = {'min': 200, 'ideal': 384, 'max': 400}
     if not overlap:

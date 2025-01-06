@@ -14,10 +14,6 @@ Dependencies:
     - combinations: For generating combinations of proteins.
     - Protein: A class representing a protein with sequence and domain information.
 """
-import csv
-import os
-from itertools import combinations
-from .classes import Protein
 
 def get_protein_combinations(proteins, method, combinations_csv, one_protein):
     """
@@ -45,6 +41,10 @@ def get_protein_combinations(proteins, method, combinations_csv, one_protein):
     Note:
         - For 'all' and 'one' methods, self-combinations are included.
     """
+    import csv
+    from itertools import combinations
+    from .classes import Protein
+
     # Validate inputs
     if not all(isinstance(protein, Protein) for protein in proteins):
         raise ValueError("Input proteins must be Protein objects.")
@@ -109,6 +109,8 @@ def output_fastas(proteins, save_location=None, method='all', combinations_csv=N
     Returns:
         - None, but creates folders and .fasta files for each protein pair.
     """
+    import os
+
     protein_pairs = get_protein_combinations(proteins, method, combinations_csv, one_protein)
 
     for protein1, protein2 in protein_pairs:

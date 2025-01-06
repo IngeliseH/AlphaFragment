@@ -21,9 +21,6 @@ Dependencies:
     overlapping domains within a protein.
 """
 
-from .classes import ProteinSubsection
-from .fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
-
 def handle_long_domains(protein, length, overlap):
     """
     Identifies long domains within a protein and generates fragments that
@@ -84,6 +81,9 @@ def handle_long_domains(protein, length, overlap):
         'overlap['min']', the domains will still be created as separate fragments with
         as much overlap as is allowed by the space between them.
     """
+    from .classes import ProteinSubsection
+    from .fragmentation_methods import validate_fragmentation_parameters, check_valid_cutpoint, merge_overlapping_domains
+
     # Validate the input parameters
     validate_fragmentation_parameters(protein, length, overlap)
 

@@ -11,16 +11,11 @@ Functions:
 
 Dependencies:
   - itertools: Used for cycling through colors for the protein domains.
+  - textwrap: Used for wrapping long domain labels.
   - os: Used for creating directories if they do not exist.
+  - re: Used for extracting the text part of the domain identifier.
   - matplotlib: Used for plotting the protein domains and fragments.
 """
-
-import itertools
-import os
-import textwrap
-import re
-import matplotlib.pyplot as plt
-from matplotlib import patches
 
 def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, color_mode='origin', type_colors={}):
     """
@@ -47,6 +42,8 @@ def plot_domain(ax, domain, base_y_position, domain_height, domain_color_cycle, 
         a rectangle to the provided axis. The return is used to maintain color
         consistency when plotting multiple domains with the 'type' color mode.
     """
+    import re
+    from matplotlib import patches
 
     if color_mode not in ['origin', 'cycle', 'type']:
         raise ValueError("color_mode must be 'origin', 'cycle', or 'type'")
@@ -94,6 +91,8 @@ def plot_fragment(ax, fragment, index, base_y_position, fragment_height, offset)
         is managed by the caller.
       - Adds 0.5 to either end of the fragment to center it on the residue position.
     """
+    from matplotlib import patches
+
     start, end = fragment
     vertical_position = (base_y_position - (fragment_height / 2) +
                          (offset if index % 2 == 0 else -offset))
@@ -123,6 +122,8 @@ def draw_label(ax, label, x, x_left, x_right, y, bracket_height, max_x):
       - This function adds to the provided axis but does not show it. The display
         is managed by the caller.
     """
+    import textwrap
+
     ax.plot([x_left, x], [y, y - bracket_height], color='black', lw=1)
     ax.plot([x_right, x], [y, y - bracket_height], color='black', lw=1)
 
@@ -194,6 +195,10 @@ def plot_fragmentation_output(protein, fragments, save_location=None,
         created.
       - x-axis represents the protein sequence position, with 1-based indexing.
     """
+    import os
+    import itertools
+    import matplotlib.pyplot as plt
+    from matplotlib import patches
 
     fig, ax = plt.subplots(figsize=figsize)
     base_y_position = 0.55

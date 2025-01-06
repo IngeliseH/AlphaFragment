@@ -14,9 +14,6 @@ Dependencies:
     domains.
 """
 
-import requests
-from .classes import Domain
-
 def fetch_uniprot_info(accession_id):
     """
     Fetches and returns protein information from the UniProt database for
@@ -44,6 +41,8 @@ def fetch_uniprot_info(accession_id):
       - This function requires the `requests` library to make HTTP requests.
       - A timeout is set to 30 seconds for the HTTP request to prevent hanging.
     """
+    import requests
+
     # Check for non-applicable accession_id before attempting the request
     if not accession_id or accession_id.lower() == "na":
         print("No valid accession ID provided. Skipping UniProt fetch operation.")
@@ -102,6 +101,8 @@ def find_uniprot_domains(protein):
       - Domains are identified by their UniProt description - if no description is
         available, the function will attempt to use the 'type' field.
     """
+    from .classes import Domain
+
     data = fetch_uniprot_info(protein.accession_id)
     uniprot_domains = []
 

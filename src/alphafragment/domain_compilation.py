@@ -16,10 +16,6 @@ Dependencies:
   - .process_proteins_csv.find_user_specified_domains: For adding
     manually specified domains from the input dataframe.
 """
-from .classes import Protein
-from .uniprot_fetch import find_uniprot_domains
-from .alphafold_db_domain_identification import read_afdb_json, find_domains_from_pae
-from .process_proteins_csv import find_user_specified_domains
 
 def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
                     protein_data=None, pae_method="definite", pae_custom_params=None):
@@ -82,6 +78,11 @@ def compile_domains(protein, uniprot=True, alphafold=True, manual=True,
         will be 1 less than standard residue positions. Manually provided domains
         are expected to be given in 1-based indexing.
     """
+    from .classes import Protein
+    from .uniprot_fetch import find_uniprot_domains
+    from .alphafold_db_domain_identification import read_afdb_json, find_domains_from_pae
+    from .process_proteins_csv import find_user_specified_domains
+
     #check that protein is instance of Protein
     if not isinstance(protein, Protein):
         raise TypeError("The 'protein' argument must be an instance of the Protein class.")

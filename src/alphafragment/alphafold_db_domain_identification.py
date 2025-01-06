@@ -14,10 +14,6 @@ Dependencies:
   - .classes.Domain: The Domain class used to represent protein domains.
 """
 
-#importing required packages
-import requests
-from .classes import Domain
-
 def read_afdb_json(accession_id, database_version="v4"):
     """
     Fetches and returns the Predicted Aligned Error (PAE) data from the
@@ -48,6 +44,8 @@ def read_afdb_json(accession_id, database_version="v4"):
         'AF-[a UniProt accession]-F1.' If there are multiple fragments associated
         with a uniprot id this will only take fragment 1
     """
+    import requests
+
     # Check for non-applicable accession_id before attempting the request
     if not accession_id or accession_id.lower() == "na":
         print("No valid accession ID provided. Skipping AlphaFoldDB fetch.")
@@ -168,6 +166,8 @@ def find_domains_from_pae(pae,  method='definite', custom_params=None):
       - Domain positions are 0-based, so the start and end residues are 1 less
         than the actual residue numbers.
     """
+    from .classes import Domain
+
     # Check if 'pae' is a non-empty matrix, each row is a list, and contains only numeric entries
     if (not pae or
         not isinstance(pae, list) or

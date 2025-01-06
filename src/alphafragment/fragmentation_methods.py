@@ -19,8 +19,6 @@ Dependencies:
     - Protein: A class representing a protein sequence.
     - ProteinSubsection: A class representing a subsection of a protein sequence.
 """
-import time
-from .classes import Domain, Protein, ProteinSubsection
 
 def validate_fragmentation_parameters(protein, length, overlap):
     """
@@ -46,6 +44,8 @@ def validate_fragmentation_parameters(protein, length, overlap):
         - ValueError: If any of the parameter validations fail.
         - TypeError: If the protein input is not an instance of the Protein class.
     """
+    from .classes import Protein
+
     # Check that the protein input is an instance of the Protein class
     if not isinstance(protein, Protein):
         raise TypeError("Input protein must be an instance of the Protein class.")
@@ -116,6 +116,8 @@ def merge_overlapping_domains(domains):
         - list of Domain: A list of domains where overlapping domains have been
           merged into single entries.
     """
+    from .classes import Domain
+
     # Sort domains by their start positions
     sorted_domains = sorted(domains, key=lambda x: x.start)
     combined_domains = []
@@ -232,6 +234,8 @@ def recursive_fragmentation(
           otherwise, "TIME_LIMIT_EXCEEDED" if the time limit is exceeded, or None if no valid
           fragmentation pattern is found.
     """
+    import time
+
     validate_fragmentation_parameters(protein, length, overlap)
 
     if cutpoints is None:
@@ -292,6 +296,8 @@ def break_in_half(protein, length, overlap):
     Returns:
         - tuple: A tuple containing two new ProteinSubsection objects if valid; otherwise, None.
     """
+    from .classes import Protein, ProteinSubsection
+
     # Error handling for invalid input types
     if not isinstance(protein, (Protein, ProteinSubsection)):
         raise ValueError("Input must be either a Protein or ProteinSubsection object.")
