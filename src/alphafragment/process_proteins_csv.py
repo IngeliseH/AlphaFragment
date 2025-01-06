@@ -10,8 +10,16 @@ Functions:
     corresponding Protein object.
   - update_csv_with_fragments: Updates a CSV file with information about protein
     fragments.
+  - reinitialize_proteins_from_csv: Reinitializes previoulsy processed Protein
+    objects from a CSV file.
+  - domains_from_manual_pae: Extracts domain positions from a manually specified
+    PAE file in the DataFrame.
+  - fragments_from_csv: Extracts fragment positions from a 'fragments' column in
+    the DataFrame.
 
 Dependencies:
+  - os: For file path operations.
+  - json: For reading JSON data from a file.
   - pandas: For reading and processing the CSV file.
   - ast.literal_eval: For safely evaluating string literals containing Python
     expressions.
@@ -19,12 +27,8 @@ Dependencies:
   - .classes.Protein: The Protein class for representing protein data.
   - .classes.Domain: The Domain class for representing protein domains.
   - .uniprot_fetch.fetch_uniprot_info: For fetching protein data from UniProt.
+  - .alphafold_db_domain_identification.find_domains_from_pae: For identifying domains from a user input pae file
 """
-from ast import literal_eval
-from collections import Counter
-import pandas as pd
-from .classes import Protein, Domain
-from .uniprot_fetch import fetch_uniprot_info
 
 def initialize_proteins_from_csv(csv_path):
     """
@@ -67,6 +71,11 @@ def initialize_proteins_from_csv(csv_path):
         'sequence' column will be ignored (and overwritten if the
         update_csv_with_fragments function is used).
     """
+    import pandas as pd
+    from collections import Counter
+    from .uniprot_fetch import fetch_uniprot_info
+    from .classes import Protein
+
     # Read the CSV file
     df = pd.read_csv(csv_path)
 
@@ -151,6 +160,10 @@ def find_user_specified_domains(protein_name, df):
       - Domains are expected to be provided using 1-based indexing but will be
         processed and output with 0-based indexing.
     """
+    import pandas as pd
+    from ast import literal_eval
+    from .classes import Domain
+
     def create_domain(identifier, start, end):
         """ Helper to create a Domain object, converting from 1-based to 0-based indexing."""
         if not (isinstance(start, int) and isinstance(end, int)):
@@ -304,3 +317,80 @@ def update_csv_with_fragments(df, output_csv, proteins):
 
     # Return the newly organized DataFrame
     return new_df
+
+def reinitialize_proteins_from_csv(input_csv_path):
+    """
+    Reinitializes Protein objects saved to a CSV file.
+
+    Parameters:
+        - input_csv_path: The path to the CSV file containing protein data.
+    
+    Returns:
+        - A list of Protein objects.
+        - The DataFrame containing all data from the CSV file.
+    """
+    from ast import literal_eval
+
+    # Import protein data from a CSV file into a list of Protein objects and a DataFrame of all data in the CSV
+    proteins, df = initialize_proteins_from_csv(input_csv_path)
+    for protein in proteins:
+        # Add domains in df 'domains' column to each protein
+        domains = find_user_specified_domains(protein.name, df)
+        for domain in domains:
+            protein.add_domain(domain)
+        # Add fragments in df 'fragment_indices' column to each protein
+        fragments = df.loc[df['name'] == protein.name, 'fragment_indices'].values[0]
+        fragments = literal_eval(fragments)
+        for fragment in fragments:
+            # subtract 1 from start and end indices to adjust for 0-based indexing
+            fragment = (fragment[0] - 1, fragment[1] - 1)
+            protein.add_fragment(fragment)
+    print(f"Reinitialized {len(proteins)} proteins from {input_csv_path}: {[protein.name for protein in proteins]}")
+    return proteins, df
+
+def domains_from_manual_pae(df, protein):
+    """
+    Extracts domain positions from a manually specified PAE file in the DataFrame.
+
+    Parameters:
+        - df: The DataFrame containing protein data, including a 'pae_file' column with file path to PAE file.
+        - protein: The Protein object for which to find domains.
+
+    Returns:
+        - A list of domain positions
+    """
+    import os
+    import json
+    import pandas as pd
+    from .alphafold_db_domain_identification import find_domains_from_pae
+
+    # check if df has pae file column entry for protein name
+    pae_file_name = df.loc[df['name'] == protein.name, 'pae_file'].values[0]
+    if not pd.isna(pae_file_name):
+        # read pae file
+        pae_file_name = pae_file_name.strip()
+        pae_file_abs_path = os.path.abspath(pae_file_name)
+        if os.path.exists(pae_file_name):
+            with open(pae_file_name, 'r') as f:
+                data = json.load(f)
+                pae = data.get('pae', data.get('predicted_aligned_error', 'Error: PAE not found'))    
+                return find_domains_from_pae(pae)
+        else:
+            print(f"File {pae_file_name} does not exist.")
+    return None
+
+def fragments_from_csv(df, protein):
+    """
+    Extracts fragment positions from a 'fragments' column in the DataFrame.
+    Converts from 1 -> 0 based indexing if fragments start at position 1
+    """
+    import pandas as pd
+    from ast import literal_eval
+
+    fragments_column = df.loc[df['name'] == protein.name, 'fragments'].values[0]
+    if not pd.isna(fragments_column):
+        fragments = literal_eval(fragments_column)
+        if fragments[0][0] == 1:
+            fragments = [(start-1, end-1) for start, end in fragments]
+        return fragments
+    return None
