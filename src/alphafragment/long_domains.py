@@ -103,7 +103,8 @@ def handle_long_domains(protein, length, overlap):
     # Merge overlapping domains to simplify processing
     combined_domains = merge_overlapping_domains(protein.domain_list)
 
-    prev_end = 0
+    # initialising prev_end to -1 to ensure that the first subsection is created starting at 0 rather than 1 (bug fix)
+    prev_end = -1
     for domain in combined_domains:
         domain_len = domain.end - domain.start + 1
         if domain_len >= length['max']:
