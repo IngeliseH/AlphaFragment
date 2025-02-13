@@ -45,11 +45,9 @@ def initialize_proteins_from_csv(csv_path):
       - csv_path (str): The path to the CSV file.
 
     Returns:
-      - tuple of (list of Protein, list of str): 
-          - The first element is a list of initialized Protein objects for which
-            sequences were successfully fetched.
-          - The second element is a list of protein names for which sequences
-            could not be retrieved or other errors occurred during fetching.
+      - list of Protein objects: A list of Protein objects initialized from the
+        data in the CSV file.
+      - dataframe: The DataFrame containing all data from the CSV file.
 
     Errors and Exceptions:
       - Raises ValueError if required columns ('name', 'accession_id') are not
@@ -274,10 +272,10 @@ def update_csv_with_fragments(df, output_csv, proteins):
                 count = domain_counts[domain_id]
                 if count > 1:
                     domain_id = f"{domain_id}_{count}"
-                # Create the domain entry with quoted keys and tuple values
+                # OLD FORMAT: Create the domain entry with quoted keys and tuple values
                 #domain_entry = f"'{domain_id}': ({domain.start + 1}, {domain.end + 1})"
-                #domain_entries.append(domain_entry)
-                domain_entry = f"({domain_id}, ({domain.start + 1}, {domain.end + 1}))"
+                # NEW FORMAT: Create the domain entry with key, (start, end) tuple values
+                domain_entry = f"('{domain_id}', ({domain.start + 1}, {domain.end + 1}))"
                 domain_entries.append(domain_entry)
             # Construct the domains string as a valid Python dictionary
             #domains_str = '{' + ', '.join(domain_entries) + '}'
@@ -330,20 +328,37 @@ def reinitialize_proteins_from_csv(input_csv_path):
         - The DataFrame containing all data from the CSV file.
     """
     from ast import literal_eval
+    def create_domain(identifier, start, end):
+        """ Helper to create a Domain object, converting from 1-based to 0-based indexing. Only used here as fix for patching old domain format."""
+        from .classes import Domain
+        return Domain(identifier, start-1, end-1, "manually_defined")
 
     # Import protein data from a CSV file into a list of Protein objects and a DataFrame of all data in the CSV
     proteins, df = initialize_proteins_from_csv(input_csv_path)
     for protein in proteins:
         # Add domains in df 'domains' column to each protein
-        domains = find_user_specified_domains(protein.name, df)
+        try:
+            domains = find_user_specified_domains(protein.name, df)
+        # if TypeError, may be file wth older format so try converting
+        except TypeError:
+            # Extract domains in string format from 'domains' column
+            domain_str = df.loc[df['name'] == protein.name, 'domains'].values[0]
+            # Remove the surrounding braces
+            domain_str = domain_str.strip()
+            # interpret string as dict
+            domain_dict = literal_eval(domain_str)
+            domain_indices = [(key, value) for key, value in domain_dict.items()]
+            domains = [create_domain(domain[0], domain[1][0], domain[1][1]) for domain in domain_indices]
+
         for domain in domains:
             protein.add_domain(domain)
+
         # Add fragments in df 'fragment_indices' column to each protein
         fragments = df.loc[df['name'] == protein.name, 'fragment_indices'].values[0]
         fragments = literal_eval(fragments)
         for fragment in fragments:
-            # subtract 1 from start and end indices to adjust for 0-based indexing
-            fragment = (fragment[0] - 1, fragment[1] - 1)
+            # subtract 1 from start index to adjust for 0-based indexing
+            fragment = (fragment[0] - 1, fragment[1])
             protein.add_fragment(fragment)
     print(f"Reinitialized {len(proteins)} proteins from {input_csv_path}: {[protein.name for protein in proteins]}")
     return proteins, df
