@@ -122,7 +122,18 @@ def output_fastas(proteins, save_location=None, method='all', combinations_csv=N
 
         fragment_pairs=[]
         for i, (start1, end1) in enumerate(protein1.fragment_list):
+            # find fragment sequence
+            if hasattr(protein1, 'fragment_sequences') and protein1.fragment_sequences is not None:
+                protein1_frag_seq = protein1.fragment_sequences[i]
+            else:
+                protein1_frag_seq = protein1.sequence[start1:end1]
             for j, (start2, end2) in enumerate(protein2.fragment_list):
+                # find fragment sequence
+                if hasattr(protein2, 'fragment_sequences') and protein2.fragment_sequences is not None:
+                    protein2_frag_seq = protein2.fragment_sequences[j]
+                else:
+                    protein2_frag_seq = protein2.sequence[start2:end2]
+
                 #don't create duplicate files (fragment1, fragment2) == (fragment2, fragment1)
                 if (start1, end1, start2, end2) in fragment_pairs or (
                     start2, end2, start1, end1) in fragment_pairs:
@@ -132,8 +143,9 @@ def output_fastas(proteins, save_location=None, method='all', combinations_csv=N
                 fragment_pairs.append((start1, end1, start2, end2))
                 filename = os.path.join(folder_path,
                                         f"{protein1.name}_F{i+1}+{protein2.name}_F{j+1}.fasta")
+                # check for fragment_sequences attribute of protein2
                 content = (f">{protein1.name}_F{i+1}+{protein2.name}_F{j+1}\n"
-                           f"{protein1.sequence[start1:end1]}:{protein2.sequence[start2:end2]}")
+                           f"{protein1_frag_seq}:{protein2_frag_seq}")
                 with open(filename, 'w', encoding='utf-8') as file:
                     file.write(content)
                 print(f"File created: {filename}")

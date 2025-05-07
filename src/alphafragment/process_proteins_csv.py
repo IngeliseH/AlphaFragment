@@ -352,6 +352,13 @@ def reinitialize_proteins_from_csv(input_csv_path):
 
         for domain in domains:
             protein.add_domain(domain)
+        
+        # If fragment_sequences column is present, add fragments to protein
+        if 'fragment_sequences' in df.columns:
+            sequences = df.loc[df['name'] == protein.name, 'fragment_sequences'].values[0]
+            if sequences:
+                sequences = literal_eval(sequences)
+                protein.add_fragment_sequences(sequences)
 
         # Add fragments in df 'fragment_indices' column to each protein
         fragments = df.loc[df['name'] == protein.name, 'fragment_indices'].values[0]

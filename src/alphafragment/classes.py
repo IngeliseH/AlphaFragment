@@ -82,9 +82,12 @@ class Protein:
         - fragment_list (list of tuples, optional): Fragments identified in the
           protein sequence, represented as a tuple in the form (start_pos, end_pos),
           using pythonic slice notation (ie inclusive of start, exclusive of end).
+        - fragment_sequences (list of str, optional): Sequences of the fragments - only
+          used in fragment reinitialization, in order to allow dimeric fragments to be
+          added
     """
     def __init__(self, name, accession_id, sequence, first_res=0, last_res=None,
-                domain_list=None, fragment_list=None):
+                domain_list=None, fragment_list=None, fragment_sequences=None):
         """
         Initializes a new instance of the Protein class.
         """
@@ -100,6 +103,7 @@ class Protein:
             self.last_res = None
         self.domain_list = domain_list if domain_list is not None else []
         self.fragment_list = fragment_list if fragment_list is not None else []
+        self.fragment_sequences = fragment_sequences
 
     def add_domain(self, domain):
         """
@@ -152,6 +156,17 @@ class Protein:
                              "start of the previous fragment.")
 
         self.fragment_list.append((start, end))
+    
+    def add_fragment_sequences(self, sequence_list):
+        """
+        Adds a list of fragment sequences to the protein.
+
+        Parameters:
+            - sequence_list (list of str): List of sequences corresponding to the fragments.
+        """
+        if not isinstance(sequence_list, list):
+            raise ValueError("sequence_list must be a list.")
+        self.fragment_sequences = sequence_list
 
     def __str__(self):
         """
@@ -189,7 +204,7 @@ class Protein:
         return (self.name == other.name and self.accession_id == other.accession_id and
                 self.sequence == other.sequence and self.first_res == other.first_res and
                 self.last_res == other.last_res and self.domain_list == other.domain_list and
-                self.fragment_list == other.fragment_list)
+                self.fragment_list == other.fragment_list and self.fragment_sequences == other.fragment_sequences)
 
 class ProteinSubsection(Protein):
     """
