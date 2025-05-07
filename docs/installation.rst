@@ -8,6 +8,9 @@ Requirements
 - pandas>=1.3.5
 - requests>=2.31.0
 - matplotlib>=3.5.3
+- sphinx>=7.2.6
+- sphinx_rtd_theme
+- requests_mock
 
 Installation from Source
 ------------------------
