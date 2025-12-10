@@ -4,7 +4,7 @@ Predicted Aligned Error (PAE) data for identifying protein domains. Domains are
 determined from PAE values, grouping residues with similar PAE thresholds.
 
 Functions:
-  - read_afdb_json(accession_id, database_version="v4"): Retrieves PAE data.
+  - read_afdb_json(accession_id): Retrieves PAE data.
   - find_domain_by_res(domains, res): Helper function to identify the domain a
     residue is in.
   - find_domains_from_pae(pae): Groups residues into domains based on PAE.
@@ -14,7 +14,7 @@ Dependencies:
   - .classes.Domain: The Domain class used to represent protein domains.
 """
 
-def read_afdb_json(accession_id, database_version="v4"):
+def read_afdb_json(accession_id):
     """
     Fetches and returns the Predicted Aligned Error (PAE) data from the
     AlphaFold Database (AFDB) for a given UniProt accession ID.
@@ -23,8 +23,6 @@ def read_afdb_json(accession_id, database_version="v4"):
       - accession_id (str): The accession ID for which to fetch the corresponding
         AlphaFold PAE data. If 'na' or a similar placeholder is provided, the
         function will not attempt a request and will return None immediately.
-      - database_version (str, optional): The version of the database to query.
-        Default is "v4".
 
     Returns:
       - list of lists or None: The predicted_aligned_error data as a list of
@@ -45,13 +43,38 @@ def read_afdb_json(accession_id, database_version="v4"):
         with a uniprot id this will only take fragment 1
     """
     import requests
+    import re
 
-    # Check for non-applicable accession_id before attempting the request
     if not accession_id or accession_id.lower() == "na":
         print("No valid accession ID provided. Skipping AlphaFoldDB fetch.")
         return None
 
-    alphafold_id = f'AF-{accession_id}-F1'
+    UNIPROT_REGEX = r"^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$"
+    if not bool(re.match(UNIPROT_REGEX, accession_id)):
+        print(f"Error: '{accession_id}' is not a valid UniProt accession id. Skipping AlphaFoldDB fetch.")
+        return None
+
+    api_url = f"https://alphafold.ebi.ac.uk/api/prediction/{accession_id}"
+
+    try:
+        api_response = requests.get(api_url, timeout=30)
+        api_response.raise_for_status()
+        info = api_response.json()
+
+        if not info:
+            print(f"No AFDB entry found for accession {accession_id}.")
+            return None
+
+        database_version = info[0].get("latestVersion")
+        if database_version is None:
+            print(f"No version info found for {accession_id}. Skipping AlphaFoldDB fetch.")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error retrieving AFDB metadata for {accession_id}: {e}")
+        return None
+
+    alphafold_id = f"AF-{accession_id}-F1"
     json_url = (
         f'https://alphafold.ebi.ac.uk/files/{alphafold_id}'
         f'-predicted_aligned_error_{database_version}.json'
@@ -61,11 +84,9 @@ def read_afdb_json(accession_id, database_version="v4"):
         # Raise an HTTPError if the status is 4xx, 5xx
         response.raise_for_status()
         data = response.json()
-        # Extract just the 'predicted_aligned_error' data
-        predicted_aligned_error = (
-            data[0]["predicted_aligned_error"] if data and "predicted_aligned_error" in data[0]
-            else None
-        )
+        if data and "predicted_aligned_error" in data[0]:
+          return data[0].get("predicted_aligned_error")
+
     except requests.exceptions.HTTPError as e:
         # Specific handling for HTTP errors (e.g., file not found on the server)
         error_message = f"HTTP Error: Could not retrieve file from {json_url}."
@@ -76,10 +97,6 @@ def read_afdb_json(accession_id, database_version="v4"):
         error_message = f"Error: A problem occurred when trying to retrieve {json_url}."
         print(f"{error_message} Error message: {e}")
         return None
-
-    # If everything went smoothly, return the content of the file
-    return predicted_aligned_error
-
 
 # Function to find the domain for a given residue
 def find_domain_by_res(domains, res):
