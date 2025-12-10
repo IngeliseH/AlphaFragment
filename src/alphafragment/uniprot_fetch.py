@@ -87,13 +87,13 @@ def find_uniprot_domains(protein):
         a ValueError will be raised.
 
     Notes:
-      - The function intentionally excludes domains of types 'CHAIN', 'MUTAGEN', and
-        'CONFLICT'. This is because:
+      - The function intentionally excludes domains of types 'CHAIN', 'MUTAGEN',
+        'CONFLICT', 'VARIANT', 'VAR_SEQ' and 'CROSSLNK'. This is because:
         - CHAIN types cover the entire sequence and do not represent discrete structural
           domains, making them unsuitable for analyses that require domain fragmentation.
-        - MUTAGEN and CONFLICT types are related to sequence variations and conflicts,
-          respectively, and are not considered structurally relevant domains for the
-          purpose of protein analysis and domain identification.
+        - MUTAGEN, CONFLICT, VARIANT, VAR_SEQ and CROSSLNK types are not considered
+          structurally relevant domains for the purpose of protein analysis and domain
+          identification.
       - In specific cases where it is necessary to include these excluded domain types,
         or to specify domains not found or incorrectly annotated in UniProt, users
         can manually specify domains in the input CSV file used with other functions of
@@ -110,18 +110,20 @@ def find_uniprot_domains(protein):
         return None
 
     for feature in data['features']:
-        if feature['type'] not in ['CHAIN', 'MUTAGEN', 'CONFLICT']:
-            description = feature.get('description', None)
-            if not description:
-                description = feature.get('type', None)
-            try:
-                start = int(feature['begin'])
-                end = int(feature['end'])
-            except ValueError:
-                print(f"Invalid start/end in feature for protein {protein.name}: {feature}")
-                continue
-
-            uniprot_domains.append(Domain(description, start-1, end-1, "UniProt"))
+        description = feature.get('description', None)
+        feature_type = feature.get('type', None)
+        if description is None:
+            description = feature_type
+        try:
+            start = int(feature['begin'])
+            end = int(feature['end'])
+        except ValueError:
+            print(f"Invalid start/end in feature for protein {protein.name}: {feature}")
+            continue
+        ignored_types = ['CHAIN', 'MUTAGEN', 'CONFLICT', 'VAR_SEQ', 'VARIANT', 'CROSSLNK']
+        if description in ignored_types or feature_type in ignored_types:
+            continue
+        uniprot_domains.append(Domain(description, start-1, end-1, "UniProt"))
     if uniprot_domains:
         print(f"{len(uniprot_domains)} domains found in UniProt for "
               f"{protein.name}: {uniprot_domains}")
