@@ -77,7 +77,7 @@ def read_afdb_json(accession_id):
     alphafold_id = f"AF-{accession_id}-F1"
     json_url = (
         f'https://alphafold.ebi.ac.uk/files/{alphafold_id}'
-        f'-predicted_aligned_error_{database_version}.json'
+        f'-predicted_aligned_error_v{database_version}.json'
     )
     try:
         response = requests.get(json_url, timeout=30) #timeout in 30 seconds
